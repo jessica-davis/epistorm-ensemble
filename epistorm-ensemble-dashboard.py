@@ -374,8 +374,8 @@ def plot_coverage_evaluation(coverage_df, selected_models):
         title="",
         xaxis_title="Prediction Interval (%)",
         yaxis_title="Coverage",
-        height=500,
-        width=800,
+        height=600,
+        width=900,
         yaxis=dict(tickformat='.0%', range=[0, 1.05]),
         xaxis=dict(range=[0, 105], tickvals=intervals),
         legend=dict(
