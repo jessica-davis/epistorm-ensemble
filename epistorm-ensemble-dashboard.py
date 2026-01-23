@@ -83,25 +83,36 @@ st.markdown("""
         color: black !important;
     }
     
-    /* Date picker / Calendar */
+    /* Date picker / Calendar - comprehensive */
     [data-baseweb="calendar"],
     [data-baseweb="datepicker"],
+    [data-baseweb="calendar"] *,
+    [data-baseweb="calendar"] > div,
+    [data-baseweb="calendar"] [role="gridcell"],
     .stDateInput > div > div,
-    [data-testid="stDateInput"] {
+    [data-testid="stDateInput"],
+    [data-testid="stDateInput"] * {
         background-color: white !important;
         color: black !important;
     }
     
-    /* Calendar popup */
-    [data-baseweb="calendar"] * {
+    /* Calendar days (including disabled days from other months) */
+    [data-baseweb="calendar"] [role="button"],
+    [aria-label*="day"],
+    [aria-disabled="true"] {
         background-color: white !important;
-        color: black !important;
+        color: #cccccc !important;
     }
     
-    /* Calendar header and days */
+    /* Selected/hover states */
+    [data-baseweb="calendar"] [role="button"]:hover {
+        background-color: #f0f0f0 !important;
+    }
+    
+    /* Calendar header and navigation */
     [data-baseweb="calendar-header"],
-    [aria-label*="calendar"],
-    [role="button"][aria-label*="day"] {
+    [data-baseweb="calendar-header"] *,
+    [aria-label*="calendar"] {
         background-color: white !important;
         color: black !important;
     }
@@ -113,6 +124,7 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
+
 
 
 # Constants
