@@ -47,7 +47,7 @@ def fetch_model_forecasts(model_name):
     base_url = f"https://raw.githubusercontent.com/cdcepi/FluSight-forecast-hub/main/model-output/{model_name}"
     all_forecasts = []
     
-    start_date = datetime(2024, 11, 1)  # Note: Fixed year to 2024
+    start_date = datetime(2025, 11, 1)  # FIXED: Changed to 2025
     end_date = pd.to_datetime(Week.fromdate(datetime.now()).enddate())
     current_date = start_date
     
