@@ -99,6 +99,19 @@ def fetch_all_forecasts():
     
     if all_data:
         combined = pd.concat(all_data, ignore_index=True)
+        
+        # FIXED: Ensure consistent data types for all columns
+        # Convert all object columns to string to avoid type conflicts
+        for col in combined.columns:
+            if combined[col].dtype == 'object':
+                combined[col] = combined[col].astype(str)
+        
+        # Convert date columns back to datetime
+        if 'reference_date' in combined.columns:
+            combined['reference_date'] = pd.to_datetime(combined['reference_date'])
+        if 'target_end_date' in combined.columns:
+            combined['target_end_date'] = pd.to_datetime(combined['target_end_date'])
+        
         output_file = DATA_DIR / "all_forecasts.parquet"
         combined.to_parquet(output_file, index=False)
         print(f"✓ Saved all forecasts to {output_file} ({len(combined)} rows)")
@@ -114,6 +127,17 @@ def fetch_baseline_forecasts():
     df = fetch_model_forecasts(baseline_model)
     
     if not df.empty:
+        # FIXED: Ensure consistent data types
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                df[col] = df[col].astype(str)
+        
+        # Convert date columns back to datetime
+        if 'reference_date' in df.columns:
+            df['reference_date'] = pd.to_datetime(df['reference_date'])
+        if 'target_end_date' in df.columns:
+            df['target_end_date'] = pd.to_datetime(df['target_end_date'])
+        
         output_file = DATA_DIR / "baseline_forecasts.parquet"
         df.to_parquet(output_file, index=False)
         print(f"✓ Saved baseline forecasts to {output_file} ({len(df)} rows)")
