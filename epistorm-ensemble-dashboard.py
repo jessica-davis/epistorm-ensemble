@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 import requests
 from io import StringIO
 import numpy as np
+import os
+from pathlib import Path
 from ensemble import create_ensemble_method1, create_ensemble_method2, create_categorical_ensemble
 
 # Page config
@@ -56,8 +58,12 @@ CATEGORY_ORDER = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Inc
 
 INTERVAL_RANGES = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 98]
 
+DATA_DIR = Path("data")
+DATA_DIR.mkdir(exist_ok=True)
+
 @st.cache_data(ttl=3600)
 def load_locations():
+    """Load locations from local file or fallback to original source"""
     try:
         locations_df = pd.read_csv('locations.csv')
         return locations_df
@@ -67,6 +73,19 @@ def load_locations():
 
 @st.cache_data(ttl=3600)
 def load_observed_data():
+    """Load observed data from local cache or fetch if not available"""
+    local_file = DATA_DIR / "observed_data.csv"
+    
+    # Try to load from local file first
+    if local_file.exists():
+        try:
+            data = pd.read_csv(local_file)
+            data['date'] = pd.to_datetime(data['date'])
+            return data
+        except Exception as e:
+            st.warning(f"Error loading cached data: {e}. Fetching fresh data...")
+    
+    # Fallback to fetching from URL
     url = "https://raw.githubusercontent.com/cdcepi/FluSight-forecast-hub/refs/heads/main/target-data/target-hospital-admissions.csv"
     try:
         response = requests.get(url)
@@ -76,6 +95,69 @@ def load_observed_data():
     except Exception as e:
         st.error(f"Error loading observed data: {e}")
         return None
+
+@st.cache_data(ttl=3600)
+def load_all_forecasts():
+    """Load all forecasts from local cache or fetch if not available"""
+    local_file = DATA_DIR / "all_forecasts.parquet"
+    
+    # Try to load from local file first
+    if local_file.exists():
+        try:
+            combined = pd.read_parquet(local_file)
+            combined['reference_date'] = pd.to_datetime(combined['reference_date'])
+            combined['target_end_date'] = pd.to_datetime(combined['target_end_date'])
+            st.info(f"Loaded cached forecast data (last updated: {pd.Timestamp(local_file.stat().st_mtime, unit='s').strftime('%Y-%m-%d %H:%M')})")
+            return combined
+        except Exception as e:
+            st.warning(f"Error loading cached forecasts: {e}. Fetching fresh data...")
+    
+    # Fallback to fetching from URLs
+    all_data = []
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    for idx, model in enumerate(MODELS):
+        status_text.text(f"Loading {model}...")
+        df = load_model_forecasts(model)
+        if not df.empty:
+            all_data.append(df)
+        progress_bar.progress((idx + 1) / len(MODELS))
+    
+    status_text.empty()
+    progress_bar.empty()
+    
+    if all_data:
+        combined = pd.concat(all_data, ignore_index=True)
+        combined['reference_date'] = pd.to_datetime(combined['reference_date'])
+        combined['target_end_date'] = pd.to_datetime(combined['target_end_date'])
+        return combined
+    return pd.DataFrame()
+
+@st.cache_data(ttl=3600)
+def load_baseline_forecasts():
+    """Load baseline forecasts from local cache or fetch if not available"""
+    local_file = DATA_DIR / "baseline_forecasts.parquet"
+    
+    # Try to load from local file first
+    if local_file.exists():
+        try:
+            df = pd.read_parquet(local_file)
+            df['reference_date'] = pd.to_datetime(df['reference_date'])
+            df['target_end_date'] = pd.to_datetime(df['target_end_date'])
+            return df
+        except Exception as e:
+            st.warning(f"Error loading cached baseline: {e}. Fetching fresh data...")
+    
+    # Fallback to fetching
+    baseline_model = 'FluSight-baseline'
+    df = load_model_forecasts(baseline_model)
+    if not df.empty:
+        df['reference_date'] = pd.to_datetime(df['reference_date'])
+        df['target_end_date'] = pd.to_datetime(df['target_end_date'])
+    return df
+
+
 
 @st.cache_data(ttl=3600)
 def load_model_forecasts(model_name):
@@ -104,34 +186,6 @@ def load_model_forecasts(model_name):
         return pd.concat(all_forecasts, ignore_index=True)
     return pd.DataFrame()
 
-@st.cache_data(ttl=3600)
-def load_all_forecasts():
-    all_data = []
-    progress_bar = st.progress(0)
-    status_text = st.empty()
-    for idx, model in enumerate(MODELS):
-        status_text.text(f"Loading {model}...")
-        df = load_model_forecasts(model)
-        if not df.empty:
-            all_data.append(df)
-        progress_bar.progress((idx + 1) / len(MODELS))
-    status_text.empty()
-    progress_bar.empty()
-    if all_data:
-        combined = pd.concat(all_data, ignore_index=True)
-        combined['reference_date'] = pd.to_datetime(combined['reference_date'])
-        combined['target_end_date'] = pd.to_datetime(combined['target_end_date'])
-        return combined
-    return pd.DataFrame()
-
-@st.cache_data(ttl=3600)
-def load_baseline_forecasts():
-    baseline_model = 'FluSight-baseline'
-    df = load_model_forecasts(baseline_model)
-    if not df.empty:
-        df['reference_date'] = pd.to_datetime(df['reference_date'])
-        df['target_end_date'] = pd.to_datetime(df['target_end_date'])
-    return df
 
 @st.cache_data(ttl=3600)
 def load_wis_data():
