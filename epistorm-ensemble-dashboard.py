@@ -83,6 +83,29 @@ st.markdown("""
         color: black !important;
     }
     
+    /* Date picker / Calendar */
+    [data-baseweb="calendar"],
+    [data-baseweb="datepicker"],
+    .stDateInput > div > div,
+    [data-testid="stDateInput"] {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    /* Calendar popup */
+    [data-baseweb="calendar"] * {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    /* Calendar header and days */
+    [data-baseweb="calendar-header"],
+    [aria-label*="calendar"],
+    [role="button"][aria-label*="day"] {
+        background-color: white !important;
+        color: black !important;
+    }
+    
     /* Plotly charts */
     .js-plotly-plot .plotly,
     .js-plotly-plot .plotly .plot-container {
