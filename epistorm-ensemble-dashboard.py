@@ -32,24 +32,64 @@ st.set_page_config(
     }
 )
 
-# Apply custom CSS to force light theme
 st.markdown("""
     <style>
-    /* Force light mode */
-    [data-testid="stAppViewContainer"] {
-        background-color: white;
-        color: black;
+    /* Force light mode everywhere */
+    :root {
+        color-scheme: light !important;
     }
-    [data-testid="stHeader"] {
-        background-color: white;
+    
+    [data-testid="stAppViewContainer"],
+    [data-testid="stApp"],
+    [data-testid="stHeader"],
+    [data-testid="stToolbar"],
+    [data-testid="stDecoration"],
+    [data-testid="stStatusWidget"] {
+        background-color: white !important;
+        color: black !important;
     }
+    
+    /* Sidebar */
     [data-testid="stSidebar"] {
-        background-color: #f0f2f6;
+        background-color: #f0f2f6 !important;
+        color: black !important;
+    }
+    
+    /* All text elements */
+    .stMarkdown, .stText, p, span, div, label {
+        color: black !important;
+    }
+    
+    /* Dropdowns and selectboxes */
+    [data-baseweb="select"],
+    [data-baseweb="popover"],
+    [data-baseweb="menu"],
+    .stSelectbox > div > div,
+    .stMultiSelect > div > div {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    /* Dropdown options */
+    [role="option"],
+    [role="listbox"] {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    /* Input fields */
+    input, textarea, select {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    /* Plotly charts */
+    .js-plotly-plot .plotly,
+    .js-plotly-plot .plotly .plot-container {
+        background-color: white !important;
     }
     </style>
     """, unsafe_allow_html=True)
-
-
 
 
 # Constants
