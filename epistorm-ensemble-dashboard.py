@@ -39,6 +39,11 @@ st.markdown("""
         color-scheme: light !important;
     }
     
+    /* Override ALL backgrounds to white */
+    * {
+        color-scheme: light !important;
+    }
+    
     [data-testid="stAppViewContainer"],
     [data-testid="stApp"],
     [data-testid="stHeader"],
@@ -83,38 +88,42 @@ st.markdown("""
         color: black !important;
     }
     
-    /* Date picker / Calendar - comprehensive */
+    /* Nuclear option for calendar - target everything */
     [data-baseweb="calendar"],
-    [data-baseweb="datepicker"],
     [data-baseweb="calendar"] *,
-    [data-baseweb="calendar"] > div,
-    [data-baseweb="calendar"] [role="gridcell"],
+    [data-baseweb="calendar"] > *,
+    [data-baseweb="calendar"] div,
+    [data-baseweb="calendar"] button,
+    [data-baseweb="datepicker"],
+    [data-baseweb="datepicker"] *,
+    .stDateInput,
+    .stDateInput *,
+    .stDateInput > div,
     .stDateInput > div > div,
+    .stDateInput div[role="button"],
     [data-testid="stDateInput"],
     [data-testid="stDateInput"] * {
         background-color: white !important;
         color: black !important;
+        background: white !important;
     }
     
-    /* Calendar days (including disabled days from other months) */
-    [data-baseweb="calendar"] [role="button"],
-    [aria-label*="day"],
-    [aria-disabled="true"] {
+    /* All calendar grid cells */
+    [role="gridcell"],
+    [role="gridcell"] *,
+    [role="gridcell"] div,
+    [role="gridcell"] button {
         background-color: white !important;
-        color: #cccccc !important;
-    }
-    
-    /* Selected/hover states */
-    [data-baseweb="calendar"] [role="button"]:hover {
-        background-color: #f0f0f0 !important;
-    }
-    
-    /* Calendar header and navigation */
-    [data-baseweb="calendar-header"],
-    [data-baseweb="calendar-header"] *,
-    [aria-label*="calendar"] {
-        background-color: white !important;
+        background: white !important;
         color: black !important;
+    }
+    
+    /* Disabled/inactive days */
+    [aria-disabled="true"],
+    [aria-disabled="true"] * {
+        background-color: white !important;
+        background: white !important;
+        color: #999999 !important;
     }
     
     /* Plotly charts */
@@ -124,7 +133,6 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
-
 
 
 # Constants
