@@ -333,6 +333,7 @@ class scoring_functions:
                         out = pd.DataFrame(out, index=[0])
                         out['Model'] = model
                         out['reference_date'] = date
+                        out['target_end_date'] = pred.target_end_date.unique()[0]
                         out['horizon'] = horizon
                         out['location'] = location
 
@@ -418,7 +419,7 @@ if __name__ == "__main__":
     dfwis_ratio['wis_ratio'] = dfwis_ratio['wis'] / dfwis_ratio['wis_baseline']
     
     # Save WIS ratio
-    output_file = 'wis_ratio_epistorm_models_2526.pq'
+    output_file = './data/wis_ratio_epistorm_models_2526.pq'
     dfwis_ratio.to_parquet(output_file)
     print(f"   ✓ Saved WIS ratios to {output_file}")
     print(f"   ✓ Total WIS ratio records: {len(dfwis_ratio)}")
@@ -435,7 +436,7 @@ if __name__ == "__main__":
     )
     
     # Save coverage
-    output_file = 'coverage_epistorm_models_2526.pq'
+    output_file = './data/coverage_epistorm_models_2526.pq'
     dfcoverage.to_parquet(output_file)
     print(f"   ✓ Saved coverage scores to {output_file}")
     print(f"   ✓ Total coverage records: {len(dfcoverage)}")
