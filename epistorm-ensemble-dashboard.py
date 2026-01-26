@@ -511,8 +511,17 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
     forecast_filtered = forecast_data[
         (forecast_data['location'] == selected_location) &
         (forecast_data['reference_date'] == selected_date) &
+        (forecast_data['target'] == 'wk inc flu hosp') &
         (forecast_data['model'].isin(selected_models))
     ].copy()
+
+    # ADD THIS DEBUG HERE:
+    print(f"DEBUG plot_forecasts:")
+    print(f"  forecast_filtered shape: {forecast_filtered.shape}")
+    print(f"  selected_models: {selected_models}")
+    print(f"  models in filtered data: {forecast_filtered['model'].unique()}")
+    
+
     max_forecast_date = end_date
     for model in selected_models:
         model_data = forecast_filtered[forecast_filtered['model'] == model]
