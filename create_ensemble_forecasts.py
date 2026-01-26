@@ -101,7 +101,7 @@ def main():
         print("   This may take a few minutes...")
         
         categorical_ensemble = create_categorical_ensemble_quantile(
-            quantile_ensemble)
+            quantile_ensemble[quantile_ensemble.horizon>=0])
         
         if len(categorical_ensemble) == 0:
             print("WARNING: No categorical forecasts generated!")
