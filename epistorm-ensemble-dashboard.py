@@ -230,17 +230,17 @@ def load_coverage_data():
         return None
 
 def create_ensemble_forecasts(forecast_data):
- #   ensemble1 = create_ensemble_method1(forecast_data)
- #   ensemble1['model'] = 'Median Epistorm Ensemble'
- #   categorical_ensemble = create_categorical_ensemble_quantile(ensemble1)
- #   categorical_ensemble['model'] = 'Median Epistorm Ensemble'
+    #ensemble1 = create_ensemble_method1(forecast_data)
+    #ensemble1['model'] = 'Median Epistorm Ensemble'
+    #categorical_ensemble = create_categorical_ensemble(forecast_data)
+    #categorical_ensemble['model'] = 'Median Epistorm Ensemble'
 
     ensemble1 = pd.read_csv('./data/quantile_ensemble.csv')
     categorical_ensemble = pd.read_csv('./data/categorical_ensemble.csv')
 
     ensemble1['model'] = 'Median Epistorm Ensemble'
     categorical_ensemble['model'] = 'Median Epistorm Ensemble'
-    
+
     return pd.concat([ensemble1, categorical_ensemble], ignore_index=True)
 
 def hex_to_rgba(hex_color, alpha):

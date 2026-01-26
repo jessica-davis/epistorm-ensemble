@@ -52,7 +52,7 @@ def main():
             sys.exit(1)
         
         # Add model identifier
-        quantile_ensemble['model'] = 'Median_Ensemble'
+        quantile_ensemble['model'] = 'Median Epistorm Ensemble'
         
         print(f"   ✓ Generated {len(quantile_ensemble):,} quantile forecast rows")
         print(f"   Reference dates: {quantile_ensemble['reference_date'].nunique()}")
