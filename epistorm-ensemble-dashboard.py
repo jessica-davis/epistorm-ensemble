@@ -1014,7 +1014,7 @@ if tab_selection == "Forecasts":
             except:
                 pass
         
-        st.markdown("💡 **Tip:** Click on any date on the plot to update the forecast reference date.")
+        st.markdown("**Tip:** Change the location, forecast date, models shown, or historical date range in the sidebar.")
         st.markdown("---")
         
         st.markdown(
