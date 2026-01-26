@@ -25,7 +25,7 @@ def main():
         
         # Load forecast data
         print("\n1. Loading forecast data...")
-        forecast_path = Path('data/forecast_data.pq')  # Adjust to your actual path
+        forecast_path = Path('data/all_forecasts.pq')  # Adjust to your actual path
         
         if not forecast_path.exists():
             print(f"ERROR: Forecast file not found at {forecast_path}")
