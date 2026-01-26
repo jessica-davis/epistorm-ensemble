@@ -634,7 +634,7 @@ st.markdown('<p style="font-size: 20px; color: black;">Interactive visualization
 
 # View selection in sidebar
 tab_selection = st.sidebar.selectbox(
-    "Select View",
+    "Select Tab",
     ["Forecasts", "Evaluation"],
     key="tab_selection"
 )
