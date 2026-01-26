@@ -232,7 +232,7 @@ def load_coverage_data():
 def create_ensemble_forecasts(forecast_data):
     ensemble1 = create_ensemble_method1(forecast_data)
     ensemble1['model'] = 'Median Epistorm Ensemble'
-    categorical_ensemble = create_categorical_ensemble(forecast_data)
+    categorical_ensemble = create_categorical_ensemble_quantile(forecast_data)
     categorical_ensemble['model'] = 'Median Epistorm Ensemble'
 
    # ensemble1 = pd.read_csv('./data/quantile_ensemble.csv')
