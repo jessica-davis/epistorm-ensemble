@@ -66,11 +66,7 @@ def main():
         quantile_ensemble.to_parquet(quantile_output_path, index=False)
         print(f"   ✓ Saved to {quantile_output_path}")
         
-        # Also save as CSV
-        quantile_csv_path = Path('data/quantile_ensemble.csv')
-        quantile_ensemble.to_csv(quantile_csv_path, index=False)
-        print(f"   ✓ Also saved as {quantile_csv_path}")
-        
+    
         # =====================================================================
         # PART 2: Create Categorical Ensemble
         # =====================================================================
@@ -139,11 +135,6 @@ def main():
         categorical_ensemble.to_parquet(categorical_output_path, index=False)
         print(f"   ✓ Saved to {categorical_output_path}")
         
-        # Also save as CSV
-        categorical_csv_path = Path('data/categorical_ensemble.csv')
-        categorical_ensemble.to_csv(categorical_csv_path, index=False)
-        print(f"   ✓ Also saved as {categorical_csv_path}")
-        
         # =====================================================================
         # PART 3: Combine Everything
         # =====================================================================
@@ -168,10 +159,6 @@ def main():
         combined_path = Path('data/ensemble_forecasts.pq')
         combined_ensemble.to_parquet(combined_path, index=False)
         print(f"   ✓ Saved combined ensemble to {combined_path}")
-        
-        combined_csv_path = Path('data/ensemble_forecasts.csv')
-        combined_ensemble.to_csv(combined_csv_path, index=False)
-        print(f"   ✓ Also saved as {combined_csv_path}")
         
         # Print final summary
         print("\n" + "=" * 60)
