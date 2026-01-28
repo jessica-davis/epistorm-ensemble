@@ -49,10 +49,18 @@ jobs:
       
      
       - name: Commit and push if changed
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Update forecast data, scores, and categorical ensemble - $(date +'%Y-%m-%d')"
-          file_pattern: 'data/ *.pq'
-          commit_user_name: github-actions[bot]
-          commit_user_email: github-actions[bot]@users.noreply.github.com
-          pull: '--rebase --autostash'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git fetch origin main
+          git add data/ *.pq
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git stash
+          git pull --rebase origin main
+          git stash pop || true
+          git add data/ *.pq
+          git commit -m "Update forecast data, scores, and categorical ensemble - $(date +'%Y-%m-%d')"
+          git push origin main
