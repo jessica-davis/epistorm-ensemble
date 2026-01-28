@@ -18,8 +18,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: main
-          fetch-depth: 0  # Fetch all history
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -52,15 +52,19 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+    
+          # Fetch and reset to latest remote
           git fetch origin main
+          git reset --hard origin/main
+    
+          # Run your data updates here would have already happened above
+          # Now add the new files
           git add data/ *.pq
+    
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-          git stash
-          git pull --rebase origin main
-          git stash pop || true
-          git add data/ *.pq
+    
           git commit -m "Update forecast data, scores, and categorical ensemble - $(date +'%Y-%m-%d')"
           git push origin main
