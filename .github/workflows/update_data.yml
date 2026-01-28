@@ -54,12 +54,33 @@ jobs:
       
       - name: Commit and push if changed
         run: |
+          echo "=== Before commit - Local HEAD ==="
+          git log -1 --oneline
+    
+          echo "=== Before commit - Remote ==="
+          git ls-remote origin main
+    
           git add data/ *.pq
-          
+    
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-          
+    
           git commit -m "Update forecast data, scores, and categorical ensemble - $(date +'%Y-%m-%d')"
-          git push origin main
+    
+          echo "=== After commit - Local HEAD ==="
+          git log -1 --oneline
+    
+          echo "=== After commit - Remote ==="
+          git ls-remote origin main
+    
+          echo "=== Attempting push ==="
+          if ! git push origin main; then
+            echo "=== Push failed - checking remote again ==="
+            git ls-remote origin main
+            git fetch origin main
+            echo "=== Remote commits that we don't have ==="
+            git log HEAD..origin/main --oneline
+            exit 1
+          fi
