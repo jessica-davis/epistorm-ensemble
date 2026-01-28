@@ -1,6 +1,5 @@
 name: Update Forecast Data and Calculate Scores
 on:
-  
   schedule:
     - cron: '0 13 * * 4'
   
@@ -18,46 +17,49 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
+      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pandas requests pyarrow epiweeks numpy scipy
-
+      
       - name: Sync with remote and generate data
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-    
-          # Get latest from remote
-          git fetch origin main
-          git reset --hard origin/main
-    
-          # NOW run the data generation
+          
+          # Ensure we're on main branch (not detached)
+          git checkout main
+          
+          # Get latest from remote and merge
+          git pull origin main
+          
+          # Run the data generation
           echo "Fetching forecast data..."
           python fetch_data.py
-    
+          
           echo "Creating ensemble forecasts..."
           python create_ensemble_forecasts.py
-    
+          
           echo "Calculating scores..."
           python calculate_scores.py
-
+      
       - name: Commit and push if changed
         run: |
           git add data/ *.pq
-    
+          
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-    
+          
           git commit -m "Update forecast data, scores, and categorical ensemble - $(date +'%Y-%m-%d')"
           git push origin main
