@@ -11,6 +11,16 @@ from datetime import datetime
 from datetime import date, timedelta
 import os
 
+api_key = os.environ.get('COVIDCAST_API_KEY', '4bee67d2520898')
+
+# Option A: If the old method still exists in your version
+try:
+    covidcast.use_api_key(api_key)
+except AttributeError:
+    # Newer versions don't have this method
+    os.environ['COVIDCAST_API_KEY'] = api_key
+
+
 def get_versioned_data():
     TODAY = datetime.now()
 
