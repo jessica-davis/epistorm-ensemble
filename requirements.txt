@@ -8,3 +8,4 @@ plotly
 scipy
 covidcast
 delphi_epidata
+altair<5.0
