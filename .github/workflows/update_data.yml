@@ -49,18 +49,12 @@ jobs:
       - name: Create ensemble forecasts
         env:
           COVIDCAST_API_KEY: ${{ secrets.COVIDCAST_API_KEY }}
-        run: 
+        run: |
           echo "Creating ensemble forecasts..."
           python create_ensemble_forecasts.py
-
+          
           echo "Calculating scores..."
           python calculate_scores.py
-
-          #echo "Creating ensemble forecasts..."
-          #python create_ensemble_forecasts.py
-      
-         # echo "Calculating scores..."
-          #python calculate_scores.py
       
       - name: Commit and push if changed
         run: |
