@@ -3,6 +3,57 @@ import numpy as np
 from typing import List, Tuple
 from scipy.interpolate import interp1d
 from datetime import timedelta
+from epiweeks import Week
+import epiweeks
+import covidcast
+from delphi_epidata import Epidata
+from datetime import datetime
+from datetime import date, timedelta
+covidcast.use_api_key("4bee67d2520898")
+
+def get_versioned_data():
+    TODAY = datetime.now()
+
+    # Convert dates to epiweeks
+    start_week = Week.fromdate(date(2025, 10, 1))
+    end_week = Week.fromdate(TODAY)
+
+    start_epiweek = int(f"{start_week.year}{start_week.week:02d}")
+    end_epiweek = int(f"{end_week.year}{end_week.week:02d}")
+
+    result_adm = Epidata.covidcast(data_source='nhsn', signals='confirmed_admissions_flu_ew_prelim',
+        time_type='week', geo_type='state', time_values=Epidata.range(start_epiweek, end_epiweek), geo_value='*',
+                                issues='*')
+    result_adm_us = Epidata.covidcast(data_source='nhsn', signals='confirmed_admissions_flu_ew_prelim',
+        time_type='week', geo_type='nation', time_values=Epidata.range(start_epiweek, end_epiweek), geo_value='*',
+                                issues='*')
+
+    # Convert to DataFrame
+    if result_adm['result'] == 1:
+        dfadm = pd.DataFrame(result_adm['epidata'])
+        dfadm_us = pd.DataFrame(result_adm_us['epidata'])
+        #print(dfadm[['time_value', 'value', 'issue']])
+    else:
+        print(f"No results: {result_adm.get('message')}")
+
+    dfadm = dfadm[['geo_value', 'time_value','issue','value']]
+    dfadm_us = dfadm_us[['geo_value', 'time_value','issue','value']]
+
+
+    df = pd.concat([dfadm, dfadm_us])
+    df['issue_date'] = df['issue'].apply(lambda x: Week(x//100, x %100).enddate())
+    df['target_end_date'] = df['time_value'].apply(lambda x: Week(x//100, x %100).enddate())
+
+    df['abbreviation'] = df['geo_value'].apply(lambda x: x.upper())
+
+    locations = pd.read_csv('./locations.csv')[['abbreviation', 'location', 'location_name']]
+
+    df = df.merge(locations, on='abbreviation')
+
+    return df 
+
+
+
 
 
 def create_ensemble_method1(forecast_data):
@@ -363,15 +414,24 @@ def create_categorical_ensemble_quantile(df):
             # Get target_end_date (should be same for all quantiles in this subset)
             target_end_date = df_subset['target_end_date'].iloc[0]
             
-            # Get observed value
+
+             # Get observed value
             last_obs = pd.to_datetime(reference_date) - timedelta(days=7)
-            try:
-                obs_date = last_obs.strftime('%Y-%m-%d')
-                obs_vers = pd.read_csv(f'https://raw.githubusercontent.com/cdcepi/FluSight-forecast-hub/refs/heads/main/auxiliary-data/target-data-archive/target-hospital-admissions_{obs_date}.csv')
-                obs_vers['date'] = pd.to_datetime(obs_vers['date'])
-                obs_subset = obs_vers[(obs_vers.location == loc) &  (obs_vers.date == last_obs)]
-            except:
-                obs_subset = obs[(obs.location == loc) &  (obs.date == last_obs)]
+
+            obs_vers = get_versioned_data()
+            obs_vers['target_end_date'] = pd.to_datetime(obs_vers['target_end_date'])
+            obs_vers['issue_date'] = pd.to_datetime(obs_vers['issue_date'])
+            obs_subset = obs_vers[(obs_vers.location == loc) &  (obs_vers.target_end_date == last_obs) &\
+                                (obs_vers.issue_date==pd.to_datetime(reference_date))]
+                        
+            if len(obs_subset) == 0:
+                try:
+                    obs_date = last_obs.strftime('%Y-%m-%d')
+                    obs_vers = pd.read_csv(f'https://raw.githubusercontent.com/cdcepi/FluSight-forecast-hub/refs/heads/main/auxiliary-data/target-data-archive/target-hospital-admissions_{obs_date}.csv')
+                    obs_vers['date'] = pd.to_datetime(obs_vers['date'])
+                    obs_subset = obs_vers[(obs_vers.location == loc) &  (obs_vers.date == last_obs)]
+                except:
+                    obs_subset = obs[(obs.location == loc) &  (obs.date == last_obs)]
 
             
             if len(obs_subset) == 0:
