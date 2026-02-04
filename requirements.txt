@@ -6,3 +6,5 @@ epiweeks
 plotly
 numpy
 scipy
+covidcast
+delphi_epidata
