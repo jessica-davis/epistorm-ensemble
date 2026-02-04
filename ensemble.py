@@ -9,7 +9,6 @@ import covidcast
 from delphi_epidata import Epidata
 from datetime import datetime
 from datetime import date, timedelta
-covidcast.use_api_key("4bee67d2520898")
 
 def get_versioned_data():
     TODAY = datetime.now()
