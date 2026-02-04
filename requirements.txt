@@ -6,5 +6,5 @@ pyarrow
 epiweeks
 plotly
 scipy
-covidcast
+covidcast==0.2.2
 delphi_epidata
