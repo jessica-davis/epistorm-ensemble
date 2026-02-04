@@ -1,5 +1,5 @@
-numpy==1.26.4
-pandas==2.0.3
+numpy==2.4.1
+pandas==1.5.3
 streamlit
 requests
 pyarrow
