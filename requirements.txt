@@ -9,3 +9,5 @@ scipy
 covidcast
 delphi_epidata
 altair<5.0
+streamlit>=1.31.0
+pillow
