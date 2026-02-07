@@ -705,7 +705,7 @@ with tab_forecasts:
     controls_col, chart_col = st.columns([1, 3], gap="large")
     
     with controls_col:
-        st.markdown("### Forecast Controls")
+        #st.markdown("### Forecast Controls")
         
         # Location selector
         if locations_df is not None:
@@ -1003,7 +1003,7 @@ with tab_evaluation:
     controls_col, chart_col = st.columns([1, 3], gap="large")
     
     with controls_col:
-        st.markdown("### Evaluation Controls")
+        #st.markdown("### Evaluation Controls")
 
         wis_data = load_wis_data()
         coverage_data = load_coverage_data()
