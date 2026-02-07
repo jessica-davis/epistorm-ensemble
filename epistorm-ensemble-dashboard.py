@@ -988,80 +988,57 @@ with tab_evaluation:
     with controls_col:
         st.markdown("### Evaluation Controls")
 
-        # Load evaluation data
         wis_data = load_wis_data()
         coverage_data = load_coverage_data()
-        
+
         if wis_data is None and coverage_data is None:
-            st.error("Could not load evaluation data. Please ensure the parquet files exist.")
-        else:
-            # Get available models from evaluation data
-            eval_models = []
+            st.error("Could not load evaluation data.")
+            st.stop()
+
+        # Get available models
+        eval_models = []
+        if wis_data is not None:
+            eval_models = sorted(wis_data['Model'].unique().tolist())
+        elif coverage_data is not None:
+            eval_models = sorted(coverage_data['Model'].unique().tolist())
+
+        # Location selector
+        eval_location_map = {'All Locations': 'all'}
+        if locations_df is not None:
+            eval_location_codes = []
             if wis_data is not None:
-                eval_models = sorted(wis_data['Model'].unique().tolist())
+                eval_location_codes = sorted(wis_data['location'].unique().tolist())
             elif coverage_data is not None:
-                eval_models = sorted(coverage_data['Model'].unique().tolist())
-            
-            st.sidebar.markdown("### Select Models to Display")
-            
-            eval_ensemble_models = [m for m in eval_models if m == 'Median Epistorm Ensemble']
-            eval_individual_models = [m for m in eval_models if m != 'Median Epistorm Ensemble' and m != 'FluSight-ensemble']
-            
-            if 'selected_eval_models' not in st.session_state:
-                st.session_state.selected_eval_models = eval_models.copy()
-            
-            selected_eval_models = []
-            
-            if eval_ensemble_models:
-                st.sidebar.markdown("**Ensemble Models:**")
-                for model in eval_ensemble_models:
-                    default_value = model in st.session_state.selected_eval_models
-                    if st.sidebar.checkbox(model, value=default_value, key=f"eval_model_{model}"):
-                        selected_eval_models.append(model)
-            
-            if eval_individual_models:
-                st.sidebar.markdown("**Individual Models:**")
-                for model in eval_individual_models:
-                    default_value = model in st.session_state.selected_eval_models
-                    if st.sidebar.checkbox(model, value=default_value, key=f"eval_model_{model}"):
-                        selected_eval_models.append(model)
-            
-            st.session_state.selected_eval_models = selected_eval_models
-            
-            eval_location_map = {'All Locations': 'all'}
-            if locations_df is not None:
-                eval_location_codes = []
-                if wis_data is not None:
-                    eval_location_codes = sorted(wis_data['location'].unique().tolist())
-                elif coverage_data is not None:
-                    eval_location_codes = sorted(coverage_data['location'].unique().tolist())
-                
-                eval_location_names = ['All Locations']
-                for loc_code in eval_location_codes:
-                    loc_name = get_location_name(loc_code, locations_df)
-                    eval_location_names.append(loc_name)
-                    eval_location_map[loc_name] = loc_code
-                
-                selected_eval_location_name = st.sidebar.selectbox(
-                    "Select Location",
-                    eval_location_names,
-                    index=0,
-                    key="eval_location"
-                )
-                selected_eval_location = eval_location_map[selected_eval_location_name]
-            else:
-                selected_eval_location = st.sidebar.text_input("Enter Location Code (or 'all')", value="all", key="eval_location_text")
-            
-            horizon_options = ['All Horizons', 0, 1, 2, 3]
-            selected_horizon = st.sidebar.selectbox(
-                "Select Horizon",
-                horizon_options,
+                eval_location_codes = sorted(coverage_data['location'].unique().tolist())
+
+            eval_location_names = ['All Locations']
+            for loc_code in eval_location_codes:
+                loc_name = get_location_name(loc_code, locations_df)
+                eval_location_names.append(loc_name)
+                eval_location_map[loc_name] = loc_code
+
+            selected_eval_location_name = st.selectbox(
+                "Select Location",
+                eval_location_names,
                 index=0,
-                key="eval_horizon"
+                key="eval_location"
             )
-            
-            st.sidebar.markdown("### Date Filters")
-            
+            selected_eval_location = eval_location_map[selected_eval_location_name]
+        else:
+            selected_eval_location = st.text_input(
+                "Enter Location Code (or 'all')", value="all", key="eval_location_text"
+            )
+
+        # Horizon selector
+        selected_horizon = st.selectbox(
+            "Select Horizon",
+            ['All Horizons', 0, 1, 2, 3],
+            index=0,
+            key="eval_horizon"
+        )
+
+        # Date filters
+        with st.expander("Date Filters"):
             if wis_data is not None:
                 min_ref_date = wis_data['reference_date'].min().date()
                 max_ref_date = wis_data['reference_date'].max().date()
@@ -1072,72 +1049,91 @@ with tab_evaluation:
                 max_ref_date = datetime.now().date()
                 min_target_date = min_ref_date
                 max_target_date = max_ref_date
-            
-            ref_date_range = st.sidebar.date_input(
+
+            ref_date_range = st.date_input(
                 "Reference Date Range",
                 value=(min_ref_date, max_ref_date),
                 min_value=min_ref_date,
                 max_value=max_ref_date,
                 key="eval_ref_date_range"
             )
-            
-            target_date_range = st.sidebar.date_input(
+            target_date_range = st.date_input(
                 "Target End Date Range",
                 value=(min_target_date, max_target_date),
                 min_value=min_target_date,
                 max_value=max_target_date,
                 key="eval_target_date_range"
             )
-            
-            if isinstance(ref_date_range, tuple) and len(ref_date_range) == 2:
-                ref_start, ref_end = ref_date_range
-            else:
-                ref_start = ref_end = ref_date_range
-            
-            if isinstance(target_date_range, tuple) and len(target_date_range) == 2:
-                target_start, target_end = target_date_range
-            else:
-                target_start = target_end = target_date_range
-            
-            # Filter data
-            filtered_wis = wis_data.copy() if wis_data is not None else None
-            filtered_coverage = coverage_data.copy() if coverage_data is not None else None
-            
-            if filtered_wis is not None:
-                if selected_eval_models:
-                    filtered_wis = filtered_wis[filtered_wis['Model'].isin(selected_eval_models)]
-                if selected_eval_location != 'all':
-                    filtered_wis = filtered_wis[filtered_wis['location'] == selected_eval_location]
-                if selected_horizon != 'All Horizons':
-                    filtered_wis = filtered_wis[filtered_wis['horizon'] == selected_horizon]
-                filtered_wis = filtered_wis[
-                    (filtered_wis['reference_date'].dt.date >= ref_start) &
-                    (filtered_wis['reference_date'].dt.date <= ref_end) &
-                    (filtered_wis['target_end_date'].dt.date >= target_start) &
-                    (filtered_wis['target_end_date'].dt.date <= target_end)
-                ]
-            
-            if filtered_coverage is not None:
-                if selected_eval_models:
-                    filtered_coverage = filtered_coverage[filtered_coverage['Model'].isin(selected_eval_models)]
-                if selected_eval_location != 'all':
-                    filtered_coverage = filtered_coverage[filtered_coverage['location'] == selected_eval_location]
-                if selected_horizon != 'All Horizons':
-                    filtered_coverage = filtered_coverage[filtered_coverage['horizon'] == selected_horizon]
-                filtered_coverage = filtered_coverage[
-                    (filtered_coverage['reference_date'].dt.date >= ref_start) &
-                    (filtered_coverage['reference_date'].dt.date <= ref_end) &
-                    (filtered_coverage['target_end_date'].dt.date >= target_start) &
-                    (filtered_coverage['target_end_date'].dt.date <= target_end)
-                ]
-            
-            st.sidebar.markdown("---")
-            st.sidebar.markdown("### Evaluation Data Summary")
-            if filtered_wis is not None:
-                st.sidebar.markdown(f"**WIS observations:** {len(filtered_wis):,}")
-            if filtered_coverage is not None:
-                st.sidebar.markdown(f"**Coverage observations:** {len(filtered_coverage):,}")
-            st.sidebar.markdown(f"**Models selected:** {len(selected_eval_models)}")
+
+        if isinstance(ref_date_range, tuple) and len(ref_date_range) == 2:
+            ref_start, ref_end = ref_date_range
+        else:
+            ref_start = ref_end = ref_date_range
+
+        if isinstance(target_date_range, tuple) and len(target_date_range) == 2:
+            target_start, target_end = target_date_range
+        else:
+            target_start = target_end = target_date_range
+
+        # Model selection
+        with st.expander("Select Models", expanded=True):
+            eval_ensemble_models = [m for m in eval_models if m == 'Median Epistorm Ensemble']
+            eval_individual_models = [m for m in eval_models if m != 'Median Epistorm Ensemble' and m != 'FluSight-ensemble']
+
+            if 'selected_eval_models' not in st.session_state:
+                st.session_state.selected_eval_models = eval_models.copy()
+
+            selected_eval_models = []
+            if eval_ensemble_models:
+                st.markdown("**Ensemble:**")
+                for model in eval_ensemble_models:
+                    if st.checkbox(model, value=model in st.session_state.selected_eval_models, key=f"eval_model_{model}"):
+                        selected_eval_models.append(model)
+            if eval_individual_models:
+                st.markdown("**Individual:**")
+                for model in eval_individual_models:
+                    if st.checkbox(model, value=model in st.session_state.selected_eval_models, key=f"eval_model_{model}"):
+                        selected_eval_models.append(model)
+            st.session_state.selected_eval_models = selected_eval_models
+
+        # Data summary
+        st.markdown("---")
+        st.caption(f"Models selected: {len(selected_eval_models)}")
+
+    # ---- Filter data ----
+    filtered_wis = wis_data.copy() if wis_data is not None else None
+    filtered_coverage = coverage_data.copy() if coverage_data is not None else None
+
+    if filtered_wis is not None:
+        if selected_eval_models:
+            filtered_wis = filtered_wis[filtered_wis['Model'].isin(selected_eval_models)]
+        if selected_eval_location != 'all':
+            filtered_wis = filtered_wis[filtered_wis['location'] == selected_eval_location]
+        if selected_horizon != 'All Horizons':
+            filtered_wis = filtered_wis[filtered_wis['horizon'] == selected_horizon]
+        filtered_wis = filtered_wis[
+            (filtered_wis['reference_date'].dt.date >= ref_start) &
+            (filtered_wis['reference_date'].dt.date <= ref_end) &
+            (filtered_wis['target_end_date'].dt.date >= target_start) &
+            (filtered_wis['target_end_date'].dt.date <= target_end)
+        ]
+
+    if filtered_coverage is not None:
+        if selected_eval_models:
+            filtered_coverage = filtered_coverage[filtered_coverage['Model'].isin(selected_eval_models)]
+        if selected_eval_location != 'all':
+            filtered_coverage = filtered_coverage[filtered_coverage['location'] == selected_eval_location]
+        if selected_horizon != 'All Horizons':
+            filtered_coverage = filtered_coverage[filtered_coverage['horizon'] == selected_horizon]
+        filtered_coverage = filtered_coverage[
+            (filtered_coverage['reference_date'].dt.date >= ref_start) &
+            (filtered_coverage['reference_date'].dt.date <= ref_end) &
+            (filtered_coverage['target_end_date'].dt.date >= target_start) &
+            (filtered_coverage['target_end_date'].dt.date <= target_end)
+        ]
+
+
+
 
     with chart_col:    
 
