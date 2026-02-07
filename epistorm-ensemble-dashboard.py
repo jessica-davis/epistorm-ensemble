@@ -657,9 +657,9 @@ tab_overview, tab_forecasts, tab_evaluation = st.tabs([ "Overview", "Forecasts",
 
 
 # Main app
-st.markdown("<h1 style='color: #415584;'>Epistorm Influenza Forecasts 2025-26</h1>", unsafe_allow_html=True)
-st.markdown('<p style="font-size: 20px; color: black;">Interactive visualization of influenza hospitalization forecasts from models in the Epistorm consortium for the 2025-26 season.</p>',
-    unsafe_allow_html=True)
+#st.markdown("<h1 style='color: #415584;'>Epistorm Influenza Forecasts 2025-26</h1>", unsafe_allow_html=True)
+#st.markdown('<p style="font-size: 20px; color: black;">Interactive visualization of influenza hospitalization forecasts from models in the Epistorm consortium for the 2025-26 season.</p>',
+#    unsafe_allow_html=True)
 
 # View selection in sidebar
 #tab_selection = st.sidebar.selectbox(   "Select Tab", ["Forecasts", "Evaluation"],  key="tab_selection")
