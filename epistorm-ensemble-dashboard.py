@@ -31,16 +31,22 @@ st.set_page_config(
     }
 )
 
-# Hide sidebar completely
+
 st.markdown(
     """
     <style>
         [data-testid="stSidebar"] { display: none; }
         [data-testid="collapsedControl"] { display: none; }
+        .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
     </style>
     """,
     unsafe_allow_html=True,
 )
+
+
 # Constants
 MODELS = [
     'MIGHTE-Nsemble', 
