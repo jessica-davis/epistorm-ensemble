@@ -653,6 +653,9 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
     )
     return fig, location_name
 
+tab_forecasts, tab_evaluation = st.tabs(["Forecasts", "Evaluation"])
+
+
 # Main app
 st.markdown("<h1 style='color: #415584;'>Epistorm Influenza Forecasts 2025-26</h1>", unsafe_allow_html=True)
 st.markdown('<p style="font-size: 20px; color: black;">Interactive visualization of influenza hospitalization forecasts from models in the Epistorm consortium for the 2025-26 season.</p>',
@@ -661,7 +664,6 @@ st.markdown('<p style="font-size: 20px; color: black;">Interactive visualization
 # View selection in sidebar
 #tab_selection = st.sidebar.selectbox(   "Select Tab", ["Forecasts", "Evaluation"],  key="tab_selection")
 
-tab_forecasts, tab_evaluation = st.tabs(["Forecasts", "Evaluation"])
 
 st.sidebar.markdown("---")
 
