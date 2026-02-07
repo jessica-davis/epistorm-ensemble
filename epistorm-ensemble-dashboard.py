@@ -20,11 +20,10 @@ import plotly.io as pio
 # Set Plotly to always use light theme
 pio.templates.default = "plotly_white"
 
-# Force light mode
 st.set_page_config(
     page_title="Epistorm Ensemble Dashboard",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
     menu_items={
         'Get Help': None,
         'Report a bug': None,
@@ -32,6 +31,16 @@ st.set_page_config(
     }
 )
 
+# Hide sidebar completely
+st.markdown(
+    """
+    <style>
+        [data-testid="stSidebar"] { display: none; }
+        [data-testid="collapsedControl"] { display: none; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 # Constants
 MODELS = [
     'MIGHTE-Nsemble', 
