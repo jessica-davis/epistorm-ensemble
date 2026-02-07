@@ -653,7 +653,7 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
     )
     return fig, location_name
 
-tab_forecasts, tab_evaluation = st.tabs([ "Overview", "Forecasts", "Evaluation"])
+tab_overview, tab_forecasts, tab_evaluation = st.tabs([ "Overview", "Forecasts", "Evaluation"])
 
 
 # Main app
