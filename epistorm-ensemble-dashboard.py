@@ -650,13 +650,9 @@ st.markdown('<p style="font-size: 20px; color: black;">Interactive visualization
     unsafe_allow_html=True)
 
 # View selection in sidebar
-#tab_selection = st.sidebar.selectbox(
- #   "Select Tab",
-  #  ["Forecasts", "Evaluation"],
-   # key="tab_selection"
-#)
+#tab_selection = st.sidebar.selectbox(   "Select Tab", ["Forecasts", "Evaluation"],  key="tab_selection")
 
-tab_selection =st.tabs(["Forecasts", "Evaluation"])
+tab_forecasts, tab_evaluation = st.tabs(["Forecasts", "Evaluation"])
 
 st.sidebar.markdown("---")
 
@@ -687,357 +683,182 @@ with st.spinner("Creating ensemble forecasts..."):
         st.error(traceback.format_exc())
 
 # ============== SIDEBAR CONTROLS ==============
-if tab_selection == "Forecasts":
-    st.sidebar.header("Forecast Controls")
+#if tab_selection == "Forecasts":
+with tab_forecasts:
+    controls_col, chart_col = st.columns([1, 3], gap="large")
     
-    if locations_df is not None:
-        state_locations_df = locations_df[locations_df['location'] != 'US']
-        location_options = ['US'] + state_locations_df['location'].tolist()
-        location_names = ['United States'] + state_locations_df['location_name'].tolist()
-        location_dict = dict(zip(location_names, location_options))
-        selected_location_name = st.sidebar.selectbox(
-            "Select Location",
-            location_names,
-            index=0,
-            key="forecast_location"
-        )
-        selected_location = location_dict[selected_location_name]
-    else:
-        selected_location = st.sidebar.text_input("Enter Location Code", value="US", key="forecast_location_text")
-
-    available_dates = sorted([pd.Timestamp(d).to_pydatetime() for d in forecast_data['reference_date'].unique()], reverse=True)
-
-    if available_dates:
-        if 'selected_date' not in st.session_state:
-            st.session_state.selected_date = available_dates[0]
-        selected_date = st.sidebar.selectbox(
-            "Select Forecast Date",
-            available_dates,
-            format_func=lambda x: x.strftime('%Y-%m-%d'),
-            index=available_dates.index(st.session_state.selected_date) if st.session_state.selected_date in available_dates else 0,
-            key="forecast_date"
-        )
-        st.session_state.selected_date = selected_date
-    else:
-        st.error("No forecast dates available")
-        st.stop()
-
-    st.sidebar.markdown("### Historical Data Range")
-
-    if not observed_data.empty:
-        min_obs_date = observed_data['date'].min().date()
-        max_obs_date = observed_data['date'].max().date()
-    else:
-        min_obs_date = datetime(2024, 1, 1).date()
-        max_obs_date = datetime.now().date()
-
-    earliest_forecast_date = None
-    latest_forecast_date = None
-    if not forecast_data.empty and 'target_end_date' in forecast_data.columns:
-        selected_forecast_data = forecast_data[forecast_data['reference_date'] == selected_date]
-        if not selected_forecast_data.empty:
-            earliest_forecast_date = selected_forecast_data['target_end_date'].min()
-            latest_forecast_date = selected_forecast_data['target_end_date'].max()
-            earliest_forecast_date = pd.Timestamp(earliest_forecast_date).date()
-            latest_forecast_date = pd.Timestamp(latest_forecast_date).date()
-
-    min_end_date = earliest_forecast_date if earliest_forecast_date else min_obs_date
-    if latest_forecast_date:
-        max_end_date = max(max_obs_date, latest_forecast_date)
-    else:
-        max_end_date = max_obs_date
-
-    if 'start_date' not in st.session_state:
-        st.session_state.start_date = datetime(2025, 10, 1).date()
-    if 'end_date' not in st.session_state:
-        st.session_state.end_date = max_end_date
-
-    if st.session_state.end_date < min_end_date:
-        st.session_state.end_date = min_end_date
-    if st.session_state.end_date > max_end_date:
-        st.session_state.end_date = max_end_date
-
-    start_date = st.sidebar.date_input(
-        "Start Date",
-        value=st.session_state.start_date,
-        min_value=min_obs_date,
-        max_value=max_end_date,
-        key="forecast_start_date"
-    )
-    st.session_state.start_date = start_date
-
-    end_date = st.sidebar.date_input(
-        "End Date",
-        value=st.session_state.end_date,
-        min_value=min_end_date,
-        max_value=max_end_date,
-        key="forecast_end_date"
-    )
-    st.session_state.end_date = end_date
-
-    start_date_ts = pd.Timestamp(start_date)
-    end_date_ts = pd.Timestamp(end_date)
-
-    all_models = sorted(forecast_data['model'].unique())
-    ensemble_models = [m for m in all_models if m=='Median Epistorm Ensemble']
-    individual_models = [m for m in all_models if not m=='Median Epistorm Ensemble']
-
-    st.sidebar.markdown("### Select Models to Display")
-
-    if 'selected_models' not in st.session_state:
-        st.session_state.selected_models = ['Median Epistorm Ensemble']
-
-    selected_models = []
-
-    if ensemble_models:
-        st.sidebar.markdown("**Ensemble Models:**")
-        for model in ensemble_models:
-            default_value = model in st.session_state.selected_models
-            if st.sidebar.checkbox(model, value=default_value, key=f"forecast_model_{model}"):
-                selected_models.append(model)
-
-    if individual_models:
-        st.sidebar.markdown("**Individual Models:**")
-        for model in individual_models:
-            default_value = model in st.session_state.selected_models
-            if st.sidebar.checkbox(model, value=default_value, key=f"forecast_model_{model}"):
-                selected_models.append(model)
-
-    st.session_state.selected_models = selected_models
-
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("### Data Summary")
-    st.sidebar.markdown(f"**Forecast dates available:** {len(available_dates)}")
-    st.sidebar.markdown(f"**Models loaded:** {len(all_models)}")
-    st.sidebar.markdown(f"**Selected forecast date:** {selected_date.strftime('%Y-%m-%d')}")
-
-if tab_selection == "Evaluation":
-    st.sidebar.header("Evaluation Controls")
-    
-    # Load evaluation data
-    wis_data = load_wis_data()
-    coverage_data = load_coverage_data()
-    
-    if wis_data is None and coverage_data is None:
-        st.error("Could not load evaluation data. Please ensure the parquet files exist.")
-    else:
-        # Get available models from evaluation data
-        eval_models = []
-        if wis_data is not None:
-            eval_models = sorted(wis_data['Model'].unique().tolist())
-        elif coverage_data is not None:
-            eval_models = sorted(coverage_data['Model'].unique().tolist())
+    with controls_col:
+        st.markdown("### Forecast Controls")
         
-        st.sidebar.markdown("### Select Models to Display")
-        
-        eval_ensemble_models = [m for m in eval_models if m == 'Median Epistorm Ensemble']
-        eval_individual_models = [m for m in eval_models if m != 'Median Epistorm Ensemble' and m != 'FluSight-ensemble']
-        
-        if 'selected_eval_models' not in st.session_state:
-            st.session_state.selected_eval_models = eval_models.copy()
-        
-        selected_eval_models = []
-        
-        if eval_ensemble_models:
-            st.sidebar.markdown("**Ensemble Models:**")
-            for model in eval_ensemble_models:
-                default_value = model in st.session_state.selected_eval_models
-                if st.sidebar.checkbox(model, value=default_value, key=f"eval_model_{model}"):
-                    selected_eval_models.append(model)
-        
-        if eval_individual_models:
-            st.sidebar.markdown("**Individual Models:**")
-            for model in eval_individual_models:
-                default_value = model in st.session_state.selected_eval_models
-                if st.sidebar.checkbox(model, value=default_value, key=f"eval_model_{model}"):
-                    selected_eval_models.append(model)
-        
-        st.session_state.selected_eval_models = selected_eval_models
-        
-        eval_location_map = {'All Locations': 'all'}
+        # Location selector
         if locations_df is not None:
-            eval_location_codes = []
-            if wis_data is not None:
-                eval_location_codes = sorted(wis_data['location'].unique().tolist())
-            elif coverage_data is not None:
-                eval_location_codes = sorted(coverage_data['location'].unique().tolist())
-            
-            eval_location_names = ['All Locations']
-            for loc_code in eval_location_codes:
-                loc_name = get_location_name(loc_code, locations_df)
-                eval_location_names.append(loc_name)
-                eval_location_map[loc_name] = loc_code
-            
-            selected_eval_location_name = st.sidebar.selectbox(
+            state_locations_df = locations_df[locations_df['location'] != 'US']
+            location_options = ['US'] + state_locations_df['location'].tolist()
+            location_names = ['United States'] + state_locations_df['location_name'].tolist()
+            location_dict = dict(zip(location_names, location_options))
+            selected_location_name = st.selectbox(
                 "Select Location",
-                eval_location_names,
+                location_names,
                 index=0,
-                key="eval_location"
+                key="forecast_location"
             )
-            selected_eval_location = eval_location_map[selected_eval_location_name]
+            selected_location = location_dict[selected_location_name]
         else:
-            selected_eval_location = st.sidebar.text_input("Enter Location Code (or 'all')", value="all", key="eval_location_text")
-        
-        horizon_options = ['All Horizons', 0, 1, 2, 3]
-        selected_horizon = st.sidebar.selectbox(
-            "Select Horizon",
-            horizon_options,
-            index=0,
-            key="eval_horizon"
-        )
-        
-        st.sidebar.markdown("### Date Filters")
-        
-        if wis_data is not None:
-            min_ref_date = wis_data['reference_date'].min().date()
-            max_ref_date = wis_data['reference_date'].max().date()
-            min_target_date = wis_data['target_end_date'].min().date()
-            max_target_date = wis_data['target_end_date'].max().date()
-        else:
-            min_ref_date = datetime(2024, 1, 1).date()
-            max_ref_date = datetime.now().date()
-            min_target_date = min_ref_date
-            max_target_date = max_ref_date
-        
-        ref_date_range = st.sidebar.date_input(
-            "Reference Date Range",
-            value=(min_ref_date, max_ref_date),
-            min_value=min_ref_date,
-            max_value=max_ref_date,
-            key="eval_ref_date_range"
-        )
-        
-        target_date_range = st.sidebar.date_input(
-            "Target End Date Range",
-            value=(min_target_date, max_target_date),
-            min_value=min_target_date,
-            max_value=max_target_date,
-            key="eval_target_date_range"
-        )
-        
-        if isinstance(ref_date_range, tuple) and len(ref_date_range) == 2:
-            ref_start, ref_end = ref_date_range
-        else:
-            ref_start = ref_end = ref_date_range
-        
-        if isinstance(target_date_range, tuple) and len(target_date_range) == 2:
-            target_start, target_end = target_date_range
-        else:
-            target_start = target_end = target_date_range
-        
-        # Filter data
-        filtered_wis = wis_data.copy() if wis_data is not None else None
-        filtered_coverage = coverage_data.copy() if coverage_data is not None else None
-        
-        if filtered_wis is not None:
-            if selected_eval_models:
-                filtered_wis = filtered_wis[filtered_wis['Model'].isin(selected_eval_models)]
-            if selected_eval_location != 'all':
-                filtered_wis = filtered_wis[filtered_wis['location'] == selected_eval_location]
-            if selected_horizon != 'All Horizons':
-                filtered_wis = filtered_wis[filtered_wis['horizon'] == selected_horizon]
-            filtered_wis = filtered_wis[
-                (filtered_wis['reference_date'].dt.date >= ref_start) &
-                (filtered_wis['reference_date'].dt.date <= ref_end) &
-                (filtered_wis['target_end_date'].dt.date >= target_start) &
-                (filtered_wis['target_end_date'].dt.date <= target_end)
-            ]
-        
-        if filtered_coverage is not None:
-            if selected_eval_models:
-                filtered_coverage = filtered_coverage[filtered_coverage['Model'].isin(selected_eval_models)]
-            if selected_eval_location != 'all':
-                filtered_coverage = filtered_coverage[filtered_coverage['location'] == selected_eval_location]
-            if selected_horizon != 'All Horizons':
-                filtered_coverage = filtered_coverage[filtered_coverage['horizon'] == selected_horizon]
-            filtered_coverage = filtered_coverage[
-                (filtered_coverage['reference_date'].dt.date >= ref_start) &
-                (filtered_coverage['reference_date'].dt.date <= ref_end) &
-                (filtered_coverage['target_end_date'].dt.date >= target_start) &
-                (filtered_coverage['target_end_date'].dt.date <= target_end)
-            ]
-        
-        st.sidebar.markdown("---")
-        st.sidebar.markdown("### Evaluation Data Summary")
-        if filtered_wis is not None:
-            st.sidebar.markdown(f"**WIS observations:** {len(filtered_wis):,}")
-        if filtered_coverage is not None:
-            st.sidebar.markdown(f"**Coverage observations:** {len(filtered_coverage):,}")
-        st.sidebar.markdown(f"**Models selected:** {len(selected_eval_models)}")
+            selected_location = st.text_input("Enter Location Code", value="US", key="forecast_location_text")
 
-# ============== MAIN CONTENT ==============
-if tab_selection == "Forecasts":
-    if selected_models:
-        
-        fig, location_name = plot_forecasts(observed_data, forecast_data, selected_location, selected_date, selected_models, available_dates, start_date_ts, end_date_ts)
-        
-        st.markdown(f"<h2 style='color: #518fb0;'>Flu Hospitalization Forecasts - {location_name}</h2>", unsafe_allow_html=True)
+        # Date selector
+        available_dates = sorted(
+            [pd.Timestamp(d).to_pydatetime() for d in forecast_data['reference_date'].unique()],
+            reverse=True
+        )
+        if available_dates:
+            if 'selected_date' not in st.session_state:
+                st.session_state.selected_date = available_dates[0]
+            selected_date = st.selectbox(
+                "Select Forecast Date",
+                available_dates,
+                format_func=lambda x: x.strftime('%Y-%m-%d'),
+                index=available_dates.index(st.session_state.selected_date) if st.session_state.selected_date in available_dates else 0,
+                key="forecast_date"
+            )
+            st.session_state.selected_date = selected_date
+        else:
+            st.error("No forecast dates available")
+            st.stop()
 
-        ensemble_forecast_data = forecast_data[
-            (forecast_data['model'] == 'Median Epistorm Ensemble') &
-            (forecast_data['location'] == selected_location) &
-            (forecast_data['reference_date'] == selected_date) &
-            (forecast_data['horizon'] == 3) &
-            (forecast_data['output_type'] == 'quantile')
-        ].copy()
-        
-        if not ensemble_forecast_data.empty:
-            ensemble_forecast_data['output_type_id'] = ensemble_forecast_data['output_type_id'].astype(float)
-            median_val = ensemble_forecast_data[ensemble_forecast_data['output_type_id'] == 0.5]['value'].values
-            lower_val = ensemble_forecast_data[ensemble_forecast_data['output_type_id'] == 0.025]['value'].values
-            upper_val = ensemble_forecast_data[ensemble_forecast_data['output_type_id'] == 0.975]['value'].values
+        # Date range
+        with st.expander("Historical Data Range"):
+            if not observed_data.empty:
+                min_obs_date = observed_data['date'].min().date()
+                max_obs_date = observed_data['date'].max().date()
+            else:
+                min_obs_date = datetime(2024, 1, 1).date()
+                max_obs_date = datetime.now().date()
+
+            earliest_forecast_date = None
+            latest_forecast_date = None
+            if not forecast_data.empty and 'target_end_date' in forecast_data.columns:
+                selected_forecast_data = forecast_data[forecast_data['reference_date'] == selected_date]
+                if not selected_forecast_data.empty:
+                    earliest_forecast_date = pd.Timestamp(selected_forecast_data['target_end_date'].min()).date()
+                    latest_forecast_date = pd.Timestamp(selected_forecast_data['target_end_date'].max()).date()
+
+            min_end_date = earliest_forecast_date if earliest_forecast_date else min_obs_date
+            max_end_date = max(max_obs_date, latest_forecast_date) if latest_forecast_date else max_obs_date
+
+            if 'start_date' not in st.session_state:
+                st.session_state.start_date = datetime(2025, 10, 1).date()
+            if 'end_date' not in st.session_state:
+                st.session_state.end_date = max_end_date
+            st.session_state.end_date = max(min_end_date, min(st.session_state.end_date, max_end_date))
+
+            start_date = st.date_input("Start Date", value=st.session_state.start_date,
+                                        min_value=min_obs_date, max_value=max_end_date, key="forecast_start_date")
+            end_date = st.date_input("End Date", value=st.session_state.end_date,
+                                      min_value=min_end_date, max_value=max_end_date, key="forecast_end_date")
+            st.session_state.start_date = start_date
+            st.session_state.end_date = end_date
+
+        start_date_ts = pd.Timestamp(start_date)
+        end_date_ts = pd.Timestamp(end_date)
+
+        # Model selection
+        with st.expander("Select Models", expanded=True):
+            all_models = sorted(forecast_data['model'].unique())
+            ensemble_models = [m for m in all_models if m == 'Median Epistorm Ensemble']
+            individual_models = [m for m in all_models if m != 'Median Epistorm Ensemble']
+
+            if 'selected_models' not in st.session_state:
+                st.session_state.selected_models = ['Median Epistorm Ensemble']
+
+            selected_models = []
+            if ensemble_models:
+                st.markdown("**Ensemble:**")
+                for model in ensemble_models:
+                    if st.checkbox(model, value=model in st.session_state.selected_models, key=f"forecast_model_{model}"):
+                        selected_models.append(model)
+            if individual_models:
+                st.markdown("**Individual:**")
+                for model in individual_models:
+                    if st.checkbox(model, value=model in st.session_state.selected_models, key=f"forecast_model_{model}"):
+                        selected_models.append(model)
+            st.session_state.selected_models = selected_models
+
+
+    with chart_col:
+       
+        if selected_models:
             
-            if len(median_val) > 0 and len(lower_val) > 0 and len(upper_val) > 0:
-                median = int(round(median_val[0]))
-                lower = int(round(lower_val[0]))
-                upper = int(round(upper_val[0]))
+            fig, location_name = plot_forecasts(observed_data, forecast_data, selected_location, selected_date, selected_models, available_dates, start_date_ts, end_date_ts)
+            
+            st.markdown(f"<h2 style='color: #518fb0;'>Flu Hospitalization Forecasts - {location_name}</h2>", unsafe_allow_html=True)
+
+            ensemble_forecast_data = forecast_data[
+                (forecast_data['model'] == 'Median Epistorm Ensemble') &
+                (forecast_data['location'] == selected_location) &
+                (forecast_data['reference_date'] == selected_date) &
+                (forecast_data['horizon'] == 3) &
+                (forecast_data['output_type'] == 'quantile')
+            ].copy()
+            
+            if not ensemble_forecast_data.empty:
+                ensemble_forecast_data['output_type_id'] = ensemble_forecast_data['output_type_id'].astype(float)
+                median_val = ensemble_forecast_data[ensemble_forecast_data['output_type_id'] == 0.5]['value'].values
+                lower_val = ensemble_forecast_data[ensemble_forecast_data['output_type_id'] == 0.025]['value'].values
+                upper_val = ensemble_forecast_data[ensemble_forecast_data['output_type_id'] == 0.975]['value'].values
                 
-                population = None
-                if locations_df is not None:
-                    if selected_location == 'US':
-                        pop_row = locations_df[locations_df['location'] == 'US']
-                    else:
-                        pop_row = locations_df[locations_df['location'] == selected_location]
-                    if not pop_row.empty and 'population' in pop_row.columns:
-                        population = pop_row.iloc[0]['population']
-                
-                end_date_4_weeks = ensemble_forecast_data['target_end_date'].iloc[0].strftime('%B %d, %Y')
-                heading = f"As of {selected_date.strftime('%B %d, %Y')}, the Epistorm Ensemble forecasts <b>{median:,}</b> influenza hospital admissions"
-                
-                if population and population > 0:
-                    per_capita_median = int(round((median / population) * 100000))
-                    per_capita_lower = int(round((lower / population) * 100000))
-                    per_capita_upper = int(round((upper / population) * 100000))
-                    heading += f" (<b>{per_capita_median:,}</b> per 100,000 people)"
-                
-                heading += f" by {end_date_4_weeks} for {location_name}."
-                pi_text = f"95% prediction interval: <b>{lower:,}–{upper:,}</b> hospital admissions"
-                
-                if population and population > 0:
-                    pi_text += f" (<b>{per_capita_lower:,}–{per_capita_upper:,}</b> per 100,000 people)"
-                pi_text += "."
-                
-                st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 18px;'>{pi_text}</p>", unsafe_allow_html=True)
-        
-        event = st.plotly_chart(fig, key="forecast_plot", on_select="rerun", use_container_width=True, config={'displayModeBar': False})
-        
-        if event and hasattr(event, 'selection') and event.selection:
-            try:
-                if 'points' in event.selection and len(event.selection['points']) > 0:
-                    clicked_x = event.selection['points'][0]['x']
-                    clicked_date = pd.to_datetime(clicked_x)
-                    closest_date = min(available_dates, key=lambda d: abs((d - clicked_date).total_seconds()))
-                    if closest_date != st.session_state.selected_date:
-                        st.session_state.selected_date = closest_date
-                        st.rerun()
-            except:
-                pass
-        
-        st.markdown("**Tip:** Change the location, forecast date, models shown, or historical date range in the sidebar.")
-        st.markdown("---")
-        
-        st.markdown(
+                if len(median_val) > 0 and len(lower_val) > 0 and len(upper_val) > 0:
+                    median = int(round(median_val[0]))
+                    lower = int(round(lower_val[0]))
+                    upper = int(round(upper_val[0]))
+                    
+                    population = None
+                    if locations_df is not None:
+                        if selected_location == 'US':
+                            pop_row = locations_df[locations_df['location'] == 'US']
+                        else:
+                            pop_row = locations_df[locations_df['location'] == selected_location]
+                        if not pop_row.empty and 'population' in pop_row.columns:
+                            population = pop_row.iloc[0]['population']
+                    
+                    end_date_4_weeks = ensemble_forecast_data['target_end_date'].iloc[0].strftime('%B %d, %Y')
+                    heading = f"As of {selected_date.strftime('%B %d, %Y')}, the Epistorm Ensemble forecasts <b>{median:,}</b> influenza hospital admissions"
+                    
+                    if population and population > 0:
+                        per_capita_median = int(round((median / population) * 100000))
+                        per_capita_lower = int(round((lower / population) * 100000))
+                        per_capita_upper = int(round((upper / population) * 100000))
+                        heading += f" (<b>{per_capita_median:,}</b> per 100,000 people)"
+                    
+                    heading += f" by {end_date_4_weeks} for {location_name}."
+                    pi_text = f"95% prediction interval: <b>{lower:,}–{upper:,}</b> hospital admissions"
+                    
+                    if population and population > 0:
+                        pi_text += f" (<b>{per_capita_lower:,}–{per_capita_upper:,}</b> per 100,000 people)"
+                    pi_text += "."
+                    
+                    st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='font-size: 18px;'>{pi_text}</p>", unsafe_allow_html=True)
+            
+            event = st.plotly_chart(fig, key="forecast_plot", on_select="rerun", use_container_width=True, config={'displayModeBar': False})
+            
+            if event and hasattr(event, 'selection') and event.selection:
+                try:
+                    if 'points' in event.selection and len(event.selection['points']) > 0:
+                        clicked_x = event.selection['points'][0]['x']
+                        clicked_date = pd.to_datetime(clicked_x)
+                        closest_date = min(available_dates, key=lambda d: abs((d - clicked_date).total_seconds()))
+                        if closest_date != st.session_state.selected_date:
+                            st.session_state.selected_date = closest_date
+                            st.rerun()
+                except:
+                    pass
+            
+            st.markdown("**Tip:** Change the location, forecast date, models shown, or historical date range in the sidebar.")
+            st.markdown("---")
+
+
+            st.markdown(
             """
             <style>
             .tooltip {
@@ -1073,209 +894,374 @@ if tab_selection == "Forecasts":
             unsafe_allow_html=True
         )
 
-        ensemble_cat_data = forecast_data[
-            (forecast_data['model'] == 'Median Epistorm Ensemble') &
-            (forecast_data['location'] == selected_location) &
-            (forecast_data['reference_date'] == selected_date) &
-            (forecast_data['horizon'] == 3) &
-            (forecast_data['output_type'] == 'pmf') &
-            (forecast_data['target'] == 'wk flu hosp rate change')
-        ].copy()
+            ensemble_cat_data = forecast_data[
+                (forecast_data['model'] == 'Median Epistorm Ensemble') &
+                (forecast_data['location'] == selected_location) &
+                (forecast_data['reference_date'] == selected_date) &
+                (forecast_data['horizon'] == 3) &
+                (forecast_data['output_type'] == 'pmf') &
+                (forecast_data['target'] == 'wk flu hosp rate change')
+            ].copy()
 
-        if not ensemble_cat_data.empty:
-            ensemble_cat_data['category'] = ensemble_cat_data['output_type_id'].apply(format_category)
-            ensemble_cat_data = ensemble_cat_data[ensemble_cat_data['category'].isin(CATEGORY_ORDER)]
-            
             if not ensemble_cat_data.empty:
-                sorted_cats = ensemble_cat_data.sort_values('value', ascending=False)
+                ensemble_cat_data['category'] = ensemble_cat_data['output_type_id'].apply(format_category)
+                ensemble_cat_data = ensemble_cat_data[ensemble_cat_data['category'].isin(CATEGORY_ORDER)]
                 
-                if len(sorted_cats) >= 1:
-                    max_prob = sorted_cats.iloc[0]['value']
-                    highest_cats = sorted_cats[sorted_cats['value'] == max_prob]
+                if not ensemble_cat_data.empty:
+                    sorted_cats = ensemble_cat_data.sort_values('value', ascending=False)
                     
-                    if len(highest_cats) == 1:
-                        cat_name = highest_cats.iloc[0]['category']
-                        cat_color = CATEGORY_COLORS.get(cat_name, '#000000')
-                        if cat_name == 'Stable':
-                            cat_color = 'dimgray'
-                        prob_pct = max_prob * 100
-                        heading = f"As of {selected_date.strftime('%B %d, %Y')}, the Epistorm Ensemble forecasts a trend of: <b><span style='color:{cat_color}'>{cat_name}</span></b> with <b>{prob_pct:.1f}%</b> probability by {end_date_4_weeks} for {location_name}."
-                    else:
-                        cat_texts = []
-                        for _, row in highest_cats.iterrows():
-                            cat_name = row['category']
-                            cat_color = CATEGORY_COLORS.get(cat_name, '#000000')
-                            cat_texts.append(f"<b><span style='color:{cat_color}'>{cat_name}</span></b>")
-                        cat_list = " and ".join(cat_texts) if len(cat_texts) == 2 else ", ".join(cat_texts[:-1]) + f", and {cat_texts[-1]}"
-                        prob_pct = max_prob * 100
-                        heading = f"As of {selected_date.strftime('%B %d, %Y')}, the Epistorm Ensemble forecasts {cat_list} (tied) with <b>{prob_pct:.1f}%</b> probability each by {end_date_4_weeks} for {location_name}."
-                    
-                    st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
-                    
-                    remaining_cats = sorted_cats[sorted_cats['value'] < max_prob]
-                    if len(remaining_cats) >= 1:
-                        second_max_prob = remaining_cats.iloc[0]['value']
-                        second_highest_cats = remaining_cats[remaining_cats['value'] == second_max_prob]
+                    if len(sorted_cats) >= 1:
+                        max_prob = sorted_cats.iloc[0]['value']
+                        highest_cats = sorted_cats[sorted_cats['value'] == max_prob]
                         
-                        if len(second_highest_cats) == 1:
-                            cat_name = second_highest_cats.iloc[0]['category']
+                        if len(highest_cats) == 1:
+                            cat_name = highest_cats.iloc[0]['category']
                             cat_color = CATEGORY_COLORS.get(cat_name, '#000000')
                             if cat_name == 'Stable':
                                 cat_color = 'dimgray'
-                            prob_pct = second_max_prob * 100
-                            secondary_text = f"A rate trend of <b><span style='color:{cat_color}'>{cat_name}</span></b> is the next most likely with <b>{prob_pct:.1f}%</b> probability."
+                            prob_pct = max_prob * 100
+                            heading = f"As of {selected_date.strftime('%B %d, %Y')}, the Epistorm Ensemble forecasts a trend of: <b><span style='color:{cat_color}'>{cat_name}</span></b> with <b>{prob_pct:.1f}%</b> probability by {end_date_4_weeks} for {location_name}."
                         else:
                             cat_texts = []
-                            for _, row in second_highest_cats.iterrows():
+                            for _, row in highest_cats.iterrows():
                                 cat_name = row['category']
                                 cat_color = CATEGORY_COLORS.get(cat_name, '#000000')
                                 cat_texts.append(f"<b><span style='color:{cat_color}'>{cat_name}</span></b>")
                             cat_list = " and ".join(cat_texts) if len(cat_texts) == 2 else ", ".join(cat_texts[:-1]) + f", and {cat_texts[-1]}"
-                            prob_pct = second_max_prob * 100
-                            secondary_text = f"Second most likely (tied): {cat_list} with <b>{prob_pct:.1f}%</b> probability each."
+                            prob_pct = max_prob * 100
+                            heading = f"As of {selected_date.strftime('%B %d, %Y')}, the Epistorm Ensemble forecasts {cat_list} (tied) with <b>{prob_pct:.1f}%</b> probability each by {end_date_4_weeks} for {location_name}."
                         
-                        st.markdown(f"<p style='font-size: 18px;'>{secondary_text}</p>", unsafe_allow_html=True)
-        else:
-            st.markdown("<p style='font-size: 22px;'>No categorical forecast available for the Epistorm Ensemble for this forecast date.</p>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
+                        
+                        remaining_cats = sorted_cats[sorted_cats['value'] < max_prob]
+                        if len(remaining_cats) >= 1:
+                            second_max_prob = remaining_cats.iloc[0]['value']
+                            second_highest_cats = remaining_cats[remaining_cats['value'] == second_max_prob]
+                            
+                            if len(second_highest_cats) == 1:
+                                cat_name = second_highest_cats.iloc[0]['category']
+                                cat_color = CATEGORY_COLORS.get(cat_name, '#000000')
+                                if cat_name == 'Stable':
+                                    cat_color = 'dimgray'
+                                prob_pct = second_max_prob * 100
+                                secondary_text = f"A rate trend of <b><span style='color:{cat_color}'>{cat_name}</span></b> is the next most likely with <b>{prob_pct:.1f}%</b> probability."
+                            else:
+                                cat_texts = []
+                                for _, row in second_highest_cats.iterrows():
+                                    cat_name = row['category']
+                                    cat_color = CATEGORY_COLORS.get(cat_name, '#000000')
+                                    cat_texts.append(f"<b><span style='color:{cat_color}'>{cat_name}</span></b>")
+                                cat_list = " and ".join(cat_texts) if len(cat_texts) == 2 else ", ".join(cat_texts[:-1]) + f", and {cat_texts[-1]}"
+                                prob_pct = second_max_prob * 100
+                                secondary_text = f"Second most likely (tied): {cat_list} with <b>{prob_pct:.1f}%</b> probability each."
+                            
+                            st.markdown(f"<p style='font-size: 18px;'>{secondary_text}</p>", unsafe_allow_html=True)
+            else:
+                st.markdown("<p style='font-size: 22px;'>No categorical forecast available for the Epistorm Ensemble for this forecast date.</p>", unsafe_allow_html=True)
 
-        cat_fig, models_without_data = plot_categorical_forecasts(
-            forecast_data, selected_location, selected_date, selected_models
-        )
+            cat_fig, models_without_data = plot_categorical_forecasts(
+                forecast_data, selected_location, selected_date, selected_models
+            )
+            
+            if cat_fig is not None:
+                st.plotly_chart(cat_fig, use_container_width=True, config={'displayModeBar': False})
+                if models_without_data:
+                    st.info(f"ℹ️ The following models do not have categorical forecast data for this forecast date: {', '.join(models_without_data)}")
+            else:
+                st.warning("⚠️ No categorical forecast data available for the selected models, location, and date.")
+                if models_without_data:
+                    st.info(f"Models without categorical data: {', '.join(models_without_data)}")
+        else:
+            st.warning("Please select at least one model to display")
+
         
-        if cat_fig is not None:
-            st.plotly_chart(cat_fig, use_container_width=True, config={'displayModeBar': False})
-            if models_without_data:
-                st.info(f"ℹ️ The following models do not have categorical forecast data for this forecast date: {', '.join(models_without_data)}")
+        
+
+
+
+#if tab_selection == "Evaluation":
+with tab_evaluation:
+    #st.sidebar.header("Evaluation Controls")
+
+    controls_col, chart_col = st.columns([1, 3], gap="large")
+    
+    with controls_col:
+        st.markdown("### Evaluation Controls")
+
+        # Load evaluation data
+        wis_data = load_wis_data()
+        coverage_data = load_coverage_data()
+        
+        if wis_data is None and coverage_data is None:
+            st.error("Could not load evaluation data. Please ensure the parquet files exist.")
         else:
-            st.warning("⚠️ No categorical forecast data available for the selected models, location, and date.")
-            if models_without_data:
-                st.info(f"Models without categorical data: {', '.join(models_without_data)}")
-    else:
-        st.warning("Please select at least one model to display")
-
-if tab_selection == "Evaluation":
-
-    # Check if evaluation data was loaded
-    wis_data = load_wis_data()
-    coverage_data = load_coverage_data()
-    
-    if wis_data is None and coverage_data is None:
-        st.error("Could not load evaluation data. Please ensure the parquet files exist.")
-    else:
-        # Get filter values from sidebar (already set above)
-        selected_eval_models = st.session_state.get('selected_eval_models', [])
-        selected_eval_location = st.session_state.get('eval_location', 'All Locations')
-
-        st.markdown(f"<h2 style='color: #518fb0;'>Forecast Evaluation - {selected_eval_location}</h2>", unsafe_allow_html=True)
-        st.markdown("Evaluate forecast performance using the Weighted Interval Score (WIS) and prediction interval coverage metrics.")
-    
-
-        if selected_eval_location != 'All Locations':
-            # Convert location name back to code if needed
+            # Get available models from evaluation data
+            eval_models = []
+            if wis_data is not None:
+                eval_models = sorted(wis_data['Model'].unique().tolist())
+            elif coverage_data is not None:
+                eval_models = sorted(coverage_data['Model'].unique().tolist())
+            
+            st.sidebar.markdown("### Select Models to Display")
+            
+            eval_ensemble_models = [m for m in eval_models if m == 'Median Epistorm Ensemble']
+            eval_individual_models = [m for m in eval_models if m != 'Median Epistorm Ensemble' and m != 'FluSight-ensemble']
+            
+            if 'selected_eval_models' not in st.session_state:
+                st.session_state.selected_eval_models = eval_models.copy()
+            
+            selected_eval_models = []
+            
+            if eval_ensemble_models:
+                st.sidebar.markdown("**Ensemble Models:**")
+                for model in eval_ensemble_models:
+                    default_value = model in st.session_state.selected_eval_models
+                    if st.sidebar.checkbox(model, value=default_value, key=f"eval_model_{model}"):
+                        selected_eval_models.append(model)
+            
+            if eval_individual_models:
+                st.sidebar.markdown("**Individual Models:**")
+                for model in eval_individual_models:
+                    default_value = model in st.session_state.selected_eval_models
+                    if st.sidebar.checkbox(model, value=default_value, key=f"eval_model_{model}"):
+                        selected_eval_models.append(model)
+            
+            st.session_state.selected_eval_models = selected_eval_models
+            
+            eval_location_map = {'All Locations': 'all'}
             if locations_df is not None:
-                eval_location_codes = sorted(wis_data['location'].unique().tolist()) if wis_data is not None else []
-                eval_location_map = {'All Locations': 'all'}
+                eval_location_codes = []
+                if wis_data is not None:
+                    eval_location_codes = sorted(wis_data['location'].unique().tolist())
+                elif coverage_data is not None:
+                    eval_location_codes = sorted(coverage_data['location'].unique().tolist())
+                
+                eval_location_names = ['All Locations']
                 for loc_code in eval_location_codes:
                     loc_name = get_location_name(loc_code, locations_df)
+                    eval_location_names.append(loc_name)
                     eval_location_map[loc_name] = loc_code
-                selected_eval_location = eval_location_map.get(selected_eval_location, 'all')
-        else:
-            selected_eval_location = 'all'
-        
-        selected_horizon = st.session_state.get('eval_horizon', 'All Horizons')
-        
-        ref_date_range = st.session_state.get('eval_ref_date_range', None)
-        target_date_range = st.session_state.get('eval_target_date_range', None)
-        
-        if wis_data is not None:
-            min_ref_date = wis_data['reference_date'].min().date()
-            max_ref_date = wis_data['reference_date'].max().date()
-            min_target_date = wis_data['target_end_date'].min().date()
-            max_target_date = wis_data['target_end_date'].max().date()
-        else:
-            min_ref_date = datetime(2024, 1, 1).date()
-            max_ref_date = datetime.now().date()
-            min_target_date = min_ref_date
-            max_target_date = max_ref_date
-        
-        if ref_date_range is not None:
+                
+                selected_eval_location_name = st.sidebar.selectbox(
+                    "Select Location",
+                    eval_location_names,
+                    index=0,
+                    key="eval_location"
+                )
+                selected_eval_location = eval_location_map[selected_eval_location_name]
+            else:
+                selected_eval_location = st.sidebar.text_input("Enter Location Code (or 'all')", value="all", key="eval_location_text")
+            
+            horizon_options = ['All Horizons', 0, 1, 2, 3]
+            selected_horizon = st.sidebar.selectbox(
+                "Select Horizon",
+                horizon_options,
+                index=0,
+                key="eval_horizon"
+            )
+            
+            st.sidebar.markdown("### Date Filters")
+            
+            if wis_data is not None:
+                min_ref_date = wis_data['reference_date'].min().date()
+                max_ref_date = wis_data['reference_date'].max().date()
+                min_target_date = wis_data['target_end_date'].min().date()
+                max_target_date = wis_data['target_end_date'].max().date()
+            else:
+                min_ref_date = datetime(2024, 1, 1).date()
+                max_ref_date = datetime.now().date()
+                min_target_date = min_ref_date
+                max_target_date = max_ref_date
+            
+            ref_date_range = st.sidebar.date_input(
+                "Reference Date Range",
+                value=(min_ref_date, max_ref_date),
+                min_value=min_ref_date,
+                max_value=max_ref_date,
+                key="eval_ref_date_range"
+            )
+            
+            target_date_range = st.sidebar.date_input(
+                "Target End Date Range",
+                value=(min_target_date, max_target_date),
+                min_value=min_target_date,
+                max_value=max_target_date,
+                key="eval_target_date_range"
+            )
+            
             if isinstance(ref_date_range, tuple) and len(ref_date_range) == 2:
                 ref_start, ref_end = ref_date_range
             else:
                 ref_start = ref_end = ref_date_range
-        else:
-            ref_start, ref_end = min_ref_date, max_ref_date
-        
-        if target_date_range is not None:
+            
             if isinstance(target_date_range, tuple) and len(target_date_range) == 2:
                 target_start, target_end = target_date_range
             else:
                 target_start = target_end = target_date_range
+            
+            # Filter data
+            filtered_wis = wis_data.copy() if wis_data is not None else None
+            filtered_coverage = coverage_data.copy() if coverage_data is not None else None
+            
+            if filtered_wis is not None:
+                if selected_eval_models:
+                    filtered_wis = filtered_wis[filtered_wis['Model'].isin(selected_eval_models)]
+                if selected_eval_location != 'all':
+                    filtered_wis = filtered_wis[filtered_wis['location'] == selected_eval_location]
+                if selected_horizon != 'All Horizons':
+                    filtered_wis = filtered_wis[filtered_wis['horizon'] == selected_horizon]
+                filtered_wis = filtered_wis[
+                    (filtered_wis['reference_date'].dt.date >= ref_start) &
+                    (filtered_wis['reference_date'].dt.date <= ref_end) &
+                    (filtered_wis['target_end_date'].dt.date >= target_start) &
+                    (filtered_wis['target_end_date'].dt.date <= target_end)
+                ]
+            
+            if filtered_coverage is not None:
+                if selected_eval_models:
+                    filtered_coverage = filtered_coverage[filtered_coverage['Model'].isin(selected_eval_models)]
+                if selected_eval_location != 'all':
+                    filtered_coverage = filtered_coverage[filtered_coverage['location'] == selected_eval_location]
+                if selected_horizon != 'All Horizons':
+                    filtered_coverage = filtered_coverage[filtered_coverage['horizon'] == selected_horizon]
+                filtered_coverage = filtered_coverage[
+                    (filtered_coverage['reference_date'].dt.date >= ref_start) &
+                    (filtered_coverage['reference_date'].dt.date <= ref_end) &
+                    (filtered_coverage['target_end_date'].dt.date >= target_start) &
+                    (filtered_coverage['target_end_date'].dt.date <= target_end)
+                ]
+            
+            st.sidebar.markdown("---")
+            st.sidebar.markdown("### Evaluation Data Summary")
+            if filtered_wis is not None:
+                st.sidebar.markdown(f"**WIS observations:** {len(filtered_wis):,}")
+            if filtered_coverage is not None:
+                st.sidebar.markdown(f"**Coverage observations:** {len(filtered_coverage):,}")
+            st.sidebar.markdown(f"**Models selected:** {len(selected_eval_models)}")
+
+    with chart_col:    
+
+        # Check if evaluation data was loaded
+        wis_data = load_wis_data()
+        coverage_data = load_coverage_data()
+        
+        if wis_data is None and coverage_data is None:
+            st.error("Could not load evaluation data. Please ensure the parquet files exist.")
         else:
-            target_start, target_end = min_target_date, max_target_date
+            # Get filter values from sidebar (already set above)
+            selected_eval_models = st.session_state.get('selected_eval_models', [])
+            selected_eval_location = st.session_state.get('eval_location', 'All Locations')
+
+            st.markdown(f"<h2 style='color: #518fb0;'>Forecast Evaluation - {selected_eval_location}</h2>", unsafe_allow_html=True)
+            st.markdown("Evaluate forecast performance using the Weighted Interval Score (WIS) and prediction interval coverage metrics.")
         
-        # Filter data
-        filtered_wis = wis_data.copy() if wis_data is not None else None
-        filtered_coverage = coverage_data.copy() if coverage_data is not None else None
-        
-        if filtered_wis is not None:
-            if selected_eval_models:
-                filtered_wis = filtered_wis[filtered_wis['Model'].isin(selected_eval_models)]
-            if selected_eval_location != 'all':
-                filtered_wis = filtered_wis[filtered_wis['location'] == selected_eval_location]
-            if selected_horizon != 'All Horizons':
-                filtered_wis = filtered_wis[filtered_wis['horizon'] == selected_horizon]
-            filtered_wis = filtered_wis[
-                (filtered_wis['reference_date'].dt.date >= ref_start) &
-                (filtered_wis['reference_date'].dt.date <= ref_end) &
-                (filtered_wis['target_end_date'].dt.date >= target_start) &
-                (filtered_wis['target_end_date'].dt.date <= target_end)
-            ]
-        
-        if filtered_coverage is not None:
-            if selected_eval_models:
-                filtered_coverage = filtered_coverage[filtered_coverage['Model'].isin(selected_eval_models)]
-            if selected_eval_location != 'all':
-                filtered_coverage = filtered_coverage[filtered_coverage['location'] == selected_eval_location]
-            if selected_horizon != 'All Horizons':
-                filtered_coverage = filtered_coverage[filtered_coverage['horizon'] == selected_horizon]
-            filtered_coverage = filtered_coverage[
-                (filtered_coverage['reference_date'].dt.date >= ref_start) &
-                (filtered_coverage['reference_date'].dt.date <= ref_end) &
-                (filtered_coverage['target_end_date'].dt.date >= target_start) &
-                (filtered_coverage['target_end_date'].dt.date <= target_end)
-            ]
-        
-        # Display WIS boxplot
-        st.markdown("### Weighted Interval Score (WIS) Ratio")
-        st.markdown("""
-        The WIS ratio compares each model's Weighted Interval Score to the FluSight-baseline model. 
-        A ratio less than 1 indicates better performance than baseline, while a ratio greater than 1 indicates worse performance.
-        """)
-        
-        if filtered_wis is not None and not filtered_wis.empty:
-            wis_fig = plot_wis_boxplot_evaluation(filtered_wis, selected_eval_models, locations_df)
-            if wis_fig:
-                st.plotly_chart(wis_fig, use_container_width=False, config={'displayModeBar': False})
+
+            if selected_eval_location != 'All Locations':
+                # Convert location name back to code if needed
+                if locations_df is not None:
+                    eval_location_codes = sorted(wis_data['location'].unique().tolist()) if wis_data is not None else []
+                    eval_location_map = {'All Locations': 'all'}
+                    for loc_code in eval_location_codes:
+                        loc_name = get_location_name(loc_code, locations_df)
+                        eval_location_map[loc_name] = loc_code
+                    selected_eval_location = eval_location_map.get(selected_eval_location, 'all')
+            else:
+                selected_eval_location = 'all'
+            
+            selected_horizon = st.session_state.get('eval_horizon', 'All Horizons')
+            
+            ref_date_range = st.session_state.get('eval_ref_date_range', None)
+            target_date_range = st.session_state.get('eval_target_date_range', None)
+            
+            if wis_data is not None:
+                min_ref_date = wis_data['reference_date'].min().date()
+                max_ref_date = wis_data['reference_date'].max().date()
+                min_target_date = wis_data['target_end_date'].min().date()
+                max_target_date = wis_data['target_end_date'].max().date()
+            else:
+                min_ref_date = datetime(2024, 1, 1).date()
+                max_ref_date = datetime.now().date()
+                min_target_date = min_ref_date
+                max_target_date = max_ref_date
+            
+            if ref_date_range is not None:
+                if isinstance(ref_date_range, tuple) and len(ref_date_range) == 2:
+                    ref_start, ref_end = ref_date_range
+                else:
+                    ref_start = ref_end = ref_date_range
+            else:
+                ref_start, ref_end = min_ref_date, max_ref_date
+            
+            if target_date_range is not None:
+                if isinstance(target_date_range, tuple) and len(target_date_range) == 2:
+                    target_start, target_end = target_date_range
+                else:
+                    target_start = target_end = target_date_range
+            else:
+                target_start, target_end = min_target_date, max_target_date
+            
+            # Filter data
+            filtered_wis = wis_data.copy() if wis_data is not None else None
+            filtered_coverage = coverage_data.copy() if coverage_data is not None else None
+            
+            if filtered_wis is not None:
+                if selected_eval_models:
+                    filtered_wis = filtered_wis[filtered_wis['Model'].isin(selected_eval_models)]
+                if selected_eval_location != 'all':
+                    filtered_wis = filtered_wis[filtered_wis['location'] == selected_eval_location]
+                if selected_horizon != 'All Horizons':
+                    filtered_wis = filtered_wis[filtered_wis['horizon'] == selected_horizon]
+                filtered_wis = filtered_wis[
+                    (filtered_wis['reference_date'].dt.date >= ref_start) &
+                    (filtered_wis['reference_date'].dt.date <= ref_end) &
+                    (filtered_wis['target_end_date'].dt.date >= target_start) &
+                    (filtered_wis['target_end_date'].dt.date <= target_end)
+                ]
+            
+            if filtered_coverage is not None:
+                if selected_eval_models:
+                    filtered_coverage = filtered_coverage[filtered_coverage['Model'].isin(selected_eval_models)]
+                if selected_eval_location != 'all':
+                    filtered_coverage = filtered_coverage[filtered_coverage['location'] == selected_eval_location]
+                if selected_horizon != 'All Horizons':
+                    filtered_coverage = filtered_coverage[filtered_coverage['horizon'] == selected_horizon]
+                filtered_coverage = filtered_coverage[
+                    (filtered_coverage['reference_date'].dt.date >= ref_start) &
+                    (filtered_coverage['reference_date'].dt.date <= ref_end) &
+                    (filtered_coverage['target_end_date'].dt.date >= target_start) &
+                    (filtered_coverage['target_end_date'].dt.date <= target_end)
+                ]
+            
+            # Display WIS boxplot
+            st.markdown("### Weighted Interval Score (WIS) Ratio")
+            st.markdown("""
+            The WIS ratio compares each model's Weighted Interval Score to the FluSight-baseline model. 
+            A ratio less than 1 indicates better performance than baseline, while a ratio greater than 1 indicates worse performance.
+            """)
+            
+            if filtered_wis is not None and not filtered_wis.empty:
+                wis_fig = plot_wis_boxplot_evaluation(filtered_wis, selected_eval_models, locations_df)
+                if wis_fig:
+                    st.plotly_chart(wis_fig, use_container_width=False, config={'displayModeBar': False})
+                else:
+                    st.warning("No WIS data available for the selected filters.")
             else:
                 st.warning("No WIS data available for the selected filters.")
-        else:
-            st.warning("No WIS data available for the selected filters.")
-        
-        st.markdown("---")
-        
-        # Display coverage plot
-        st.markdown("### Prediction Interval Coverage")
-        st.markdown("""
-        Coverage measures the proportion of observed values that fall within each prediction interval. 
-        A well-calibrated model should have coverage close to the diagonal line (e.g., 50% of observations within the 50% prediction interval).
-        """)
-        
-        if filtered_coverage is not None and not filtered_coverage.empty:
-            cov_fig = plot_coverage_evaluation(filtered_coverage, selected_eval_models)
-            if cov_fig:
-                st.plotly_chart(cov_fig, use_container_width=False, config={'displayModeBar': False})
+            
+            st.markdown("---")
+            
+            # Display coverage plot
+            st.markdown("### Prediction Interval Coverage")
+            st.markdown("""
+            Coverage measures the proportion of observed values that fall within each prediction interval. 
+            A well-calibrated model should have coverage close to the diagonal line (e.g., 50% of observations within the 50% prediction interval).
+            """)
+            
+            if filtered_coverage is not None and not filtered_coverage.empty:
+                cov_fig = plot_coverage_evaluation(filtered_coverage, selected_eval_models)
+                if cov_fig:
+                    st.plotly_chart(cov_fig, use_container_width=False, config={'displayModeBar': False})
+                else:
+                    st.warning("No coverage data available for the selected filters.")
             else:
                 st.warning("No coverage data available for the selected filters.")
-        else:
-            st.warning("No coverage data available for the selected filters.")
