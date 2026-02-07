@@ -764,7 +764,7 @@ with tab_forecasts:
             max_end_date = max(max_obs_date, latest_forecast_date) if latest_forecast_date else max_obs_date
 
             if 'start_date' not in st.session_state:
-                st.session_state.start_date = datetime(2025, 10, 1).date()
+                st.session_state.start_date = datetime(2025, 11, 1).date()
             if 'end_date' not in st.session_state:
                 st.session_state.end_date = max_end_date
             st.session_state.end_date = max(min_end_date, min(st.session_state.end_date, max_end_date))
