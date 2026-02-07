@@ -1018,7 +1018,7 @@ if tab_selection == "Forecasts":
                 st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
                 st.markdown(f"<p style='font-size: 18px;'>{pi_text}</p>", unsafe_allow_html=True)
         
-        event = st.plotly_chart(fig, key="forecast_plot", on_select="rerun", use_container_width=True, config={'displayModeBar': False})
+        event = st.plotly_chart(fig, key="forecast_plot", on_select="rerun", use_container_width=True)
         
         if event and hasattr(event, 'selection') and event.selection:
             try:
@@ -1141,7 +1141,7 @@ if tab_selection == "Forecasts":
         )
         
         if cat_fig is not None:
-            st.plotly_chart(cat_fig, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(cat_fig, use_container_width=True)
             if models_without_data:
                 st.info(f"ℹ️ The following models do not have categorical forecast data for this forecast date: {', '.join(models_without_data)}")
         else:
@@ -1254,7 +1254,7 @@ if tab_selection == "Evaluation":
         if filtered_wis is not None and not filtered_wis.empty:
             wis_fig = plot_wis_boxplot_evaluation(filtered_wis, selected_eval_models, locations_df)
             if wis_fig:
-                st.plotly_chart(wis_fig, use_container_width=False, config={'displayModeBar': False})
+                st.plotly_chart(wis_fig, use_container_width=False)
             else:
                 st.warning("No WIS data available for the selected filters.")
         else:
@@ -1272,7 +1272,7 @@ if tab_selection == "Evaluation":
         if filtered_coverage is not None and not filtered_coverage.empty:
             cov_fig = plot_coverage_evaluation(filtered_coverage, selected_eval_models)
             if cov_fig:
-                st.plotly_chart(cov_fig, use_container_width=False, config={'displayModeBar': False})
+                st.plotly_chart(cov_fig, use_container_width=False)
             else:
                 st.warning("No coverage data available for the selected filters.")
         else:
