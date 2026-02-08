@@ -1307,8 +1307,51 @@ with tab_overview:
 
     with row1_col1:
         with st.container(border=True):
-            st.markdown("### Box 1 Title")
-            # your content here
+            st.markdown("### Observed Hospitalizations")
+            
+            # Location selector
+            if locations_df is not None:
+                state_locations_df = locations_df[locations_df['location'] != 'US']
+                overview_location_names = ['United States'] + state_locations_df['location_name'].tolist()
+                overview_location_dict = dict(
+                    zip(overview_location_names, ['US'] + state_locations_df['location'].tolist())
+                )
+                overview_location_name = st.selectbox(
+                    "Location",
+                    overview_location_names,
+                    index=0,
+                    key="overview_location"
+                )
+                overview_location = overview_location_dict[overview_location_name]
+            else:
+                overview_location = "US"
+                overview_location_name = "United States"
+
+            # Filter and plot
+            obs_filtered = observed_data[
+                (observed_data['location'] == overview_location)
+            ].sort_values('date')
+
+            if not obs_filtered.empty:
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=obs_filtered['date'],
+                    y=obs_filtered['value'],
+                    mode='lines+markers',
+                    line=dict(color='#415584', width=2),
+                    marker=dict(size=4),
+                    hovertemplate='%{x|%b %d, %Y}<br>Value: %{y:,.0f}<extra></extra>'
+                ))
+                fig.update_layout(
+                    xaxis_title="Date",
+                    yaxis_title="Weekly Flu Hospitalizations",
+                    height=350,
+                    margin=dict(l=50, r=20, t=20, b=50),
+                    showlegend=False
+                )
+                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+            else:
+                st.warning("No observed data available for this location.")
 
     with row1_col2:
         with st.container(border=True):
