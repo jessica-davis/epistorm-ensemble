@@ -1440,6 +1440,7 @@ with tab_overview:
                     index=["Last 3 months", "Last 6 months", "Last year", "Last 2 years", "All data"].index(st.session_state.overview_date_range),
                     key="overview_date_range"
                 )
+            st.markdown('</div>', unsafe_allow_html=True)
 
 
 
