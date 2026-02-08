@@ -1435,7 +1435,7 @@ with tab_overview:
             """
             <style>
                 div[data-testid="stSelectbox"]:has(#overview_date_range) {
-                    margin-top: -30px;
+                    margin-top: -1000px;
                 }
             </style>
             """,
