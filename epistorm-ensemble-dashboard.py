@@ -1406,7 +1406,7 @@ with tab_overview:
                             annotation_text=level,
                             annotation_position="right",
                             annotation=dict(font_size=10, font_color="gray")
-                        )
+                        ) 
 
                     fig.update_layout(yaxis=dict(range=[0, y_max]))
 
