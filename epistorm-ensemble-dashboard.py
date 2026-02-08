@@ -1342,15 +1342,15 @@ with tab_overview:
 
             if not obs_filtered.empty:
 
-                # Apply date range filter
                 max_date = obs_filtered['date'].max()
+                date_range_option = st.session_state.overview_date_range
+                
                 if date_range_option == "Last 3 months":
                     obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(months=3)]
                 elif date_range_option == "Last 6 months":
                     obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(months=6)]
                 elif date_range_option == "Last year":
                     obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(years=1)]
-                # "All data" — no filter
 
 
                 fig = go.Figure()
