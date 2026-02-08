@@ -1302,7 +1302,7 @@ with tab_evaluation:
 
 
 with tab_overview:
-    row1_col1, row1_col2 = st.columns([3,2], gap="large")
+    row1_col1, row1_col2 = st.columns([4,2], gap="large")
     row2_col1, row2_col2 = st.columns(2, gap="large")
 
     with row1_col1:
