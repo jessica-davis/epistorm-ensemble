@@ -1328,7 +1328,7 @@ with tab_overview:
                 overview_location_name = "United States"
 
             # Filter and plot
-            obs_filtered = observed_data[
+            obs_filtered = observed_data[(observed_data['date'] >= pd.Timestamp('2025-11-01')) &
                 (observed_data['location'] == overview_location)
             ].sort_values('date')
 
@@ -1338,7 +1338,7 @@ with tab_overview:
                     x=obs_filtered['date'],
                     y=obs_filtered['value'],
                     mode='lines+markers',
-                    line=dict(color='#415584', width=2),
+                    line=dict(color='#495781', width=2),
                     marker=dict(size=4),
                     hovertemplate='%{x|%b %d, %Y}<br>Value: %{y:,.0f}<extra></extra>'
                 ))
