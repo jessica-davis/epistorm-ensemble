@@ -1420,7 +1420,7 @@ with tab_overview:
                     xaxis_title="Date",
                     yaxis_title="Weekly Flu Hospitalizations",
                     height=450,
-                    margin=dict(l=50, r=20, t=20, b=50),
+                    margin=dict(l=50, r=20, t=20, b=10),
                     showlegend=False,
                     yaxis=dict(range=[0, y_max], showgrid=False)
                 )
@@ -1431,16 +1431,7 @@ with tab_overview:
 
 
             # Date range selector below the plot
-            st.markdown(
-            """
-            <style>
-                div[data-testid="stSelectbox"]:has(#overview_date_range) {
-                    margin-top: -1000px;
-                }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
+            
             range_col, _ = st.columns([1, 2])
             with range_col:
                 st.selectbox(
