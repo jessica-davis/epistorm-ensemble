@@ -1305,28 +1305,29 @@ with tab_overview:
     row1_col1, row1_col2 = st.columns([4,2], gap="large")
     row2_col1, row2_col2 = st.columns(2, gap="large")
 
+     # Location selector
+    if locations_df is not None:
+        state_locations_df = locations_df[locations_df['location'] != 'US']
+        overview_location_names = ['United States'] + state_locations_df['location_name'].tolist()
+        overview_location_dict = dict(
+            zip(overview_location_names, ['US'] + state_locations_df['location'].tolist())
+        )
+        overview_location_name = st.selectbox(
+            "Location",
+            overview_location_names,
+            index=0,
+            key="overview_location"
+        )
+        overview_location = overview_location_dict[overview_location_name]
+    else:
+        overview_location = "US"
+        overview_location_name = "United States"
+
+
     with row1_col1:
         with st.container(border=True):
             st.markdown("### Observed Hospitalizations")
             
-            # Location selector
-            if locations_df is not None:
-                state_locations_df = locations_df[locations_df['location'] != 'US']
-                overview_location_names = ['United States'] + state_locations_df['location_name'].tolist()
-                overview_location_dict = dict(
-                    zip(overview_location_names, ['US'] + state_locations_df['location'].tolist())
-                )
-                overview_location_name = st.selectbox(
-                    "Location",
-                    overview_location_names,
-                    index=0,
-                    key="overview_location"
-                )
-                overview_location = overview_location_dict[overview_location_name]
-            else:
-                overview_location = "US"
-                overview_location_name = "United States"
-
             # Filter and plot
             obs_filtered = observed_data[(observed_data['date'] >= pd.Timestamp('2025-11-01')) &
                 (observed_data['location'] == overview_location)
