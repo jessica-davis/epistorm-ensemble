@@ -1302,22 +1302,27 @@ with tab_evaluation:
 
 
 with tab_overview:
-    if locations_df is not None:
-        state_locations_df = locations_df[locations_df['location'] != 'US']
-        overview_location_names = ['United States'] + state_locations_df['location_name'].tolist()
-        overview_location_dict = dict(
-            zip(overview_location_names, ['US'] + state_locations_df['location'].tolist())
-        )
-        overview_location_name = st.selectbox(
-            "Location",
-            overview_location_names,
-            index=0,
-            key="overview_location"
-        )
-        overview_location = overview_location_dict[overview_location_name]
-    else:
-        overview_location = "US"
-        overview_location_name = "United States"
+    
+    sel_col, _ = st.columns([1, 2])  # 1/3 width for selector
+    with sel_col:
+        if locations_df is not None:
+            state_locations_df = locations_df[locations_df['location'] != 'US']
+            overview_location_names = ['United States'] + state_locations_df['location_name'].tolist()
+            overview_location_dict = dict(
+                zip(overview_location_names, ['US'] + state_locations_df['location'].tolist())
+            )
+            overview_location_name = st.selectbox(
+                "Location",
+                overview_location_names,
+                index=0,
+                key="overview_location"
+            )
+            overview_location = overview_location_dict[overview_location_name]
+        else:
+            overview_location = "US"
+            overview_location_name = "United States"
+
+        
 
 
 
