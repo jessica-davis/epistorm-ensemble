@@ -18,6 +18,12 @@ from ensemble import create_ensemble_method1, create_ensemble_method2, create_ca
 
 import plotly.io as pio
 
+def img_to_html(path, width=150):
+    with open(path, "rb") as f:
+        data = base64.b64encode(f.read()).decode()
+    return f'<img src="data:image/png;base64,{data}" width="{width}">'
+
+
 # Set Plotly to always use light theme
 pio.templates.default = "plotly_white"
 
@@ -47,6 +53,15 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.markdown(
+    f"""
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="color: #415584; margin: 0;">Epistorm Influenza Forecasts 2025-26</h1>
+        {img_to_html("assets/epistorm-ensemble-logo.png", width=120)}
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 # Constants
 MODELS = [
@@ -94,11 +109,6 @@ INTERVAL_RANGES = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 98]
 
 DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
-
-def img_to_html(path, width=150):
-    with open(path, "rb") as f:
-        data = base64.b64encode(f.read()).decode()
-    return f'<img src="data:image/png;base64,{data}" width="{width}">'
 
 
 @st.cache_data(ttl=3600)
