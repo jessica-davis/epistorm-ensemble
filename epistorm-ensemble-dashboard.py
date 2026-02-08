@@ -1403,10 +1403,10 @@ with tab_overview:
                 thresh = loc_thresholds.iloc[0]
                 
                 activity_levels = [
-                    ('Low', 0, thresh['Low']),
-                    ('Moderate', thresh['Low'], thresh['Medium']),
-                    ('High', thresh['Medium'], thresh['High']),
-                    ('Very High', thresh['High'], thresh['Very High']),
+                    ('Low', 0, thresh['Medium']),
+                    ('Moderate', thresh['Medium'], thresh['High']),
+                    ('High', thresh['High'], thresh['Very High']),
+                    ('Very High', thresh['Very High'], thresh['Very High'] * 5),
                 ]
 
                 ACTIVITY_COLORS = {
