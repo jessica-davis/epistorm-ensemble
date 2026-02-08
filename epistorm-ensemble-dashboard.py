@@ -1337,7 +1337,7 @@ with tab_overview:
             ].sort_values('date')
 
             if 'overview_date_range' not in st.session_state:
-                st.session_state.overview_date_range = "Last 6 months"
+                st.session_state.overview_date_range = "Last 3 months"
 
 
             if not obs_filtered.empty:
@@ -1351,6 +1351,9 @@ with tab_overview:
                     obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(months=6)]
                 elif date_range_option == "Last year":
                     obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(years=1)]
+                elif date_range_option == "Last 2 years":
+                    obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(years=2)]
+
 
 
                 fig = go.Figure()
@@ -1379,8 +1382,8 @@ with tab_overview:
             with range_col:
                 st.selectbox(
                     "Date Range",
-                    ["Last 3 months", "Last 6 months", "Last year", "All data"],
-                    index=["Last 3 months", "Last 6 months", "Last year", "All data"].index(st.session_state.overview_date_range),
+                    ["Last 3 months", "Last 6 months", "Last year", "Last 2 years", "All data"],
+                    index=["Last 3 months", "Last 6 months", "Last year", "Last 2 years", "All data"].index(st.session_state.overview_date_range),
                     key="overview_date_range"
                 )
 
