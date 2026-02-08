@@ -1302,10 +1302,6 @@ with tab_evaluation:
 
 
 with tab_overview:
-    row1_col1, row1_col2 = st.columns([4,2], gap="large")
-    row2_col1, row2_col2 = st.columns(2, gap="large")
-
-     # Location selector
     if locations_df is not None:
         state_locations_df = locations_df[locations_df['location'] != 'US']
         overview_location_names = ['United States'] + state_locations_df['location_name'].tolist()
@@ -1324,6 +1320,11 @@ with tab_overview:
         overview_location_name = "United States"
 
 
+
+    row1_col1, row1_col2 = st.columns([4,2], gap="large")
+    row2_col1, row2_col2 = st.columns(2, gap="large")
+
+    
     with row1_col1:
         with st.container(border=True):
             st.markdown("### Observed Hospitalizations")
