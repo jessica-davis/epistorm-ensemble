@@ -1331,17 +1331,9 @@ with tab_overview:
     with row1_col1:
         with st.container(border=True):
            # st.markdown("### Observed Hospitalizations")
-            
-            date_range_option = st.selectbox(
-                "Date Range",
-                ["Last 3 months", "Last 6 months", "Last year", "All data"],
-                index=1,
-                key="overview_date_range"
-            )
 
             # Filter and plot
-            obs_filtered = observed_data[(observed_data['date'] >= pd.Timestamp('2025-11-01')) &
-                (observed_data['location'] == overview_location)
+            obs_filtered = observed_data[ (observed_data['location'] == overview_location)
             ].sort_values('date')
 
             if not obs_filtered.empty:
@@ -1376,6 +1368,19 @@ with tab_overview:
                 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
             else:
                 st.warning("No observed data available for this location.")
+
+
+            # Date range selector below the plot
+            range_col, _ = st.columns([1, 2])
+            with range_col:
+                st.selectbox(
+                    "Date Range",
+                    ["Last 3 months", "Last 6 months", "Last year", "All data"],
+                    index=["Last 3 months", "Last 6 months", "Last year", "All data"].index(st.session_state.overview_date_range),
+                    key="overview_date_range"
+                )
+
+
 
     with row1_col2:
         with st.container(border=True):
