@@ -53,15 +53,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown(
-    f"""
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1 style="color: #415584; margin: 0;">Epistorm Influenza Forecasts 2025-26</h1>
-        {img_to_html("assets/epistorm-ensemble-logo.png", width=120)}
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
 
 # Constants
 MODELS = [
@@ -675,6 +666,17 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
         )
     )
     return fig, location_name
+
+st.markdown(
+    f"""
+    <div style="display: flex; justify-content: flex-end;">
+        {img_to_html("assets/epistorm-ensemble-logo.png", width=120)}
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
 
 tab_overview, tab_forecasts, tab_evaluation = st.tabs([ "Overview", "Forecasts", "Evaluation"])
 
