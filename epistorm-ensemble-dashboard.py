@@ -139,6 +139,22 @@ def load_observed_data():
         st.error(f"Error loading observed data: {e}")
         return None
 
+
+@st.cache_data(ttl=3600)
+def load_thresholds():
+    """Load observed data from local cache or fetch if not available"""
+    local_file = DATA_DIR / "threshold_levels.csv"
+    
+    # Try to load from local file first
+    if local_file.exists():
+        try:
+            data = pd.read_csv(local_file)
+            return data
+        except Exception as e:
+            st.warning(f"Error loading cached data: {e}. Fetching fresh data...")
+    
+
+
 @st.cache_data(ttl=3600)
 def load_all_forecasts():
     """Load all forecasts from local cache or fetch if not available"""
@@ -700,6 +716,7 @@ with st.spinner("Loading data..."):
     observed_data = load_observed_data()
     forecast_data = load_all_forecasts()
     baseline_data = load_baseline_forecasts()
+    thresholds = load_thresholds()
 
 if forecast_data.empty:
     st.error("No forecast data could be loaded. Please check your internet connection and try again.")
@@ -1335,6 +1352,10 @@ with tab_overview:
             # Filter and plot
             obs_filtered = observed_data[ (observed_data['location'] == overview_location)
             ].sort_values('date')
+
+
+            thresholds_filtered = thresholds[ (thresholds['location'] == overview_location)]
+
 
             if 'overview_date_range' not in st.session_state:
                 st.session_state.overview_date_range = "Last 3 months"
