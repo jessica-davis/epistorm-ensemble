@@ -44,6 +44,11 @@ st.markdown(
     <style>
         [data-testid="stSidebar"] { display: none; }
         [data-testid="collapsedControl"] { display: none; }
+        [data-testid="stVerticalBlock"] > div[data-testid="stContainer"] {
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
         .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
             font-size: 1.2rem;
             font-weight: 600;}
@@ -1299,6 +1304,34 @@ with tab_evaluation:
                     st.warning("No coverage data available for the selected filters.")
             else:
                 st.warning("No coverage data available for the selected filters.")
+
+
+with tab_overview:
+    row1_col1, row1_col2 = st.columns(2, gap="large")
+    row2_col1, row2_col2 = st.columns(2, gap="large")
+
+    with row1_col1:
+        with st.container(border=True):
+            st.markdown("### Box 1 Title")
+            # your content here
+
+    with row1_col2:
+        with st.container(border=True):
+            st.markdown("### Box 2 Title")
+            # your content here
+
+    with row2_col1:
+        with st.container(border=True):
+            st.markdown("### Box 3 Title")
+            # your content here
+
+    with row2_col2:
+        with st.container(border=True):
+            st.markdown("### Box 4 Title")
+            # your content here
+
+
+
 
 
 st.divider()
