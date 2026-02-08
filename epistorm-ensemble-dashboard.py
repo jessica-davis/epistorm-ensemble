@@ -1419,7 +1419,7 @@ with tab_overview:
                 fig.update_layout(
                     xaxis_title="Date",
                     yaxis_title="Weekly Flu Hospitalizations",
-                    height=400,
+                    height=450,
                     margin=dict(l=50, r=20, t=20, b=50),
                     showlegend=False,
                     yaxis=dict(range=[0, y_max], showgrid=False)
