@@ -1431,7 +1431,7 @@ with tab_overview:
 
 
             # Date range selector below the plot
-            st.markdown('<div style="margin-top: -20px;">', unsafe_allow_html=True)
+            st.markdown('<div style="margin-top: -100px;">', unsafe_allow_html=True)
             range_col, _ = st.columns([1, 2])
             with range_col:
                 st.selectbox(
