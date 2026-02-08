@@ -1336,6 +1336,10 @@ with tab_overview:
             obs_filtered = observed_data[ (observed_data['location'] == overview_location)
             ].sort_values('date')
 
+            if 'overview_date_range' not in st.session_state:
+                st.session_state.overview_date_range = "Last 6 months"
+
+
             if not obs_filtered.empty:
 
                 # Apply date range filter
