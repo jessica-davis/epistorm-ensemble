@@ -1354,7 +1354,7 @@ with tab_overview:
             ].sort_values('date')
 
 
-            thresholds_filtered = thresholds[ (thresholds['location'] == overview_location)]
+            loc_thresholds = thresholds[ (thresholds['location'] == overview_location)]
 
 
             if 'overview_date_range' not in st.session_state:
@@ -1396,6 +1396,41 @@ with tab_overview:
                 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
             else:
                 st.warning("No observed data available for this location.")
+
+
+
+            if not loc_thresholds.empty:
+                thresh = loc_thresholds.iloc[0]
+                
+                activity_levels = [
+                    ('Low', 0, thresh['Low']),
+                    ('Moderate', thresh['Low'], thresh['Medium']),
+                    ('High', thresh['Medium'], thresh['High']),
+                    ('Very High', thresh['High'], thresh['Very High']),
+                ]
+
+                ACTIVITY_COLORS = {
+                    'Low': 'rgba(144, 238, 144, 0.15)',
+                    'Moderate': 'rgba(255, 255, 144, 0.15)',
+                    'High': 'rgba(255, 165, 0, 0.15)',
+                    'Very High': 'rgba(255, 99, 71, 0.15)'
+                }
+
+                y_max = max(obs_filtered['value'].max() * 1.1, thresh['Very High'] * 1.2)
+
+                for level, lower, upper in activity_levels:
+                    fig.add_hrect(
+                        y0=lower, y1=upper,
+                        fillcolor=ACTIVITY_COLORS[level],
+                        line_width=0,
+                        annotation_text=level,
+                        annotation_position="right",
+                        annotation=dict(font_size=10, font_color="gray")
+                    )
+
+                fig.update_layout(yaxis=dict(range=[0, y_max]))
+
+
 
 
             # Date range selector below the plot
