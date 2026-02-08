@@ -1396,7 +1396,7 @@ with tab_overview:
                         'Very High': 'rgba(255, 99, 71, 0.15)'
                     }
 
-                    y_max = max(obs_filtered['value'].max() * 1.1, thresh['Very High'] * 1.2)
+                    y_max = obs_filtered['value'].max() * 1.1
 
                     for level, lower, upper in activity_levels:
                         fig.add_hrect(
