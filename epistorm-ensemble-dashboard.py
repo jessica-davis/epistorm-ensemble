@@ -670,7 +670,7 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
 st.markdown(
     f"""
     <div style="display: flex; justify-content: flex-end;">
-        {img_to_html("assets/epistorm-ensemble-logo.png", width=300)}
+        {img_to_html("assets/epistorm-ensemble-logo.png", width=250)}
     </div>
     """,
     unsafe_allow_html=True,
