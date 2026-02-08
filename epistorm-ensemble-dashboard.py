@@ -1431,7 +1431,16 @@ with tab_overview:
 
 
             # Date range selector below the plot
-            st.markdown('<div style="margin-top: -200px;">', unsafe_allow_html=True)
+            st.markdown(
+            """
+            <style>
+                div[data-testid="stSelectbox"]:has(#overview_date_range) {
+                    margin-top: -30px;
+                }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
             range_col, _ = st.columns([1, 2])
             with range_col:
                 st.selectbox(
@@ -1440,7 +1449,7 @@ with tab_overview:
                     index=["Last 3 months", "Last 6 months", "Last year", "Last 2 years", "All data"].index(st.session_state.overview_date_range),
                     key="overview_date_range"
                 )
-            st.markdown('</div>', unsafe_allow_html=True)
+            
 
 
 
