@@ -1306,7 +1306,7 @@ with tab_overview:
     sel_col, _ = st.columns([1, 2])  # 1/3 width for selector
     with sel_col:
         if locations_df is not None:
-            state_locations_df = locations_df[locations_df['location'] != 'US']
+            state_locations_df = locations_df[locations_df['location'] != 'US'].sort_values('location_name')
             overview_location_names = ['United States'] + state_locations_df['location_name'].tolist()
             overview_location_dict = dict(
                 zip(overview_location_names, ['US'] + state_locations_df['location'].tolist())
@@ -1324,22 +1324,39 @@ with tab_overview:
 
         
 
-
-
     row1_col1, row1_col2 = st.columns([4,2], gap="large")
     row2_col1, row2_col2 = st.columns(2, gap="large")
 
     
     with row1_col1:
         with st.container(border=True):
-            st.markdown("### Observed Hospitalizations")
+           # st.markdown("### Observed Hospitalizations")
             
+            date_range_option = st.selectbox(
+                "Date Range",
+                ["Last 3 months", "Last 6 months", "Last year", "All data"],
+                index=1,
+                key="overview_date_range"
+            )
+
             # Filter and plot
             obs_filtered = observed_data[(observed_data['date'] >= pd.Timestamp('2025-11-01')) &
                 (observed_data['location'] == overview_location)
             ].sort_values('date')
 
             if not obs_filtered.empty:
+
+                # Apply date range filter
+                max_date = obs_filtered['date'].max()
+                if date_range_option == "Last 3 months":
+                    obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(months=3)]
+                elif date_range_option == "Last 6 months":
+                    obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(months=6)]
+                elif date_range_option == "Last year":
+                    obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(years=1)]
+                # "All data" — no filter
+
+
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(
                     x=obs_filtered['date'],
