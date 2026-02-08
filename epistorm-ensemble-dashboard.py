@@ -46,8 +46,10 @@ st.markdown(
         [data-testid="collapsedControl"] { display: none; }
         .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
             font-size: 1.2rem;
-            font-weight: 600;
-        }
+            font-weight: 600;}
+        .block-container {
+    padding-top: 1rem;
+}
     </style>
     """,
     unsafe_allow_html=True,
