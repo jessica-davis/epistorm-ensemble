@@ -48,7 +48,7 @@ st.markdown(
             font-size: 1.2rem;
             font-weight: 600;}
         .block-container {
-    padding-top: 5rem;
+    padding-top: 3rem;
 }
     </style>
     """,
