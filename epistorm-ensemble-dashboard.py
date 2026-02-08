@@ -45,8 +45,8 @@ st.markdown(
         [data-testid="stSidebar"] { display: none; }
         [data-testid="collapsedControl"] { display: none; }
         [data-testid="stVerticalBlock"] > div[data-testid="stContainer"] {
-    border-radius: 10px;
-    padding: 1rem;
+    border-radius: 20px;
+    padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
         .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
