@@ -1405,7 +1405,7 @@ with tab_overview:
                             line_width=0,
                             annotation_text=level,
                             annotation_position="right",
-                            annotation=dict(font_size=10, font_color="gray")
+                            #annotation=dict(font_size=10, font_color="gray")
                         ) 
 
                     fig.update_layout(yaxis=dict(range=[0, y_max]))
@@ -1424,7 +1424,8 @@ with tab_overview:
                     yaxis_title="Weekly Flu Hospitalizations",
                     height=350,
                     margin=dict(l=50, r=20, t=20, b=50),
-                    showlegend=False
+                    showlegend=False,
+                    yaxis=dict(range=[0, y_max], showgrid=False)
                 )
                 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
             else:
