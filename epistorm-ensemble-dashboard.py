@@ -1290,7 +1290,7 @@ with tab_evaluation:
 st.divider()
 st.markdown(
     f"""
-    <div style="display: flex; align-items: center; gap: 30px; justify-content: center;">
+    <div style="display: flex; align-items: center; gap: 30px; justify-content: flex-start;">
         {img_to_html("assets/northeastern-logo.png", width=150)}
         {img_to_html("assets/epistorm-logo.png", width=150)}
     </div>
