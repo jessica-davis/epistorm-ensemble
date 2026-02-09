@@ -1488,9 +1488,11 @@ with tab_overview:
 
             loc_text = 'the United States' if overview_location=='US' else overview_location_name
             threshold_color = ACTIVITY_COLORS.get(current_threshold, 'black')
-            st.markdown(f"The flu activity level in {loc_text} is currently " f"<b style='color: {threshold_color};'>{current_threshold}</b> "
-                 f"as of {obs_filtered['date'].max().strftime('%B %d, %Y')}.",unsafe_allow_html=True)
+            heading = f"The flu activity level in {loc_text} is currently " f"<b style='color: {threshold_color};'>{current_threshold}</b> " + \
+                  f"as of {obs_filtered['date'].max().strftime('%B %d, %Y')}."
 
+            st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
+                        
 
     with row2_col1:
         with st.container(border=True):
