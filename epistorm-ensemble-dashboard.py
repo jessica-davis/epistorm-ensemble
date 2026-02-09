@@ -1390,10 +1390,10 @@ with tab_overview:
                     ]
 
                     ACTIVITY_COLORS = {
-                        'Low': 'rgba(144, 238, 144, 0.15)',
-                        'Moderate': 'rgba(255, 255, 144, 0.15)',
-                        'High': 'rgba(255, 165, 0, 0.15)',
-                        'Very High': 'rgba(255, 99, 71, 0.15)'
+                        'Low': '#7DD4C8',
+                        'Moderate': '#3CAAA0',
+                        'High': '#2B7A8F',
+                        'Very High': '#3D5A80'
                     }
 
                     y_max = obs_filtered['value'].max() * 1.1
