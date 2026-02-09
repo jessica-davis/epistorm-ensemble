@@ -1422,7 +1422,7 @@ with tab_overview:
                     xaxis_title="Date",
                     yaxis_title="Weekly Flu Hospitalizations",
                     height=450,
-                    margin=dict(l=50, r=20, t=20, b=5),
+                    margin=dict(l=50, r=20, t=20, b=2),
                     showlegend=False,
                     yaxis=dict(range=[0, y_max], showgrid=False)
                 )
