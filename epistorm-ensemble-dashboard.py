@@ -1403,7 +1403,7 @@ with tab_overview:
                             y0=lower, y1=upper,
                             fillcolor=ACTIVITY_COLORS[level],
                             line_width=0,
-                            opacity=0.5,
+                            opacity=0.7,
                            ) 
 
                     fig.update_layout(yaxis=dict(range=[0, y_max]))
