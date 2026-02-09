@@ -1487,7 +1487,7 @@ with tab_overview:
                 current_threshold = 'Low'
 
 
-            st.markdown(f"The flu activity level in {overview_location} is currently {current_threshold} as of {recent_date.strftime('%B %d, %Y')}. ")
+            st.markdown(f"The flu activity level in {overview_location} is currently {current_threshold} as of {obs_filtered['date'].max().strftime('%B %d, %Y')}. ")
             # your content here
 
 
