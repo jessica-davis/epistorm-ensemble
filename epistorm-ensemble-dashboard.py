@@ -1430,7 +1430,8 @@ with tab_overview:
 
 
                 legend_html = """
-                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: -10px;">
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: -10px; align-items: center;">
+                    <span style="font-size: 12px; color: gray; font-weight: 600;">Activity Level:</span>
                     <span style="display: flex; align-items: center; gap: 4px;">
                         <span style="width: 12px; height: 12px; background: #7DD4C8; display: inline-block;"></span>
                         <span style="font-size: 12px; color: gray;">Low</span>
