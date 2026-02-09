@@ -1486,8 +1486,9 @@ with tab_overview:
             else:
                 current_threshold = 'Low'
 
+            loc_text = 'the United States' if overview_location=='US' else overview_location_name
 
-            st.markdown(f"The flu activity level in {overview_location} is currently {current_threshold} as of {obs_filtered['date'].max().strftime('%B %d, %Y')}. ")
+            st.markdown(f"The flu activity level in {loc_text} is currently {current_threshold} as of {obs_filtered['date'].max().strftime('%B %d, %Y')}. ")
             # your content here
 
 
