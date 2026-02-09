@@ -1472,9 +1472,24 @@ with tab_overview:
 
 
     with row1_col2:
-        with st.container(border=True):
-            st.markdown("### Box 2 Title")
+        with st.container(border=True): 
+            recent_date = obs_filtered['date'].max() if not obs_filtered.empty else None
+            value = recent_date['value'].iloc[0] if recent_date is not None else None
+            threshold_dat = thresholds[ (thresholds['location'] == overview_location)].iloc[0]
+
+            if value >= threshold_dat['Very High']:
+                current_threshold = 'Very High'
+            elif value >= threshold_dat['High']:
+                current_threshold = 'High'
+            elif value >= threshold_dat['Medium']:
+                current_threshold = 'Moderate'
+            else:
+                current_threshold = 'Low'
+
+
+            st.markdown(f"The flu activity level in {overview_location} is currently {current_threshold} as of {recent_date.strftime('%B %d, %Y')}. ")
             # your content here
+
 
     with row2_col1:
         with st.container(border=True):
