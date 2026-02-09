@@ -1395,7 +1395,7 @@ with tab_overview:
                         'High': '#2B7A8F',
                         'Very High': '#3D5A80'
                     }
-
+ 
                     y_max = obs_filtered['value'].max() * 1.1
 
                     for level, lower, upper in activity_levels:
@@ -1403,6 +1403,7 @@ with tab_overview:
                             y0=lower, y1=upper,
                             fillcolor=ACTIVITY_COLORS[level],
                             line_width=0,
+                            opacity=0.3,
                            ) 
 
                     fig.update_layout(yaxis=dict(range=[0, y_max]))
@@ -1412,7 +1413,7 @@ with tab_overview:
                     x=obs_filtered['date'],
                     y=obs_filtered['value'],
                     mode='lines+markers',
-                    line=dict(color='#495781', width=2),
+                    line=dict(color="#000000", width=2),
                     marker=dict(size=4),
                     hovertemplate='%{x|%b %d, %Y}<br>Value: %{y:,.0f}<extra></extra>'
                 ))
