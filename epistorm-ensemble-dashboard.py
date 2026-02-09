@@ -1488,8 +1488,8 @@ with tab_overview:
 
             loc_text = 'the United States' if overview_location=='US' else overview_location_name
 
-            st.markdown(f"The flu activity level in {loc_text} is currently {current_threshold} as of {obs_filtered['date'].max().strftime('%B %d, %Y')}. ")
-            # your content here
+            st.markdown(f"The flu activity level in {loc_text} is currently <b><span style='color:{ACTIVITY_COLORS[current_threshold]}'>{current_threshold}</span></b> as of {obs_filtered['date'].max().strftime('%B %d, %Y')}. ")
+           
 
 
     with row2_col1:
