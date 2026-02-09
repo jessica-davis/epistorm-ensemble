@@ -1,3 +1,4 @@
+setuptools
 numpy>=1.26.0,<2.0
 pandas
 streamlit
@@ -11,4 +12,3 @@ delphi_epidata
 altair<5.0
 streamlit>=1.31.0
 pillow
-setuptools
