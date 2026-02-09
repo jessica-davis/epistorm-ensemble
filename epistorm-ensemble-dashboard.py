@@ -1473,7 +1473,7 @@ with tab_overview:
 
     with row1_col2:
         with st.container(border=True): 
-            recent_date = obs_filtered['date'].max() if not obs_filtered.empty else None
+            recent_date = obs_filtered[obs_filtered['date'] == obs_filtered['date'].max()] if not obs_filtered.empty else None
             value = recent_date['value'].iloc[0] if recent_date is not None else None
             threshold_dat = thresholds[ (thresholds['location'] == overview_location)].iloc[0]
 
