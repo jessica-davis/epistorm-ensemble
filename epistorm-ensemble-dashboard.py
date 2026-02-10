@@ -1323,6 +1323,11 @@ with tab_evaluation:
 
 
 with tab_overview:
+    if 'overview_ref_date' not in st.session_state:
+        cat_dates = sorted(forecast_data['reference_date'].unique(), reverse=True)
+        st.session_state.overview_ref_date = cat_dates[0]
+    if 'overview_horizon' not in st.session_state:
+        st.session_state.overview_horizon = 3
     
     sel_col, _ = st.columns([1, 2])  # 1/3 width for selector
     with sel_col:
@@ -1505,16 +1510,11 @@ with tab_overview:
             cat_df['reference_date'] = pd.to_datetime(cat_df['reference_date'])
             cat_df = cat_df[cat_df['location'] == overview_location]
             
-            # Use session state defaults
-            if 'overview_cat_date' not in st.session_state:
-                st.session_state.overview_cat_date = sorted(cat_df['reference_date'].unique(), reverse=True)[0]
-            if 'overview_cat_horizon' not in st.session_state:
-                st.session_state.overview_cat_horizon = 3
             
             # Filter data
             plot_df = cat_df[
-                (cat_df['reference_date'] == st.session_state.overview_cat_date) &
-                (cat_df['horizon'] == st.session_state.overview_cat_horizon)
+                (cat_df['reference_date'] == st.session_state.overview_ref_date) &
+                (cat_df['horizon'] == st.session_state.overview_horizon)
             ].copy()
 
             # Most likely activity level
@@ -1606,17 +1606,12 @@ with tab_overview:
             cat_df['reference_date'] = pd.to_datetime(cat_df['reference_date'])
             cat_df = cat_df[cat_df['location'] == overview_location]
             
-            # Use session state defaults
-            if 'overview_cat_date' not in st.session_state:
-                st.session_state.overview_cat_date = sorted(cat_df['reference_date'].unique(), reverse=True)[0]
-            if 'overview_cat_horizon' not in st.session_state:
-                st.session_state.overview_cat_horizon = 3
-            
             # Filter data
             plot_df = cat_df[
-                (cat_df['reference_date'] == st.session_state.overview_cat_date) &
-                (cat_df['horizon'] == st.session_state.overview_cat_horizon)
+                (cat_df['reference_date'] == st.session_state.overview_ref_date) &
+                (cat_df['horizon'] == st.session_state.overview_horizon)
             ].copy()
+
 
             # Most likely category
             max_idx = plot_df['value'].dropna().idxmax()
@@ -1641,6 +1636,8 @@ with tab_overview:
                 colors = ['#006d77', '#83c5be', '#e5e5e5', '#e29578', '#bc4749']
                 
                 plot_df = plot_df.set_index('output_type_id').reindex(order).reset_index()
+
+
                 
                 fig = go.Figure()
                 fig.add_trace(go.Bar(
@@ -1670,33 +1667,33 @@ with tab_overview:
             else:
                 st.warning("No categorical data available for this selection.")
             
-            # Dropdowns below the plot
-            sel_col1, sel_col2, _ = st.columns([1, 1, 1])
-            cat_dates = sorted(cat_df['reference_date'].unique(), reverse=True)
             
-            with sel_col1:
-                st.selectbox(
-                    "Forecast Date",
-                    cat_dates,
-                    format_func=lambda x: pd.Timestamp(x).strftime('%Y-%m-%d'),
-                    index=cat_dates.index(st.session_state.overview_cat_date) if st.session_state.overview_cat_date in cat_dates else 0,
-                    key="overview_cat_date"
-                )
-            
-            with sel_col2:
-                horizon_labels = {
-                    0: "1 week ahead",
-                    1: "2 weeks ahead",
-                    2: "3 weeks ahead",
-                    3: "4 weeks ahead"
-                }
-                st.selectbox(
-                    "Horizon",
-                    [0, 1, 2, 3],
-                    index=[0, 1, 2, 3].index(st.session_state.overview_cat_horizon),
-                    format_func=lambda x: horizon_labels[x],
-                    key="overview_cat_horizon"
-                )
+
+    ctrl_col1, ctrl_col2, _ = st.columns([1, 1, 3])
+    with ctrl_col1:
+        cat_dates = sorted(forecast_data['reference_date'].unique(), reverse=True)
+        st.selectbox(
+            "Forecast Date",
+            cat_dates,
+            format_func=lambda x: pd.Timestamp(x).strftime('%Y-%m-%d'),
+            index=0,
+            key="overview_ref_date"
+        )
+    with ctrl_col2:
+        horizon_labels = {
+            0: "1 week ahead",
+            1: "2 weeks ahead",
+            2: "3 weeks ahead",
+            3: "4 weeks ahead"
+        }
+        st.selectbox(
+            "Forecast Horizon",
+            [0, 1, 2, 3],
+            index=3,
+            format_func=lambda x: horizon_labels[x],
+            key="overview_horizon"
+        )
+
 
 
 st.divider()
