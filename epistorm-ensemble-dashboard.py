@@ -1531,8 +1531,8 @@ with tab_overview:
             
 
             st.markdown(
-                    f"## Most likely trend: <b style='color: {cat_color};'>{max_cat}</b> "
-                    f"## with <b>{max_prob:.1%}</b> probability.",
+                    f"# Most likely trend: <b style='color: {cat_color};'>{max_cat}</b> "
+                    f" with <b>{max_prob:.1%}</b> probability.",
                     unsafe_allow_html=True
                 )
             
