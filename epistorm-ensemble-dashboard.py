@@ -1593,7 +1593,7 @@ with tab_overview:
             with sel_col2:
                 st.selectbox(
                     "Forecast Horizon",
-                    ["1 week ahead", 1, 2, 3],
+                    ["1 week ahead", '2 weeks ahead', '3 weeks ahead', '4 weeks ahead'],
                     index=[0, 1, 2, 3].index(st.session_state.overview_cat_horizon),
                     key="overview_cat_horizon"
                 )
