@@ -50,6 +50,10 @@ st.markdown(
         .block-container {
     padding-top: 3rem;
 }
+    [data-testid="stContainer"] .stMarkdown, 
+    [data-testid="stContainer"] .stPlotlyChart {
+    margin-bottom: -15px;
+}
     </style>
     """,
     unsafe_allow_html=True,
