@@ -1503,7 +1503,7 @@ with tab_overview:
 
 
     with row2_col2:
-        with st.container(border=True, height=400):
+        with st.container(border=True, height=500):
             
             cat_df = pd.read_parquet('./data/categorical_ensemble.pq')
             cat_df['reference_date'] = pd.to_datetime(cat_df['reference_date'])
