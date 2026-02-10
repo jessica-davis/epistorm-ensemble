@@ -1591,13 +1591,19 @@ with tab_overview:
                 )
             
             with sel_col2:
+                horizon_labels = {
+                    0: "1 week ahead",
+                    1: "2 weeks ahead",
+                    2: "3 weeks ahead",
+                    3: "4 weeks ahead"
+                }
                 st.selectbox(
-                    "Forecast Horizon",
-                    [0,1,2,3],
+                    "Horizon",
+                    [0, 1, 2, 3],
                     index=[0, 1, 2, 3].index(st.session_state.overview_cat_horizon),
+                    format_func=lambda x: horizon_labels[x],
                     key="overview_cat_horizon"
                 )
-
 st.divider()
 st.markdown(
     f"""
