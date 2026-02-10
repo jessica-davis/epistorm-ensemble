@@ -1567,35 +1567,6 @@ with tab_overview:
                 
             else:
                 st.warning("No categorical data available for this selection.")
-            
-            # Dropdowns below the plot
-            sel_col1, sel_col2, _ = st.columns([1, 1, 1])
-            cat_dates = sorted(cat_df['reference_date'].unique(), reverse=True)
-            
-            with sel_col1:
-                st.selectbox(
-                    "Forecast Date",
-                    cat_dates,
-                    format_func=lambda x: pd.Timestamp(x).strftime('%Y-%m-%d'),
-                    index=cat_dates.index(st.session_state.overview_cat_date) if st.session_state.overview_cat_date in cat_dates else 0,
-                    key="overview_cat_date"
-                )
-            
-            with sel_col2:
-                horizon_labels = {
-                    0: "1 week ahead",
-                    1: "2 weeks ahead",
-                    2: "3 weeks ahead",
-                    3: "4 weeks ahead"
-                }
-                st.selectbox(
-                    "Horizon",
-                    [0, 1, 2, 3],
-                    index=[0, 1, 2, 3].index(st.session_state.overview_cat_horizon),
-                    format_func=lambda x: horizon_labels[x],
-                    key="overview_cat_horizon"
-                )
-
 
 
 
