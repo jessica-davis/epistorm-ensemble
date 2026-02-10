@@ -1583,7 +1583,7 @@ with tab_overview:
             
             with sel_col1:
                 st.selectbox(
-                    "Reference Date",
+                    "Forecast Date",
                     cat_dates,
                     format_func=lambda x: pd.Timestamp(x).strftime('%Y-%m-%d'),
                     index=cat_dates.index(st.session_state.overview_cat_date) if st.session_state.overview_cat_date in cat_dates else 0,
