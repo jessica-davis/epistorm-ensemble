@@ -1526,7 +1526,7 @@ with tab_overview:
             ].copy()
 
             # Most likely category
-            max_idx = plot_df['value'].idxmax()
+            max_idx = plot_df['value'].dropna().idxmax()
             max_cat = format_category(plot_df.loc[max_idx, 'output_type_id'])
             max_prob = plot_df.loc[max_idx, 'value']
             cat_color = CATEGORY_COLORS.get(max_cat, 'black')
