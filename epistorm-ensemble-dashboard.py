@@ -1504,7 +1504,6 @@ with tab_overview:
 
     with row2_col2:
         with st.container(border=True, height=400):
-            st.markdown("### Categorical Forecast")
             
             cat_df = pd.read_parquet('./data/categorical_ensemble.pq')
             cat_df['reference_date'] = pd.to_datetime(cat_df['reference_date'])
@@ -1521,6 +1520,21 @@ with tab_overview:
                 (cat_df['reference_date'] == st.session_state.overview_cat_date) &
                 (cat_df['horizon'] == st.session_state.overview_cat_horizon)
             ].copy()
+
+            # Most likely category
+            max_idx = plot_df['value'].idxmax()
+            max_cat = format_category(plot_df.loc[max_idx, 'output_type_id'])
+            max_prob = plot_df.loc[max_idx, 'value']
+            cat_color = CATEGORY_COLORS.get(max_cat, 'black')
+            if max_cat == 'Stable':
+                cat_color = 'dimgray'
+            
+
+            st.markdown(
+                    f"Most likely trend: <b style='color: {cat_color};'>{max_cat}</b> "
+                    f"with <b>{max_prob:.1%}</b> probability.",
+                    unsafe_allow_html=True
+                )
             
             if not plot_df.empty:
                 order = ['large_decrease', 'decrease', 'stable', 'increase', 'large_increase']
@@ -1554,19 +1568,6 @@ with tab_overview:
                 
                 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 
-                # Most likely category
-                max_idx = plot_df['value'].idxmax()
-                max_cat = format_category(plot_df.loc[max_idx, 'output_type_id'])
-                max_prob = plot_df.loc[max_idx, 'value']
-                cat_color = CATEGORY_COLORS.get(max_cat, 'black')
-                if max_cat == 'Stable':
-                    cat_color = 'dimgray'
-                
-                st.markdown(
-                    f"Most likely trend: <b style='color: {cat_color};'>{max_cat}</b> "
-                    f"with <b>{max_prob:.1%}</b> probability.",
-                    unsafe_allow_html=True
-                )
             else:
                 st.warning("No categorical data available for this selection.")
             
