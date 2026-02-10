@@ -1536,6 +1536,8 @@ with tab_overview:
                     unsafe_allow_html=True
                 )
             
+            st.markdown('<div style="margin-top: -20px;">', unsafe_allow_html=True)
+            
             if not plot_df.empty:
                 order = ['large_decrease', 'decrease', 'stable', 'increase', 'large_increase']
                 labels = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Increase']
