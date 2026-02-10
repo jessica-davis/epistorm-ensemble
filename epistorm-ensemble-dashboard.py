@@ -1499,9 +1499,102 @@ with tab_overview:
                         
 
     with row2_col1:
-        with st.container(border=True):
-            st.markdown("### Box 3 Title")
-            # your content here
+        with st.container(border=True, height=550):
+            
+            cat_df = pd.read_parquet('./data/activity_level_ensemble.pq')
+            cat_df['reference_date'] = pd.to_datetime(cat_df['reference_date'])
+            cat_df = cat_df[cat_df['location'] == overview_location]
+            
+            # Use session state defaults
+            if 'overview_cat_date' not in st.session_state:
+                st.session_state.overview_cat_date = sorted(cat_df['reference_date'].unique(), reverse=True)[0]
+            if 'overview_cat_horizon' not in st.session_state:
+                st.session_state.overview_cat_horizon = 3
+            
+            # Filter data
+            plot_df = cat_df[
+                (cat_df['reference_date'] == st.session_state.overview_cat_date) &
+                (cat_df['horizon'] == st.session_state.overview_cat_horizon)
+            ].copy()
+
+            # Most likely activity level
+            max_idx = plot_df['value'].dropna().idxmax()
+            max_level = plot_df.loc[max_idx, 'output_type_id']
+            max_prob = plot_df.loc[max_idx, 'value']
+
+            
+            level_color = ACTIVITY_COLORS.get(max_level, 'black')
+
+            st.markdown(
+                f"#### Most likely activity level: <b style='color: {level_color};'>{max_level}</b> "
+                f" with <b>{max_prob:.1%}</b> probability.",
+                unsafe_allow_html=True
+            )
+
+            st.markdown('<div style="margin-top: -100px;">', unsafe_allow_html=True)
+
+            if not plot_df.empty:
+                order = ['Low', 'Moderate', 'High', 'Very High']
+                labels = ['Low', 'Moderate', 'High', 'Very High']
+                colors = ['#7DD4C8','#3CAAA0','#2B7A8F','#3D5A80']
+
+                plot_df = plot_df.set_index('output_type_id').reindex(order).reset_index()
+                plot_df['value'] = plot_df['value'].fillna(0)
+                fig = go.Figure()
+                fig.add_trace(go.Bar(
+                    y=labels,
+                    x=plot_df['value'],
+                    orientation='h',
+                    marker_color=colors,
+                    hovertemplate='%{y}: %{x:.1%}<extra></extra>'
+                ))
+                
+                fig.update_layout(
+                    xaxis_title="Probability",
+                    yaxis_title="",
+                    height=350,
+                    margin=dict(l=120, r=20, t=20, b=50),
+                    xaxis=dict(tickformat='.0%', range=[0, 1], showgrid=False),
+                    yaxis=dict(
+                        categoryorder='array',
+                        categoryarray=list(reversed(labels)),
+                        showgrid=False
+                    ),
+                    showlegend=False
+                )
+                
+                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+                
+            else:
+                st.warning("No categorical data available for this selection.")
+            
+            # Dropdowns below the plot
+            sel_col1, sel_col2, _ = st.columns([1, 1, 1])
+            cat_dates = sorted(cat_df['reference_date'].unique(), reverse=True)
+            
+            with sel_col1:
+                st.selectbox(
+                    "Forecast Date",
+                    cat_dates,
+                    format_func=lambda x: pd.Timestamp(x).strftime('%Y-%m-%d'),
+                    index=cat_dates.index(st.session_state.overview_cat_date) if st.session_state.overview_cat_date in cat_dates else 0,
+                    key="overview_cat_date"
+                )
+            
+            with sel_col2:
+                horizon_labels = {
+                    0: "1 week ahead",
+                    1: "2 weeks ahead",
+                    2: "3 weeks ahead",
+                    3: "4 weeks ahead"
+                }
+                st.selectbox(
+                    "Horizon",
+                    [0, 1, 2, 3],
+                    index=[0, 1, 2, 3].index(st.session_state.overview_cat_horizon),
+                    format_func=lambda x: horizon_labels[x],
+                    key="overview_cat_horizon"
+                )
 
 
 
@@ -1604,6 +1697,8 @@ with tab_overview:
                     format_func=lambda x: horizon_labels[x],
                     key="overview_cat_horizon"
                 )
+
+
 st.divider()
 st.markdown(
     f"""
