@@ -1500,12 +1500,92 @@ with tab_overview:
             # your content here
 
     with row2_col2:
-        with st.container(border=True):
-            st.markdown("### Box 4 Title")
-            # your content here
-
-
-
+        with st.container(border=True, height=600):
+            st.markdown("### Categorical Forecast")
+            
+            sel_col1, sel_col2, _ = st.columns([1, 1, 1])
+            
+            cat_df = pd.read_parquet('./data/categorical_ensemble.pq')
+            cat_df['reference_date'] = pd.to_datetime(cat_df['reference_date'])
+            
+            # Filter to selected location
+            cat_df = cat_df[cat_df['location'] == overview_location]
+            
+            with sel_col1:
+                cat_dates = sorted(cat_df['reference_date'].unique(), reverse=True)
+                selected_cat_date = st.selectbox(
+                    "Reference Date",
+                    cat_dates,
+                    format_func=lambda x: pd.Timestamp(x).strftime('%Y-%m-%d'),
+                    index=0,
+                    key="overview_cat_date"
+                )
+            
+            with sel_col2:
+                selected_cat_horizon = st.selectbox(
+                    "Horizon",
+                    [0, 1, 2, 3],
+                    index=3,
+                    key="overview_cat_horizon"
+                )
+            
+            # Filter data
+            plot_df = cat_df[
+                (cat_df['reference_date'] == selected_cat_date) &
+                (cat_df['horizon'] == selected_cat_horizon)
+            ].copy()
+            
+            if not plot_df.empty:
+                order = ['large_decrease', 'decrease', 'stable', 'increase', 'large_increase']
+                labels = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Increase']
+                colors = ['#006d77', '#83c5be', '#e5e5e5', '#e29578', '#bc4749']
+                
+                plot_df = plot_df.set_index('output_type_id').reindex(order).reset_index()
+                
+                fig = go.Figure()
+                fig.add_trace(go.Bar(
+                    y=labels,
+                    x=plot_df['value'],
+                    orientation='h',
+                    marker_color=colors,
+                    hovertemplate='%{y}: %{x:.1%}<extra></extra>'
+                ))
+                
+                fig.update_layout(
+                    xaxis_title="Probability",
+                    yaxis_title="",
+                    height=350,
+                    margin=dict(l=120, r=20, t=20, b=50),
+                    xaxis=dict(
+                        tickformat='.0%',
+                        range=[0, 1],
+                        showgrid=False
+                    ),
+                    yaxis=dict(
+                        categoryorder='array',
+                        categoryarray=list(reversed(labels)),
+                        showgrid=False
+                    ),
+                    showlegend=False
+                )
+                
+                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+                
+                # Show most likely category
+                max_idx = plot_df['value'].idxmax()
+                max_cat = format_category(plot_df.loc[max_idx, 'output_type_id'])
+                max_prob = plot_df.loc[max_idx, 'value']
+                cat_color = CATEGORY_COLORS.get(max_cat, 'black')
+                if max_cat == 'Stable':
+                    cat_color = 'dimgray'
+                
+                st.markdown(
+                    f"Most likely trend: <b style='color: {cat_color};'>{max_cat}</b> "
+                    f"with <b>{max_prob:.1%}</b> probability.",
+                    unsafe_allow_html=True
+                )
+            else:
+                st.warning("No categorical data available for this selection.")
 
 
 st.divider()
