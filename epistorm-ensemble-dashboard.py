@@ -1499,40 +1499,27 @@ with tab_overview:
             st.markdown("### Box 3 Title")
             # your content here
 
+
+
+
     with row2_col2:
-        with st.container(border=True, height=600):
+        with st.container(border=True, height=400):
             st.markdown("### Categorical Forecast")
-            
-            sel_col1, sel_col2, _ = st.columns([1, 1, 1])
             
             cat_df = pd.read_parquet('./data/categorical_ensemble.pq')
             cat_df['reference_date'] = pd.to_datetime(cat_df['reference_date'])
-            
-            # Filter to selected location
             cat_df = cat_df[cat_df['location'] == overview_location]
             
-            with sel_col1:
-                cat_dates = sorted(cat_df['reference_date'].unique(), reverse=True)
-                selected_cat_date = st.selectbox(
-                    "Reference Date",
-                    cat_dates,
-                    format_func=lambda x: pd.Timestamp(x).strftime('%Y-%m-%d'),
-                    index=0,
-                    key="overview_cat_date"
-                )
-            
-            with sel_col2:
-                selected_cat_horizon = st.selectbox(
-                    "Horizon",
-                    [0, 1, 2, 3],
-                    index=3,
-                    key="overview_cat_horizon"
-                )
+            # Use session state defaults
+            if 'overview_cat_date' not in st.session_state:
+                st.session_state.overview_cat_date = sorted(cat_df['reference_date'].unique(), reverse=True)[0]
+            if 'overview_cat_horizon' not in st.session_state:
+                st.session_state.overview_cat_horizon = 3
             
             # Filter data
             plot_df = cat_df[
-                (cat_df['reference_date'] == selected_cat_date) &
-                (cat_df['horizon'] == selected_cat_horizon)
+                (cat_df['reference_date'] == st.session_state.overview_cat_date) &
+                (cat_df['horizon'] == st.session_state.overview_cat_horizon)
             ].copy()
             
             if not plot_df.empty:
@@ -1556,11 +1543,7 @@ with tab_overview:
                     yaxis_title="",
                     height=350,
                     margin=dict(l=120, r=20, t=20, b=50),
-                    xaxis=dict(
-                        tickformat='.0%',
-                        range=[0, 1],
-                        showgrid=False
-                    ),
+                    xaxis=dict(tickformat='.0%', range=[0, 1], showgrid=False),
                     yaxis=dict(
                         categoryorder='array',
                         categoryarray=list(reversed(labels)),
@@ -1571,7 +1554,7 @@ with tab_overview:
                 
                 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 
-                # Show most likely category
+                # Most likely category
                 max_idx = plot_df['value'].idxmax()
                 max_cat = format_category(plot_df.loc[max_idx, 'output_type_id'])
                 max_prob = plot_df.loc[max_idx, 'value']
@@ -1586,7 +1569,27 @@ with tab_overview:
                 )
             else:
                 st.warning("No categorical data available for this selection.")
-
+            
+            # Dropdowns below the plot
+            sel_col1, sel_col2, _ = st.columns([1, 1, 1])
+            cat_dates = sorted(cat_df['reference_date'].unique(), reverse=True)
+            
+            with sel_col1:
+                st.selectbox(
+                    "Reference Date",
+                    cat_dates,
+                    format_func=lambda x: pd.Timestamp(x).strftime('%Y-%m-%d'),
+                    index=cat_dates.index(st.session_state.overview_cat_date) if st.session_state.overview_cat_date in cat_dates else 0,
+                    key="overview_cat_date"
+                )
+            
+            with sel_col2:
+                st.selectbox(
+                    "Horizon",
+                    [0, 1, 2, 3],
+                    index=[0, 1, 2, 3].index(st.session_state.overview_cat_horizon),
+                    key="overview_cat_horizon"
+                )
 
 st.divider()
 st.markdown(
