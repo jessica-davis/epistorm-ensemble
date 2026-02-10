@@ -51,7 +51,7 @@ st.markdown(
     padding-top: 3rem;
 }
         [data-testid="stVerticalBlock"] > div[data-testid="stContainer"] {
-            min-height: 600px;
+            min-height: 1200px;
         }
     </style>
     """,
