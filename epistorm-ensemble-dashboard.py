@@ -50,12 +50,6 @@ st.markdown(
         .block-container {
     padding-top: 3rem;
 }
-div[data-testid="stHorizontalBlock"] {
-    align-items: stretch;
-}
-div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] > div[data-testid="stContainer"] {
-    height: 100%;
-}
     </style>
     """,
     unsafe_allow_html=True,
@@ -1352,7 +1346,7 @@ with tab_overview:
 
     
     with row1_col1:
-        with st.container(border=True):
+        with st.container(border=True, height=600):
            # st.markdown("### Observed Hospitalizations")
 
             # Filter and plot
@@ -1478,7 +1472,7 @@ with tab_overview:
 
 
     with row1_col2:
-        with st.container(border=True): 
+        with st.container(border=True, height=600): 
             recent_date = obs_filtered[obs_filtered['date'] == obs_filtered['date'].max()] if not obs_filtered.empty else None
             value = recent_date['value'].iloc[0] if recent_date is not None else None
             threshold_dat = thresholds[ (thresholds['location'] == overview_location)].iloc[0]
