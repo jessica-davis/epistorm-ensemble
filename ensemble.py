@@ -589,3 +589,118 @@ def create_categorical_ensemble_quantile(df):
     ]]
     
     return results_df
+
+
+def create_activity_level_ensemble(quantile_ensemble_path='./data/quantile_ensemble.pq',
+                                    thresholds_path='./data/threshold_levels.csv',
+                                    output_path='./data/activity_level_ensemble.pq'):
+    """
+    Convert quantile ensemble forecasts into activity level probabilities
+    (Low, Moderate, High, Very High) using state-specific thresholds.
+    """
+    
+    df = pd.read_parquet(quantile_ensemble_path)
+    df['reference_date'] = pd.to_datetime(df['reference_date'])
+    df['target_end_date'] = pd.to_datetime(df['target_end_date'])
+    
+    # Only quantile rows
+    df = df[df['output_type'] == 'quantile'].copy()
+    df['output_type_id'] = df['output_type_id'].astype(float)
+    
+    thresholds = pd.read_csv(thresholds_path)
+    thresholds['location'] = thresholds['location'].astype(str).str.zfill(2)
+    
+    results = []
+    
+    combinations = df[['reference_date', 'horizon', 'location', 'target_end_date']].drop_duplicates()
+    
+    for _, row in combinations.iterrows():
+        reference_date = row['reference_date']
+        horizon = row['horizon']
+        loc = row['location']
+        target_end_date = row['target_end_date']
+        
+        try:
+            # Get quantile forecast for this combination
+            df_subset = df[
+                (df.reference_date == reference_date) &
+                (df.horizon == horizon) &
+                (df.location == loc)
+            ].sort_values(by='output_type_id')
+            
+            if len(df_subset) == 0:
+                continue
+            
+            # Get thresholds for this location
+            loc_thresh = thresholds[thresholds['location'] == loc]
+            if len(loc_thresh) == 0:
+                print(f"No thresholds for location {loc}, skipping.")
+                continue
+            
+            thresh_medium = loc_thresh['Medium'].values[0]
+            thresh_high = loc_thresh['High'].values[0]
+            thresh_very_high = loc_thresh['Very High'].values[0]
+            
+            # Build CDF from quantiles
+            quantiles = df_subset['output_type_id'].values
+            values = df_subset['value'].values
+            
+            cdf = interp1d(
+                values, quantiles,
+                kind='linear', bounds_error=False, fill_value=(0, 1)
+            )
+            
+            # Calculate probabilities for each activity level
+            p_below_medium = float(cdf(thresh_medium))
+            p_below_high = float(cdf(thresh_high))
+            p_below_very_high = float(cdf(thresh_very_high))
+            
+            probs = {
+                'Low': p_below_medium,
+                'Moderate': p_below_high - p_below_medium,
+                'High': p_below_very_high - p_below_high,
+                'Very High': 1.0 - p_below_very_high
+            }
+            
+            # Clip any small negative values from interpolation
+            probs = {k: max(0.0, v) for k, v in probs.items()}
+            
+            # Renormalize to sum to 1
+            total = sum(probs.values())
+            if total > 0:
+                probs = {k: v / total for k, v in probs.items()}
+            
+            # Verify
+            if abs(sum(probs.values()) - 1.0) > 0.01:
+                print(f"WARNING: Probabilities don't sum to 1 for {loc}, horizon {horizon}, date {reference_date}")
+            
+            for level, probability in probs.items():
+                results.append({
+                    'reference_date': reference_date,
+                    'target_end_date': target_end_date,
+                    'horizon': horizon,
+                    'location': loc,
+                    'target': 'wk flu hosp activity level',
+                    'output_type': 'pmf',
+                    'output_type_id': level,
+                    'value': probability,
+                })
+                
+        except Exception as e:
+            print(f"Error processing {loc}, horizon {horizon}, date {reference_date}: {e}")
+            continue
+    
+    results_df = pd.DataFrame(results)
+    
+    results_df = results_df[[
+        'reference_date', 'target_end_date', 'horizon', 'location',
+        'target', 'output_type', 'output_type_id', 'value'
+    ]]
+    
+    results_df.to_parquet(output_path, index=False)
+    print(f"Saved activity level ensemble to {output_path}")
+    print(f"Shape: {results_df.shape}")
+    print(f"Locations: {results_df.location.nunique()}")
+    print(f"Reference dates: {results_df.reference_date.nunique()}")
+    
+    return results_df

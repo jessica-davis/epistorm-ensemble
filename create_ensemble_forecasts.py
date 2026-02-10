@@ -5,7 +5,7 @@ Runs as part of GitHub Actions workflow.
 
 import pandas as pd
 import numpy as np
-from ensemble import create_ensemble_method1, create_categorical_ensemble_quantile
+from ensemble import create_ensemble_method1, create_categorical_ensemble_quantile, create_activity_level_ensemble
 from pathlib import Path
 import sys
 
@@ -135,6 +135,123 @@ def main():
         categorical_ensemble.to_parquet(categorical_output_path, index=False)
         print(f"   ✓ Saved to {categorical_output_path}")
         
+
+
+        # =====================================================================
+        # PART 3: Create Activity Level Ensemble
+        # =====================================================================
+        print("\n" + "=" * 60)
+        print("PART 3: Creating Activity Level Ensemble")
+        print("=" * 60)
+        
+        # Load thresholds
+        print("\n   Loading activity level thresholds...")
+        thresholds_path = Path('data/threshold_levels.csv')
+        
+        if not thresholds_path.exists():
+            print(f"ERROR: Thresholds file not found at {thresholds_path}")
+            sys.exit(1)
+        
+        thresholds = pd.read_csv(thresholds_path)
+        thresholds['location'] = thresholds['location'].astype(str).str.zfill(2)
+        print(f"   Loaded thresholds for {len(thresholds)} locations")
+        print(f"   Threshold columns: {[c for c in thresholds.columns if c != 'location']}")
+        
+        # Create activity level ensemble from quantile ensemble
+        print("\n   Creating activity level ensemble from quantile ensemble...")
+        print("   This may take a few minutes...")
+        
+        activity_level_ensemble = create_activity_level_ensemble(
+            quantile_ensemble_path='data/quantile_ensemble.pq',
+            thresholds_path='data/threshold_levels.csv'
+        )
+        
+        if len(activity_level_ensemble) == 0:
+            print("WARNING: No activity level forecasts generated!")
+            sys.exit(1)
+        
+        print(f"   ✓ Generated {len(activity_level_ensemble):,} activity level forecast rows")
+        
+        # Validate activity level output
+        print("\n   Validating activity level output...")
+        required_cols = [
+            'reference_date', 'target_end_date', 'horizon', 'location',
+            'target', 'output_type', 'output_type_id', 'value'
+        ]
+        missing_cols = [col for col in required_cols if col not in activity_level_ensemble.columns]
+        
+        if missing_cols:
+            print(f"ERROR: Missing required columns: {missing_cols}")
+            sys.exit(1)
+        
+        # Check for valid probabilities
+        print("\n   Checking probability distributions...")
+        prob_check = activity_level_ensemble.groupby(
+            ['reference_date', 'horizon', 'location']
+        )['value'].sum()
+        
+        invalid_probs = prob_check[(prob_check < 0.99) | (prob_check > 1.01)]
+        if len(invalid_probs) > 0:
+            print(f"   WARNING: {len(invalid_probs)} groups have probabilities not summing to 1")
+            print(invalid_probs.head())
+        else:
+            print("   ✓ All probability distributions sum to 1")
+        
+        # Check for negative probabilities
+        neg_probs = activity_level_ensemble[activity_level_ensemble['value'] < 0]
+        if len(neg_probs) > 0:
+            print(f"   WARNING: {len(neg_probs)} rows have negative probabilities")
+        else:
+            print("   ✓ No negative probabilities")
+        
+        # Check all expected categories are present
+        expected_categories = {'Low', 'Moderate', 'High', 'Very High'}
+        actual_categories = set(activity_level_ensemble['output_type_id'].unique())
+        missing_categories = expected_categories - actual_categories
+        if missing_categories:
+            print(f"   WARNING: Missing categories: {missing_categories}")
+        else:
+            print(f"   ✓ All expected categories present: {sorted(actual_categories)}")
+        
+        # Check location coverage
+        ensemble_locations = set(activity_level_ensemble['location'].unique())
+        threshold_locations = set(thresholds['location'].unique())
+        missing_locations = threshold_locations - ensemble_locations
+        if missing_locations:
+            print(f"   WARNING: {len(missing_locations)} locations in thresholds but not in output: {sorted(missing_locations)}")
+        else:
+            print(f"   ✓ All {len(ensemble_locations)} threshold locations have forecasts")
+        
+        # Save activity level results
+        print("\n   Saving activity level ensemble...")
+        activity_output_path = Path('data/activity_level_ensemble.pq')
+        activity_level_ensemble.to_parquet(activity_output_path, index=False)
+        print(f"   ✓ Saved to {activity_output_path}")
+        
+        # Print summary
+        print("\nActivity Level Ensemble by Reference Date:")
+        activity_summary = activity_level_ensemble.groupby('reference_date').agg({
+            'location': 'nunique',
+            'horizon': 'nunique',
+            'output_type_id': 'nunique'
+        })
+        activity_summary.columns = ['Locations', 'Horizons', 'Categories']
+        print(activity_summary)
+        
+        # Print sample probabilities for spot-checking
+        print("\n   Sample forecasts (US, latest date, horizon 0):")
+        sample = activity_level_ensemble[
+            (activity_level_ensemble['location'] == 'US') &
+            (activity_level_ensemble['reference_date'] == activity_level_ensemble['reference_date'].max()) &
+            (activity_level_ensemble['horizon'] == 0)
+        ][['output_type_id', 'value']]
+        if not sample.empty:
+            for _, row in sample.iterrows():
+                print(f"      {row['output_type_id']:>12s}: {row['value']:.4f}")
+        
+        print("\n✓ Activity level ensemble created successfully!")
+
+
         # =====================================================================
         # PART 3: Combine Everything
         # =====================================================================
@@ -150,11 +267,15 @@ def main():
             quantile_ensemble = quantile_ensemble.rename(columns={'model': 'Model'})
         
         combined_ensemble = pd.concat([quantile_ensemble, categorical_ensemble], ignore_index=True)
+        combined_all = pd.concat([combined_ensemble, activity_level_ensemble], ignore_index=True)
+        print(f"   ✓ Combined ensemble (with activity levels) has {len(combined_all):,} total rows")
         
         print(f"   ✓ Combined ensemble has {len(combined_ensemble):,} total rows")
         print(f"      - Quantile forecasts: {len(quantile_ensemble):,}")
         print(f"      - Categorical forecasts: {len(categorical_ensemble):,}")
+        print(f"      - Activity level forecasts: {len(activity_level_ensemble):,}")
         
+       
         # Save combined
         combined_path = Path('data/ensemble_forecasts.pq')
         combined_ensemble.to_parquet(combined_path, index=False)
@@ -185,6 +306,8 @@ def main():
         
         print("\n✓ All ensemble forecasts created successfully!")
         
+
+
     except Exception as e:
         print(f"\n✗ ERROR: {str(e)}")
         import traceback
