@@ -50,9 +50,12 @@ st.markdown(
         .block-container {
     padding-top: 3rem;
 }
-        [data-testid="stVerticalBlock"] > div[data-testid="stContainer"] {
-            min-height: 1200px;
-        }
+div[data-testid="stHorizontalBlock"] {
+    align-items: stretch;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] > div[data-testid="stContainer"] {
+    height: 100%;
+}
     </style>
     """,
     unsafe_allow_html=True,
