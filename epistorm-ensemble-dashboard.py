@@ -10,7 +10,7 @@ import numpy as np
 import os
 import base64
 from pathlib import Path
-from ensemble import create_ensemble_method1, create_ensemble_method2, create_categorical_ensemble, create_categorical_ensemble_quantile
+from src.ensemble import create_ensemble_method1, create_ensemble_method2, create_categorical_ensemble, create_categorical_ensemble_quantile
 
 # Page config
 #st.set_page_config(page_title="Epistorm Influenza Forecasts", layout="wide")
@@ -46,14 +46,42 @@ st.markdown(
         [data-testid="collapsedControl"] { display: none; }
         .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
             font-size: 1.2rem;
-            font-weight: 600;}
+            font-weight: 600;
+        }
         .block-container {
-    padding-top: 3rem;
-}
-    [data-testid="stContainer"] .stMarkdown, 
-    [data-testid="stContainer"] .stPlotlyChart {
-    margin-bottom: -15px;
-}
+            padding-top: 3rem;
+        }
+
+        /* Tooltip styles */
+        .info-tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        .info-tooltip .info-tooltip-text {
+            visibility: hidden;
+            width: 500px;
+            background-color: #ffffff;
+            color: #333;
+            text-align: left;
+            border-radius: 8px;
+            padding: 16px 20px;
+            position: absolute;
+            z-index: 100;
+            bottom: 130%;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.5;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border: 1px solid #e0e0e0;
+        }
+        .info-tooltip:hover .info-tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
     """,
     unsafe_allow_html=True,
@@ -112,7 +140,7 @@ DATA_DIR.mkdir(exist_ok=True)
 def load_locations():
     """Load locations from local file or fallback to original source"""
     try:
-        locations_df = pd.read_csv('locations.csv')
+        locations_df = pd.read_csv('data/locations.csv')
         return locations_df
     except Exception as e:
         st.error(f"Error loading locations: {e}")
@@ -274,12 +302,8 @@ def load_coverage_data():
         st.error(f"Error loading coverage data: {e}")
         return None
 
+@st.cache_data(ttl=3600)
 def create_ensemble_forecasts(forecast_data):
-   # ensemble1 = create_ensemble_method1(forecast_data)
-   # ensemble1['model'] = 'Median Epistorm Ensemble'
-   # categorical_ensemble = create_categorical_ensemble_quantile(ensemble1[ensemble1.horizon>=0])
-   # categorical_ensemble['model'] = 'Median Epistorm Ensemble'
-
     ensemble1 = pd.read_parquet('./data/quantile_ensemble.pq')
     categorical_ensemble = pd.read_parquet('./data/categorical_ensemble.pq')
 
@@ -287,6 +311,18 @@ def create_ensemble_forecasts(forecast_data):
     categorical_ensemble['model'] = 'Median Epistorm Ensemble'
 
     return pd.concat([ensemble1, categorical_ensemble], ignore_index=True)
+
+@st.cache_data(ttl=3600)
+def load_activity_level_ensemble():
+    df = pd.read_parquet('./data/activity_level_ensemble.pq')
+    df['reference_date'] = pd.to_datetime(df['reference_date'])
+    return df
+
+@st.cache_data(ttl=3600)
+def load_categorical_ensemble():
+    df = pd.read_parquet('./data/categorical_ensemble.pq')
+    df['reference_date'] = pd.to_datetime(df['reference_date'])
+    return df
 
 def hex_to_rgba(hex_color, alpha):
     hex_color = hex_color.lstrip('#')
@@ -560,12 +596,6 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
         (forecast_data['model'].isin(selected_models))
     ].copy()
 
-    # ADD THIS DEBUG HERE:
-    print(f"DEBUG plot_forecasts:")
-    print(f"  forecast_filtered shape: {forecast_filtered.shape}")
-    print(f"  selected_models: {selected_models}")
-    print(f"  models in filtered data: {forecast_filtered['model'].unique()}")
-    
 
     max_forecast_date = end_date
     for model in selected_models:
@@ -919,35 +949,8 @@ with tab_forecasts:
 
             st.markdown(
             """
-            <style>
-            .tooltip {
-                position: relative;
-                display: inline-block;
-            }
-            .tooltip .tooltiptext {
-                visibility: hidden;
-                width: 650px;
-                background-color: #555;
-                color: #fff;
-                text-align: center;
-                border-radius: 6px;
-                padding: 10px;
-                position: absolute;
-                z-index: 1;
-                bottom: 125%;
-                left: 50%;
-                margin-left: -150px;
-                opacity: 0;
-                transition: opacity 0.3s;
-                font-size: 18px;
-            }
-            .tooltip:hover .tooltiptext {
-                visibility: visible;
-                opacity: 1;
-            }
-            </style>
-            <h3 class="tooltip" style="color: #518fb0;">Categorical Forecasts: Weekly Hospitalization Rate Change
-                <span class="tooltiptext">For the categorical forecasts, teams predict the trend of weekly hospitalization rates over 1-4 weeks, with predictions submitted as probabilities. These plots show the probability of each trend category (increasing, decreasing, or stable) for each week ahead. The ensemble is computed by taking the mean of the individual model predictions and ensuring the probabilities sum to 1.</span>
+            <h3 class="info-tooltip" style="color: #518fb0;">Categorical Forecasts: Weekly Hospitalization Rate Change
+                <span class="info-tooltip-text">For the categorical forecasts, teams predict the trend of weekly hospitalization rates over 1-4 weeks, with predictions submitted as probabilities. These plots show the probability of each trend category (increasing, decreasing, or stable) for each week ahead. The ensemble is computed by taking the mean of the individual model predictions and ensuring the probabilities sum to 1.</span>
             </h3>
             """,
             unsafe_allow_html=True
@@ -1323,13 +1326,15 @@ with tab_evaluation:
 
 
 with tab_overview:
-    if 'overview_ref_date' not in st.session_state:
-        cat_dates = sorted(forecast_data['reference_date'].unique(), reverse=True)
-        st.session_state.overview_ref_date = cat_dates[0]
-    if 'overview_horizon' not in st.session_state:
-        st.session_state.overview_horizon = 3
-    
-    sel_col, _ = st.columns([1, 2])  # 1/3 width for selector
+    ACTIVITY_COLORS = {
+        'Low': '#7DD4C8',
+        'Moderate': '#3CAAA0',
+        'High': '#2B7A8F',
+        'Very High': '#3D5A80'
+    }
+
+    # -- Location selector at top --
+    sel_col, _ = st.columns([1, 2])
     with sel_col:
         if locations_df is not None:
             state_locations_df = locations_df[locations_df['location'] != 'US'].sort_values('location_name')
@@ -1348,33 +1353,21 @@ with tab_overview:
             overview_location = "US"
             overview_location_name = "United States"
 
-        
+    # -- Prepare data --
+    obs_overview = observed_data[observed_data['location'] == overview_location].sort_values('date')
+    loc_thresholds = thresholds[thresholds['location'] == overview_location]
+    loc_text = 'the United States' if overview_location == 'US' else overview_location_name
 
-    row1_col1, row1_col2 = st.columns([4,2], gap="large")
-    row2_col1, row2_col2 = st.columns(2, gap="large")
+    # -- Row 1: Observed chart (left) + Current status (right) --
+    row1_col1, row1_col2 = st.columns([3, 2], gap="medium")
 
-    
     with row1_col1:
-        with st.container(border=True, height=600):
-           # st.markdown("### Observed Hospitalizations")
-
-            # Filter and plot
-            obs_filtered = observed_data[ (observed_data['location'] == overview_location)
-            ].sort_values('date')
-
-
-            loc_thresholds = thresholds[ (thresholds['location'] == overview_location)]
-
-
-            if 'overview_date_range' not in st.session_state:
-                st.session_state.overview_date_range = "Last 3 months"
-
-
+        with st.container(border=True):
+            obs_filtered = obs_overview.copy()
             if not obs_filtered.empty:
-
                 max_date = obs_filtered['date'].max()
-                date_range_option = st.session_state.overview_date_range
-                
+                date_range_option = st.session_state.get("overview_date_range", "Last 3 months")
+
                 if date_range_option == "Last 3 months":
                     obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(months=3)]
                 elif date_range_option == "Last 6 months":
@@ -1384,29 +1377,18 @@ with tab_overview:
                 elif date_range_option == "Last 2 years":
                     obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(years=2)]
 
-
-
                 fig = go.Figure()
+                y_max = obs_filtered['value'].max() * 1.1
 
                 if not loc_thresholds.empty:
                     thresh = loc_thresholds.iloc[0]
-                    
                     activity_levels = [
                         ('Low', 0, thresh['Medium']),
                         ('Moderate', thresh['Medium'], thresh['High']),
                         ('High', thresh['High'], thresh['Very High']),
                         ('Very High', thresh['Very High'], thresh['Very High'] * 5),
                     ]
-
-                    ACTIVITY_COLORS = {
-                        'Low': '#7DD4C8',
-                        'Moderate': '#3CAAA0',
-                        'High': '#2B7A8F',
-                        'Very High': '#3D5A80'
-                    }
- 
-                    y_max = obs_filtered['value'].max() * 1.1
-
+                    x_left = obs_filtered['date'].min()
                     for level, lower, upper in activity_levels:
                         fig.add_hrect(
                             y0=lower, y1=upper,
@@ -1414,233 +1396,174 @@ with tab_overview:
                             line_width=0,
                             opacity=0.7,
                             layer="below"
-                           ) 
-
-                    fig.update_layout(yaxis=dict(range=[0, y_max]))
-
+                        )
+                        # Label in top-left of each band
+                        label_y = min(upper, y_max) - (min(upper, y_max) - lower) * 0.15
+                        if lower < y_max:
+                            fig.add_annotation(
+                                x=x_left,
+                                y=label_y,
+                                text=f"<b>{level}</b>",
+                                showarrow=False,
+                                font=dict(color="rgba(255,255,255,0.7)", size=12),
+                                xanchor="left",
+                                yanchor="top",
+                            )
 
                 fig.add_trace(go.Scatter(
                     x=obs_filtered['date'],
                     y=obs_filtered['value'],
                     mode='lines+markers',
-                    line=dict(color="#000000", width=2),
-                    marker=dict(size=5),
-                    hovertemplate='%{x|%b %d, %Y}<br>Value: %{y:,.0f}<extra></extra>'
+                    line=dict(color="white", width=2.5),
+                    marker=dict(size=5, color="white"),
+                    hovertemplate='%{x|%b %d, %Y}<br>Hospitalizations: %{y:,.0f}<extra></extra>'
                 ))
                 fig.update_layout(
-                    xaxis_title="Date",
+                    xaxis_title="",
                     yaxis_title="Weekly Flu Hospitalizations",
-                    height=450,
-                    margin=dict(l=50, r=20, t=20, b=2),
+                    height=480,
+                    margin=dict(l=50, r=20, t=20, b=10),
                     showlegend=False,
-                    yaxis=dict(range=[0, y_max], showgrid=False)
+                    yaxis=dict(range=[0, y_max], showgrid=False),
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
                 )
                 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-
                 legend_html = """
-                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: -10px; align-items: center;">
+                <div style="display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
                     <span style="font-size: 12px; color: gray; font-weight: 600;">Activity Level:</span>
                     <span style="display: flex; align-items: center; gap: 4px;">
-                        <span style="width: 12px; height: 12px; background: #7DD4C8; display: inline-block;"></span>
+                        <span style="width: 12px; height: 12px; background: #7DD4C8; display: inline-block; border-radius: 2px;"></span>
                         <span style="font-size: 12px; color: gray;">Low</span>
                     </span>
                     <span style="display: flex; align-items: center; gap: 4px;">
-                        <span style="width: 12px; height: 12px; background: #3CAAA0; display: inline-block;"></span>
+                        <span style="width: 12px; height: 12px; background: #3CAAA0; display: inline-block; border-radius: 2px;"></span>
                         <span style="font-size: 12px; color: gray;">Moderate</span>
                     </span>
                     <span style="display: flex; align-items: center; gap: 4px;">
-                        <span style="width: 12px; height: 12px; background: #2B7A8F; display: inline-block;"></span>
+                        <span style="width: 12px; height: 12px; background: #2B7A8F; display: inline-block; border-radius: 2px;"></span>
                         <span style="font-size: 12px; color: gray;">High</span>
                     </span>
                     <span style="display: flex; align-items: center; gap: 4px;">
-                        <span style="width: 12px; height: 12px; background: #3D5A80; display: inline-block;"></span>
+                        <span style="width: 12px; height: 12px; background: #3D5A80; display: inline-block; border-radius: 2px;"></span>
                         <span style="font-size: 12px; color: gray;">Very High</span>
                     </span>
                 </div>
                 """
                 st.markdown(legend_html, unsafe_allow_html=True)
 
+                # Date range toggle buttons
+                date_range_options = ["3M", "6M", "1Y", "2Y", "All"]
+                date_range_map = {
+                    "3M": "Last 3 months",
+                    "6M": "Last 6 months",
+                    "1Y": "Last year",
+                    "2Y": "Last 2 years",
+                    "All": "All data"
+                }
+                current_range = st.session_state.get("overview_date_range", "Last 3 months")
+                # Reverse lookup for active button
+                active_key = next((k for k, v in date_range_map.items() if v == current_range), "3M")
+
+                btn_cols = st.columns(len(date_range_options))
+                for i, label in enumerate(date_range_options):
+                    with btn_cols[i]:
+                        btn_type = "primary" if label == active_key else "secondary"
+                        if st.button(label, key=f"date_range_btn_{label}", use_container_width=True, type=btn_type):
+                            st.session_state.overview_date_range = date_range_map[label]
+                            st.rerun()
             else:
                 st.warning("No observed data available for this location.")
 
-
-
-            # Date range selector below the plot
-            
-            range_col, _ = st.columns([1, 2])
-            with range_col:
-                st.selectbox(
-                    "Date Range",
-                    ["Last 3 months", "Last 6 months", "Last year", "Last 2 years", "All data"],
-                    index=["Last 3 months", "Last 6 months", "Last year", "Last 2 years", "All data"].index(st.session_state.overview_date_range),
-                    key="overview_date_range"
-                )
-            
-  
-
-
     with row1_col2:
-        with st.container(border=True, height=600): 
-            recent_date = obs_filtered[obs_filtered['date'] == obs_filtered['date'].max()] if not obs_filtered.empty else None
-            value = recent_date['value'].iloc[0] if recent_date is not None else None
-            threshold_dat = thresholds[ (thresholds['location'] == overview_location)].iloc[0]
+        with st.container(border=True):
+            if not obs_overview.empty and not loc_thresholds.empty:
+                recent_row = obs_overview[obs_overview['date'] == obs_overview['date'].max()]
+                current_value = recent_row['value'].iloc[0] if not recent_row.empty else 0
+                latest_date = obs_overview['date'].max()
+                thresh = loc_thresholds.iloc[0]
 
-            if value >= threshold_dat['Very High']:
-                current_threshold = 'Very High'
-            elif value >= threshold_dat['High']:
-                current_threshold = 'High'
-            elif value >= threshold_dat['Medium']:
-                current_threshold = 'Moderate'
-            else:
-                current_threshold = 'Low'
+                if current_value >= thresh['Very High']:
+                    current_level = 'Very High'
+                elif current_value >= thresh['High']:
+                    current_level = 'High'
+                elif current_value >= thresh['Medium']:
+                    current_level = 'Moderate'
+                else:
+                    current_level = 'Low'
 
-            loc_text = 'the United States' if overview_location=='US' else overview_location_name
-            threshold_color = ACTIVITY_COLORS.get(current_threshold, 'black')
-            heading = f"The flu activity level in {loc_text} is currently " f"<b style='color: {threshold_color};'>{current_threshold}</b> " + \
-                  f"as of {obs_filtered['date'].max().strftime('%B %d, %Y')}."
+                level_color = ACTIVITY_COLORS.get(current_level, 'black')
 
-            st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
-                        
-
-    with row2_col1:
-        with st.container(border=True, height=500):
-            
-            cat_df = pd.read_parquet('./data/activity_level_ensemble.pq')
-            cat_df['reference_date'] = pd.to_datetime(cat_df['reference_date'])
-            cat_df = cat_df[cat_df['location'] == overview_location]
-            
-            
-            # Filter data
-            plot_df = cat_df[
-                (cat_df['reference_date'] == st.session_state.overview_ref_date) &
-                (cat_df['horizon'] == st.session_state.overview_horizon)
-            ].copy()
-
-            # Most likely activity level
-            max_idx = plot_df['value'].dropna().idxmax()
-            max_level = plot_df.loc[max_idx, 'output_type_id']
-            max_prob = plot_df.loc[max_idx, 'value']
-
-            
-            level_color = ACTIVITY_COLORS.get(max_level, 'black')
-
-            st.markdown(
-                f"#### Most likely activity level: <b style='color: {level_color};'>{max_level}</b> "
-                f" with <b>{max_prob:.1%}</b> probability.",
-                unsafe_allow_html=True
-            )
-
-            st.markdown('<div style="margin-top: -100px;">', unsafe_allow_html=True)
-
-            if not plot_df.empty:
-                order = ['Low', 'Moderate', 'High', 'Very High']
-                labels = ['Low', 'Moderate', 'High', 'Very High']
-                colors = ['#7DD4C8','#3CAAA0','#2B7A8F','#3D5A80']
-
-                plot_df = plot_df.set_index('output_type_id').reindex(order).reset_index()
-                plot_df['value'] = plot_df['value'].fillna(0)
-                fig = go.Figure()
-                fig.add_trace(go.Bar(
-                    y=labels,
-                    x=plot_df['value'],
-                    orientation='h',
-                    marker_color=colors,
-                    hovertemplate='%{y}: %{x:.1%}<extra></extra>'
-                ))
-                
-                fig.update_layout(
-                    xaxis_title="Probability",
-                    yaxis_title="",
-                    height=350,
-                    margin=dict(l=120, r=20, t=20, b=50),
-                    xaxis=dict(tickformat='.0%', range=[0, 1], showgrid=False),
-                    yaxis=dict(
-                        categoryorder='array',
-                        categoryarray=list(reversed(labels)),
-                        showgrid=False
-                    ),
-                    showlegend=False
-                )
-                
-                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-                
-            else:
-                st.warning("No categorical data available for this selection.")
-
-
-
-    with row2_col2:
-        with st.container(border=True, height=500):
-            
-            cat_df = pd.read_parquet('./data/categorical_ensemble.pq')
-            cat_df['reference_date'] = pd.to_datetime(cat_df['reference_date'])
-            cat_df = cat_df[cat_df['location'] == overview_location]
-            
-            # Filter data
-            plot_df = cat_df[
-                (cat_df['reference_date'] == st.session_state.overview_ref_date) &
-                (cat_df['horizon'] == st.session_state.overview_horizon)
-            ].copy()
-
-
-            # Most likely category
-            max_idx = plot_df['value'].dropna().idxmax()
-            max_cat = format_category(plot_df.loc[max_idx, 'output_type_id'])
-            max_prob = plot_df.loc[max_idx, 'value']
-            cat_color = CATEGORY_COLORS.get(max_cat, 'black')
-            if max_cat == 'Stable':
-                cat_color = 'dimgray'
-            
-
-            st.markdown(
-                    f"#### Most likely trend: <b style='color: {cat_color};'>{max_cat}</b> "
-                    f" with <b>{max_prob:.1%}</b> probability.",
+                st.markdown(
+                    f"<p style='font-size: 20px; line-height: 1.6;'>"
+                    f"The flu activity level in {loc_text} is currently "
+                    f"<b style='color: {level_color};'>{current_level}</b> "
+                    f"as of {latest_date.strftime('%B %d, %Y')}.</p>",
                     unsafe_allow_html=True
                 )
-            
-            st.markdown('<div style="margin-top: -100px;">', unsafe_allow_html=True)
-            
-            if not plot_df.empty:
-                order = ['large_decrease', 'decrease', 'stable', 'increase', 'large_increase']
-                labels = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Increase']
-                colors = ['#006d77', '#83c5be', '#e5e5e5', '#e29578', '#bc4749']
-                
-                plot_df = plot_df.set_index('output_type_id').reindex(order).reset_index()
 
-
-                
-                fig = go.Figure()
-                fig.add_trace(go.Bar(
-                    y=labels,
-                    x=plot_df['value'],
-                    orientation='h',
-                    marker_color=colors,
-                    hovertemplate='%{y}: %{x:.1%}<extra></extra>'
-                ))
-                
-                fig.update_layout(
-                    xaxis_title="Probability",
-                    yaxis_title="",
-                    height=350,
-                    margin=dict(l=120, r=20, t=20, b=50),
-                    xaxis=dict(tickformat='.0%', range=[0, 1], showgrid=False),
-                    yaxis=dict(
-                        categoryorder='array',
-                        categoryarray=list(reversed(labels)),
-                        showgrid=False
-                    ),
-                    showlegend=False
+                st.markdown(
+                    f"<p style='font-size: 18px; line-height: 1.5;'>"
+                    f"There were <b>{int(current_value):,}</b> influenza hospital admissions "
+                    f"reported for the week ending {latest_date.strftime('%B %d, %Y')}.</p>",
+                    unsafe_allow_html=True
                 )
-                
-                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-                
-            else:
-                st.warning("No categorical data available for this selection.")
-            
-            
 
-    ctrl_col1, ctrl_col2, _ = st.columns([1, 1, 3])
+                if len(obs_overview) >= 2:
+                    prev_value = obs_overview.iloc[-2]['value']
+                    prev_date = obs_overview.iloc[-2]['date']
+                    change = int(current_value - prev_value)
+                    pct_change = ((current_value - prev_value) / prev_value * 100) if prev_value > 0 else 0
+                    if change > 0:
+                        direction = "an increase"
+                        change_color = "#bc4749"
+                    elif change < 0:
+                        direction = "a decrease"
+                        change_color = "#006d77"
+                    else:
+                        direction = "no change"
+                        change_color = "gray"
+
+                    st.markdown(
+                        f"<p style='font-size: 18px; line-height: 1.5;'>"
+                        f"This is <b style='color: {change_color};'>{direction} of {abs(change):,}</b> "
+                        f"({abs(pct_change):.1f}%) compared to the week ending "
+                        f"{prev_date.strftime('%B %d, %Y')}.</p>",
+                        unsafe_allow_html=True
+                    )
+
+                # Ensemble forecast summary
+                max_ref_date = forecast_data['reference_date'].max()
+                ensemble_overview = forecast_data[
+                    (forecast_data['model'] == 'Median Epistorm Ensemble') &
+                    (forecast_data['location'] == overview_location) &
+                    (forecast_data['reference_date'] == max_ref_date) &
+                    (forecast_data['horizon'] == 3) &
+                    (forecast_data['output_type'] == 'quantile')
+                ].copy()
+                if not ensemble_overview.empty:
+                    ensemble_overview['output_type_id'] = ensemble_overview['output_type_id'].astype(float)
+                    median_val = ensemble_overview[ensemble_overview['output_type_id'] == 0.5]['value'].values
+                    lower_val = ensemble_overview[ensemble_overview['output_type_id'] == 0.025]['value'].values
+                    upper_val = ensemble_overview[ensemble_overview['output_type_id'] == 0.975]['value'].values
+                    if len(median_val) > 0 and len(lower_val) > 0 and len(upper_val) > 0:
+                        ref_date_fmt = pd.Timestamp(max_ref_date).strftime('%B %d, %Y')
+                        end_date_str = ensemble_overview['target_end_date'].iloc[0]
+                        end_date_fmt = pd.Timestamp(end_date_str).strftime('%B %d, %Y')
+                        st.markdown(
+                            f"<p style='font-size: 18px; line-height: 1.5; margin-top: 8px;'>"
+                            f"As of {ref_date_fmt}, the Epistorm Ensemble forecasts "
+                            f"<b>{int(round(median_val[0])):,}</b> "
+                            f"hospital admissions by {end_date_fmt} "
+                            f"(95% PI: {int(round(lower_val[0])):,}&ndash;{int(round(upper_val[0])):,}).</p>",
+                            unsafe_allow_html=True
+                        )
+            else:
+                st.info("No data available for this location.")
+
+    # -- Controls row between chart and forecast panels --
+    ctrl_col1, ctrl_col2, _ = st.columns([2, 2, 4])
     with ctrl_col1:
         cat_dates = sorted(forecast_data['reference_date'].unique(), reverse=True)
         st.selectbox(
@@ -1664,6 +1587,121 @@ with tab_overview:
             format_func=lambda x: horizon_labels[x],
             key="overview_horizon"
         )
+
+    # -- Row 2: Forecast panels --
+    overview_ref_date = st.session_state.get("overview_ref_date", cat_dates[0])
+    overview_horizon = st.session_state.get("overview_horizon", 3)
+
+    row2_col1, row2_col2 = st.columns(2, gap="medium")
+
+    with row2_col1:
+        with st.container(border=True):
+            st.markdown("#### Forecasted Activity Level")
+            cat_df = load_activity_level_ensemble()
+            cat_df = cat_df[cat_df['location'] == overview_location]
+
+            plot_df = cat_df[
+                (cat_df['reference_date'] == overview_ref_date) &
+                (cat_df['horizon'] == overview_horizon)
+            ].copy()
+
+            if not plot_df.empty and plot_df['value'].dropna().any():
+                max_idx = plot_df['value'].dropna().idxmax()
+                max_level = plot_df.loc[max_idx, 'output_type_id']
+                max_prob = plot_df.loc[max_idx, 'value']
+                level_color = ACTIVITY_COLORS.get(max_level, 'black')
+
+                st.markdown(
+                    f"Most likely: **<span style='color: {level_color};'>{max_level}</span>** "
+                    f"({max_prob:.0%} probability)",
+                    unsafe_allow_html=True
+                )
+
+                order = ['Low', 'Moderate', 'High', 'Very High']
+                colors = ['#7DD4C8', '#3CAAA0', '#2B7A8F', '#3D5A80']
+                plot_df = plot_df.set_index('output_type_id').reindex(order).reset_index()
+                plot_df['value'] = plot_df['value'].fillna(0)
+
+                fig = go.Figure()
+                fig.add_trace(go.Bar(
+                    y=order,
+                    x=plot_df['value'],
+                    orientation='h',
+                    marker_color=colors,
+                    hovertemplate='%{y}: %{x:.1%}<extra></extra>'
+                ))
+                fig.update_layout(
+                    xaxis_title="Probability",
+                    yaxis_title="",
+                    height=300,
+                    margin=dict(l=100, r=20, t=10, b=40),
+                    xaxis=dict(tickformat='.0%', range=[0, 1], showgrid=False),
+                    yaxis=dict(
+                        categoryorder='array',
+                        categoryarray=list(reversed(order)),
+                        showgrid=False
+                    ),
+                    showlegend=False
+                )
+                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+            else:
+                st.warning("No activity level data available for this selection.")
+
+    with row2_col2:
+        with st.container(border=True):
+            st.markdown("#### Forecasted Rate Trend")
+            cat_df = load_categorical_ensemble()
+            cat_df = cat_df[cat_df['location'] == overview_location]
+
+            plot_df = cat_df[
+                (cat_df['reference_date'] == overview_ref_date) &
+                (cat_df['horizon'] == overview_horizon)
+            ].copy()
+
+            if not plot_df.empty and plot_df['value'].dropna().any():
+                max_idx = plot_df['value'].dropna().idxmax()
+                max_cat = format_category(plot_df.loc[max_idx, 'output_type_id'])
+                max_prob = plot_df.loc[max_idx, 'value']
+                cat_color = CATEGORY_COLORS.get(max_cat, 'black')
+                if max_cat == 'Stable':
+                    cat_color = 'dimgray'
+
+                st.markdown(
+                    f"Most likely: **<span style='color: {cat_color};'>{max_cat}</span>** "
+                    f"({max_prob:.0%} probability)",
+                    unsafe_allow_html=True
+                )
+
+                order = ['large_decrease', 'decrease', 'stable', 'increase', 'large_increase']
+                labels = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Increase']
+                colors = ['#006d77', '#83c5be', '#e5e5e5', '#e29578', '#bc4749']
+                plot_df = plot_df.set_index('output_type_id').reindex(order).reset_index()
+                plot_df['value'] = plot_df['value'].fillna(0)
+
+                fig = go.Figure()
+                fig.add_trace(go.Bar(
+                    y=labels,
+                    x=plot_df['value'],
+                    orientation='h',
+                    marker_color=colors,
+                    hovertemplate='%{y}: %{x:.1%}<extra></extra>'
+                ))
+                fig.update_layout(
+                    xaxis_title="Probability",
+                    yaxis_title="",
+                    height=300,
+                    margin=dict(l=120, r=20, t=10, b=40),
+                    xaxis=dict(tickformat='.0%', range=[0, 1], showgrid=False),
+                    yaxis=dict(
+                        categoryorder='array',
+                        categoryarray=list(reversed(labels)),
+                        showgrid=False
+                    ),
+                    showlegend=False
+                )
+                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+            else:
+                st.warning("No categorical data available for this selection.")
 
 
 
