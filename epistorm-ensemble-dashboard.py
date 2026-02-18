@@ -1438,7 +1438,7 @@ with tab_overview:
                 st.warning("No observed data available for this location.")
 
 
-            st.markdown("<p style='font-size: 15px; color: gray; margin-bottom: -1px;'>Date Range</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-size: 15px; color: gray; margin-bottom: 2px;'>Date Range:</p>", unsafe_allow_html=True)
             range_options = ["Last 3 months", "Last 6 months", "Last year", "Last 2 years", "All data"]
             cols = st.columns(len(range_options))
             for col, label in zip(cols, range_options):
