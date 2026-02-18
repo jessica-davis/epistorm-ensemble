@@ -1310,13 +1310,34 @@ with tab_overview:
         with st.container(border=True, height=600):
            # st.markdown("### Observed Hospitalizations")
 
-            # Filter and plot
+           # Filter and plot
             obs_filtered = observed_data[ (observed_data['location'] == overview_location)
             ].sort_values('date')
 
 
             loc_thresholds = thresholds[ (thresholds['location'] == overview_location)]
 
+
+            recent_date = obs_filtered[obs_filtered['date'] == obs_filtered['date'].max()] if not obs_filtered.empty else None
+            value = recent_date['value'].iloc[0] if recent_date is not None else None
+            threshold_dat = thresholds[ (thresholds['location'] == overview_location)].iloc[0]
+
+            if value >= threshold_dat['Very High']:
+                current_threshold = 'Very High'
+            elif value >= threshold_dat['High']:
+                current_threshold = 'High'
+            elif value >= threshold_dat['Medium']:
+                current_threshold = 'Moderate'
+            else:
+                current_threshold = 'Low'
+
+            loc_text = 'the United States' if overview_location=='US' else overview_location_name
+            threshold_color = ACTIVITY_COLORS.get(current_threshold, 'black')
+            heading = f"The flu activity level in {loc_text} is currently " f"<b style='color: {threshold_color};'>{current_threshold}</b> " + \
+                  f"as of {obs_filtered['date'].max().strftime('%B %d, %Y')}."
+
+            st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
+                  
 
             if 'overview_date_range' not in st.session_state:
                 st.session_state.overview_date_range = "Last 3 months"
@@ -1376,7 +1397,7 @@ with tab_overview:
                     y=obs_filtered['value'],
                     mode='lines+markers',
                     line=dict(color="#000000", width=2),
-                    marker=dict(size=5),
+                    marker=dict(size=5, symbol='circle-open', color='black'),
                     hovertemplate='%{x|%b %d, %Y}<br>Value: %{y:,.0f}<extra></extra>'
                 ))
                 fig.update_layout(
@@ -1418,16 +1439,13 @@ with tab_overview:
 
 
 
-            # Date range selector below the plot
-            
-            range_col, _ = st.columns([1, 2])
-            with range_col:
-                st.selectbox(
-                    "Date Range",
-                    ["Last 3 months", "Last 6 months", "Last year", "Last 2 years", "All data"],
-                    index=["Last 3 months", "Last 6 months", "Last year", "Last 2 years", "All data"].index(st.session_state.overview_date_range),
-                    key="overview_date_range"
-                )
+            range_options = ["Last 3 months", "Last 6 months", "Last year", "Last 2 years", "All data"]
+            cols = st.columns(len(range_options))
+            for col, label in zip(cols, range_options):
+                with col:
+                    if st.button(label, key=f"overview_range_{label}", use_container_width=True):
+                        st.session_state.overview_date_range = label
+                        st.rerun()
             
   
 
