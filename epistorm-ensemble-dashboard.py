@@ -823,7 +823,7 @@ with tab_forecasts:
             st.markdown("""
                 <style>
                 div[data-testid="stExpander"] div[data-testid="stVerticalBlock"] {
-                    max-height: 300px;
+                    max-height: 600px;
                     overflow-y: auto;
                 }
                 </style>
