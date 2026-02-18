@@ -1438,7 +1438,7 @@ with tab_overview:
                 st.warning("No observed data available for this location.")
 
 
-
+            st.markdown("<p style='font-size: 15px; color: gray; margin-bottom: -10px;'>Date Range</p>", unsafe_allow_html=True)
             range_options = ["Last 3 months", "Last 6 months", "Last year", "Last 2 years", "All data"]
             cols = st.columns(len(range_options))
             for col, label in zip(cols, range_options):
@@ -1452,7 +1452,7 @@ with tab_overview:
 
     with row1_col2:
         with st.container(border=True, height=600):
-            st.markdown("<p style='font-size: 22px;'><b>What are Activity Levels?</b></p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-size: 22px;'><b>What are Flu Activity Levels?</b></p>", unsafe_allow_html=True)
             st.markdown(
                 """
                 Activity levels describe the intensity of flu hospitalization activity in a given location, 
