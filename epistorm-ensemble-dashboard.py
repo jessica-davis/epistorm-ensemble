@@ -536,6 +536,7 @@ def plot_categorical_forecasts(forecast_data, selected_location, selected_date, 
     return fig, models_without_data
 
 def plot_forecasts(observed_data, forecast_data, selected_location, selected_date, selected_models, available_dates, start_date, end_date):
+    
     fig = go.Figure()
     obs_filtered = observed_data[
         (observed_data['location'] == selected_location) &
@@ -543,16 +544,38 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
         (observed_data['date'] <= end_date)
     ].copy()
     obs_filtered = obs_filtered.sort_values('date')
+
     if not obs_filtered.empty:
-        fig.add_trace(go.Scatter(
-            x=obs_filtered['date'],
-            y=obs_filtered['value'],
-            mode='lines+markers',
-            name='Observed',
-            line=dict(color='black', width=2),
-            marker=dict(size=4),
-            hovertemplate='Value: %{y:,.0f}<extra></extra>'
-        ))
+        reference_date = pd.Timestamp(selected_date)
+
+        obs_past = obs_filtered[obs_filtered['date'] < reference_date]
+        obs_future = obs_filtered[obs_filtered['date'] >= reference_date]
+
+        if not obs_past.empty:
+            fig.add_trace(go.Scatter(
+                x=obs_past['date'],
+                y=obs_past['value'],
+                mode='lines+markers',
+                name='Observed',
+                line=dict(color='black', width=2),
+                marker=dict(size=6, symbol='circle', color='black'),
+                hovertemplate='Value: %{y:,.0f}<extra></extra>'
+            ))
+
+        if not obs_future.empty:
+            fig.add_trace(go.Scatter(
+                x=obs_future['date'],
+                y=obs_future['value'],
+                mode='lines+markers',
+                name='Observed (preliminary)',
+                line=dict(color='black', width=2),
+                marker=dict(size=6, symbol='circle-open', color='black'),
+                showlegend=True,
+                hovertemplate='Value: %{y:,.0f}<extra></extra>'
+            ))
+
+
+
     forecast_filtered = forecast_data[
         (forecast_data['location'] == selected_location) &
         (forecast_data['reference_date'] == selected_date) &
