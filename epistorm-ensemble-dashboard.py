@@ -818,11 +818,8 @@ with tab_forecasts:
 
             max_end_date = max(max_obs_date, latest_forecast_date) if latest_forecast_date else max_obs_date
 
-            start_date = max_end_date - pd.DateOffset(months=3)
-            start_date = max(start_date.date(), min_obs_date)
-
             end_date = max_end_date
-            start_date_ts = pd.Timestamp(start_date)
+            start_date_ts = max_end_date - pd.DateOffset(months=3)
             end_date_ts = pd.Timestamp(end_date)        
 
             
