@@ -1323,6 +1323,7 @@ with tab_overview:
 
 
             if not obs_filtered.empty:
+                thresh = loc_thresholds.iloc[0]
                 activity_levels = [
                         ('Low', 0, thresh['Medium']),
                         ('Moderate', thresh['Medium'], thresh['High']),
