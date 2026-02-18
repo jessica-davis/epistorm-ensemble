@@ -900,8 +900,8 @@ with tab_forecasts:
                         if st.button(label, key=f"range_{label}", use_container_width=True):
                             st.session_state.selected_range = label
                             st.rerun()
-                            
-            st.markdown("<style>div.block-container { gap: 0 !important; }</style>", unsafe_allow_html=True)
+
+            st.markdown("<style>.stPlotlyChart { margin-top: -2rem; }</style>", unsafe_allow_html=True)
 
             event = st.plotly_chart(fig, key="forecast_plot", on_select="rerun", use_container_width=True, config={'displayModeBar': False})
             
