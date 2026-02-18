@@ -826,7 +826,7 @@ with tab_forecasts:
                     unsafe_allow_html=True
                 )
                 for name in location_names:
-                    if st.button(name, key=f"loc_{name}", use_container_width=True):
+                    if st.checkbox(name, key=f"loc_{name}", value=(st.session_state.selected_location_name == name)):
                         st.session_state.selected_location_name = name
                         st.rerun()
                 st.markdown("</div>", unsafe_allow_html=True)
