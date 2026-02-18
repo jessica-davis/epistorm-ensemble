@@ -955,6 +955,16 @@ with tab_forecasts:
         else:
             st.warning("Please select at least one model to display")
 
+
+        with st.container(border=True):
+            st.markdown("**What are Prediction Intervals?**")
+            st.markdown(
+                "The shaded regions around the forecast line show the range of values the model expects future observations to fall within. "
+                "The darker shaded region represents the **50% interval** — there is a 50% chance the true value will fall within this range. "
+                "The lighter shaded region represents the **90% interval** — there is a 90% chance the true value will fall within this range."
+            )
+
+
         
         
 
