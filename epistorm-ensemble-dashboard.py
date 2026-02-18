@@ -899,8 +899,9 @@ with tab_forecasts:
                     with col:
                         if st.button(label, key=f"range_{label}", use_container_width=True):
                             st.session_state.selected_range = label
+                            st.rerun()
 
-
+                            
             event = st.plotly_chart(fig, key="forecast_plot", on_select="rerun", use_container_width=True, config={'displayModeBar': False})
             
             if event and hasattr(event, 'selection') and event.selection:
