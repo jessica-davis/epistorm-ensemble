@@ -955,8 +955,7 @@ with tab_forecasts:
         else:
             st.warning("Please select at least one model to display")
 
-        st.markdown("<style>.stPlotlyChart { margin-top: -5rem; }</style>", unsafe_allow_html=True)
-        
+        st.markdown("<div style='margin-top: -10rem;'>", unsafe_allow_html=True)
         with st.container(border=True):
             st.markdown("**What are Prediction Intervals?**")
             st.markdown(
