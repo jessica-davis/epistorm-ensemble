@@ -820,16 +820,19 @@ with tab_forecasts:
             if 'selected_location_name' not in st.session_state:
                 st.session_state.selected_location_name = 'United States'
 
+            st.markdown("""
+                <style>
+                div[data-testid="stExpander"] div[data-testid="stVerticalBlock"] {
+                    max-height: 300px;
+                    overflow-y: auto;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+
             with st.expander("Select Location", expanded=True):
-                st.markdown(
-                    "<div style='max-height: 300px; overflow-y: auto;'>",
-                    unsafe_allow_html=True
-                )
                 for name in location_names:
                     if st.checkbox(name, key=f"loc_{name}", value=(st.session_state.selected_location_name == name)):
                         st.session_state.selected_location_name = name
-                        st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
 
             selected_location_name = st.session_state.selected_location_name
             selected_location = location_dict[selected_location_name]
