@@ -1318,32 +1318,24 @@ with tab_overview:
             loc_thresholds = thresholds[ (thresholds['location'] == overview_location)]
 
 
-            recent_date = obs_filtered[obs_filtered['date'] == obs_filtered['date'].max()] if not obs_filtered.empty else None
-            value = recent_date['value'].iloc[0] if recent_date is not None else None
-            threshold_dat = thresholds[ (thresholds['location'] == overview_location)].iloc[0]
-
-            if value >= threshold_dat['Very High']:
-                current_threshold = 'Very High'
-            elif value >= threshold_dat['High']:
-                current_threshold = 'High'
-            elif value >= threshold_dat['Medium']:
-                current_threshold = 'Moderate'
-            else:
-                current_threshold = 'Low'
-
-            loc_text = 'the United States' if overview_location=='US' else overview_location_name
-            threshold_color = ACTIVITY_COLORS.get(current_threshold, 'black')
-            heading = f"The flu activity level in {loc_text} is currently " f"<b style='color: {threshold_color};'>{current_threshold}</b> " + \
-                  f"as of {obs_filtered['date'].max().strftime('%B %d, %Y')}."
-
-            st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
-                  
-
             if 'overview_date_range' not in st.session_state:
                 st.session_state.overview_date_range = "Last 3 months"
 
 
             if not obs_filtered.empty:
+                activity_levels = [
+                        ('Low', 0, thresh['Medium']),
+                        ('Moderate', thresh['Medium'], thresh['High']),
+                        ('High', thresh['High'], thresh['Very High']),
+                        ('Very High', thresh['Very High'], thresh['Very High'] * 5),
+                    ]
+
+                ACTIVITY_COLORS = {
+                        'Low': '#7DD4C8',
+                        'Moderate': '#3CAAA0',
+                        'High': '#2B7A8F',
+                        'Very High': '#3D5A80'
+                    }
 
                 max_date = obs_filtered['date'].max()
                 date_range_option = st.session_state.overview_date_range
@@ -1357,26 +1349,33 @@ with tab_overview:
                 elif date_range_option == "Last 2 years":
                     obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(years=2)]
 
+                recent_date = obs_filtered[obs_filtered['date'] == obs_filtered['date'].max()] if not obs_filtered.empty else None
+                value = recent_date['value'].iloc[0] if recent_date is not None else None
+                threshold_dat = thresholds[ (thresholds['location'] == overview_location)].iloc[0]
+
+                if value >= threshold_dat['Very High']:
+                    current_threshold = 'Very High'
+                elif value >= threshold_dat['High']:
+                    current_threshold = 'High'
+                elif value >= threshold_dat['Medium']:
+                    current_threshold = 'Moderate'
+                else:
+                    current_threshold = 'Low'
+
+                loc_text = 'the United States' if overview_location=='US' else overview_location_name
+                threshold_color = ACTIVITY_COLORS.get(current_threshold, 'black')
+                heading = f"The flu activity level in {loc_text} is currently " f"<b style='color: {threshold_color};'>{current_threshold}</b> " + \
+                    f"as of {obs_filtered['date'].max().strftime('%B %d, %Y')}."
+
+                st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
+                    
+
 
 
                 fig = go.Figure()
 
                 if not loc_thresholds.empty:
                     thresh = loc_thresholds.iloc[0]
-                    
-                    activity_levels = [
-                        ('Low', 0, thresh['Medium']),
-                        ('Moderate', thresh['Medium'], thresh['High']),
-                        ('High', thresh['High'], thresh['Very High']),
-                        ('Very High', thresh['Very High'], thresh['Very High'] * 5),
-                    ]
-
-                    ACTIVITY_COLORS = {
-                        'Low': '#7DD4C8',
-                        'Moderate': '#3CAAA0',
-                        'High': '#2B7A8F',
-                        'Very High': '#3D5A80'
-                    }
  
                     y_max = obs_filtered['value'].max() * 1.1
 
