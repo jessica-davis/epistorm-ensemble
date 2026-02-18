@@ -551,29 +551,38 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
         obs_past = obs_filtered[obs_filtered['date'] < reference_date]
         obs_future = obs_filtered[obs_filtered['date'] >= reference_date]
 
+        # Continuous line across all observed data
+        fig.add_trace(go.Scatter(
+            x=obs_filtered['date'],
+            y=obs_filtered['value'],
+            mode='lines',
+            name='Observed',
+            line=dict(color='black', width=2),
+            hovertemplate='Value: %{y:,.0f}<extra></extra>'
+        ))
+
+        # Solid markers for past
         if not obs_past.empty:
             fig.add_trace(go.Scatter(
                 x=obs_past['date'],
                 y=obs_past['value'],
-                mode='lines+markers',
+                mode='markers',
                 name='Observed',
-                line=dict(color='black', width=2),
+                showlegend=False,
                 marker=dict(size=6, symbol='circle', color='black'),
                 hovertemplate='Value: %{y:,.0f}<extra></extra>'
             ))
 
+        # Open markers for preliminary
         if not obs_future.empty:
             fig.add_trace(go.Scatter(
                 x=obs_future['date'],
                 y=obs_future['value'],
-                mode='lines+markers',
+                mode='markers',
                 name='Observed (preliminary)',
-                line=dict(color='black', width=2),
                 marker=dict(size=6, symbol='circle-open', color='black'),
-                showlegend=True,
                 hovertemplate='Value: %{y:,.0f}<extra></extra>'
             ))
-
 
 
     forecast_filtered = forecast_data[
