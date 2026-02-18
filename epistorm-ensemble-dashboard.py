@@ -822,7 +822,7 @@ with tab_forecasts:
 
             with st.expander("Select Location", expanded=True):
                 for name in location_names:
-                    if st.button(name, key=f"loc_{name}", use_container_width=True):
+                    if st.checkbox(name, key=f"loc_{name}", value=(st.session_state.selected_location_name == name)):
                         st.session_state.selected_location_name = name
 
             selected_location_name = st.session_state.selected_location_name
@@ -831,7 +831,7 @@ with tab_forecasts:
             selected_location = st.text_input("Enter Location Code", value="US", key="forecast_location_text")
 
 
-            
+
     with chart_col:
        
         if selected_models:
