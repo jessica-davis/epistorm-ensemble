@@ -568,7 +568,7 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
                 y=obs_past['value'],
                 mode='lines+markers',
                 name='Observed (in sample)',
-                showlegend=False,
+                showlegend=True,
                 marker=dict(size=6, symbol='circle', color='black'),
                 hovertemplate='Value: %{y:,.0f}<extra></extra>'
             ))
@@ -580,6 +580,7 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
                 y=obs_future['value'],
                 mode='lines+markers',
                 name='Observed (out of sample)',
+                showlegend=True,
                 marker=dict(size=6, symbol='circle-open', color='black'),
                 hovertemplate='Value: %{y:,.0f}<extra></extra>'
             ))
