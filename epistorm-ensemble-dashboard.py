@@ -1451,27 +1451,22 @@ with tab_overview:
 
 
     with row1_col2:
-        with st.container(border=True, height=600): 
-            recent_date = obs_filtered[obs_filtered['date'] == obs_filtered['date'].max()] if not obs_filtered.empty else None
-            value = recent_date['value'].iloc[0] if recent_date is not None else None
-            threshold_dat = thresholds[ (thresholds['location'] == overview_location)].iloc[0]
+        with st.container(border=True, height=600):
+            st.markdown("<p style='font-size: 22px;'><b>What are Activity Levels?</b></p>", unsafe_allow_html=True)
+            st.markdown(
+                """
+                Activity levels describe the intensity of flu hospitalization activity in a given location, 
+                based on thresholds derived from historical data.
 
-            if value >= threshold_dat['Very High']:
-                current_threshold = 'Very High'
-            elif value >= threshold_dat['High']:
-                current_threshold = 'High'
-            elif value >= threshold_dat['Medium']:
-                current_threshold = 'Moderate'
-            else:
-                current_threshold = 'Low'
+                - <b style='color: #7DD4C8;'>Low</b> — Flu hospitalizations are below typical seasonal levels. Little to no widespread activity.
+                - <b style='color: #3CAAA0;'>Moderate</b> — Flu activity is picking up. Hospitalizations are above baseline but within expected seasonal range.
+                - <b style='color: #2B7A8F;'>High</b> — Elevated flu activity. Hospitalizations are significantly above typical levels.
+                - <b style='color: #3D5A80;'>Very High</b> — Exceptional flu activity. Hospitalizations are at or near peak seasonal levels.
 
-            loc_text = 'the United States' if overview_location=='US' else overview_location_name
-            threshold_color = ACTIVITY_COLORS.get(current_threshold, 'black')
-            heading = f"The flu activity level in {loc_text} is currently " f"<b style='color: {threshold_color};'>{current_threshold}</b> " + \
-                  f"as of {obs_filtered['date'].max().strftime('%B %d, %Y')}."
-
-            st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
-                        
+                Thresholds are location-specific and are calculated based on historical flu hospitalization patterns for each state and the United States overall.
+                """,
+                unsafe_allow_html=True
+            )      
 
     with row2_col1:
         with st.container(border=True, height=500):
