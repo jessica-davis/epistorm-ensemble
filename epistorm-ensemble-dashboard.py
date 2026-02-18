@@ -811,22 +811,21 @@ with tab_forecasts:
 
 
        # Location selector
-        with st.expander("Select Location", expanded=True):
-            if locations_df is not None:
-                state_locations_df = locations_df[locations_df['location'] != 'US']
-                location_options = ['US'] + state_locations_df['location'].tolist()
-                location_names = ['United States'] + state_locations_df['location_name'].tolist()
-                location_dict = dict(zip(location_names, location_options))
+        if locations_df is not None:
+            state_locations_df = locations_df[locations_df['location'] != 'US']
+            location_options = ['US'] + state_locations_df['location'].tolist()
+            location_names = ['United States'] + state_locations_df['location_name'].tolist()
+            location_dict = dict(zip(location_names, location_options))
+            with st.expander("Select Location", expanded=True):
                 selected_location_name = st.selectbox(
                     "Select Location",
                     location_names,
                     index=0,
                     key="forecast_location"
                 )
-                selected_location = location_dict[selected_location_name]
-            else:
-                selected_location = st.text_input("Enter Location Code", value="US", key="forecast_location_text")
-
+            selected_location = location_dict[selected_location_name]
+        else:
+            selected_location = st.text_input("Enter Location Code", value="US", key="forecast_location_text")
 
 
     with chart_col:
