@@ -901,7 +901,7 @@ with tab_forecasts:
                             st.session_state.selected_range = label
                             st.rerun()
 
-            st.markdown("<style>.stPlotlyChart { margin-top: -2rem; }</style>", unsafe_allow_html=True)
+            st.markdown("<style>.stPlotlyChart { margin-top: -5rem; }</style>", unsafe_allow_html=True)
 
             event = st.plotly_chart(fig, key="forecast_plot", on_select="rerun", use_container_width=True, config={'displayModeBar': False})
             
