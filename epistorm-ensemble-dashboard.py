@@ -749,22 +749,6 @@ with tab_forecasts:
     with controls_col:
         #st.markdown("### Forecast Controls")
         
-        # Location selector
-        if locations_df is not None:
-            state_locations_df = locations_df[locations_df['location'] != 'US']
-            location_options = ['US'] + state_locations_df['location'].tolist()
-            location_names = ['United States'] + state_locations_df['location_name'].tolist()
-            location_dict = dict(zip(location_names, location_options))
-            selected_location_name = st.selectbox(
-                "Select Location",
-                location_names,
-                index=0,
-                key="forecast_location"
-            )
-            selected_location = location_dict[selected_location_name]
-        else:
-            selected_location = st.text_input("Enter Location Code", value="US", key="forecast_location_text")
-
         # Date selector
         available_dates = sorted(
             [pd.Timestamp(d).to_pydatetime() for d in forecast_data['reference_date'].unique()],
@@ -806,7 +790,7 @@ with tab_forecasts:
             max_end_date = max(max_obs_date, latest_forecast_date) if latest_forecast_date else max_obs_date
 
             if 'start_date' not in st.session_state:
-                st.session_state.start_date = datetime(2025, 11, 1).date()
+                st.session_state.start_date = datetime(2025, 11, 15).date()
             if 'end_date' not in st.session_state:
                 st.session_state.end_date = max_end_date
             st.session_state.end_date = max(min_end_date, min(st.session_state.end_date, max_end_date))
@@ -821,27 +805,28 @@ with tab_forecasts:
         start_date_ts = pd.Timestamp(start_date)
         end_date_ts = pd.Timestamp(end_date)
 
-        # Model selection
-        with st.expander("Select Models", expanded=True):
-            all_models = sorted(forecast_data['model'].unique())
-            ensemble_models = [m for m in all_models if m == 'Median Epistorm Ensemble']
-            individual_models = [m for m in all_models if m != 'Median Epistorm Ensemble']
+        # Model selection (ensemble only)
+        selected_models = ['Median Epistorm Ensemble']
+        st.session_state.selected_models = selected_models
 
-            if 'selected_models' not in st.session_state:
-                st.session_state.selected_models = ['Median Epistorm Ensemble']
 
-            selected_models = []
-            if ensemble_models:
-                st.markdown("**Ensemble:**")
-                for model in ensemble_models:
-                    if st.checkbox(model, value=model in st.session_state.selected_models, key=f"forecast_model_{model}"):
-                        selected_models.append(model)
-            if individual_models:
-                st.markdown("**Individual:**")
-                for model in individual_models:
-                    if st.checkbox(model, value=model in st.session_state.selected_models, key=f"forecast_model_{model}"):
-                        selected_models.append(model)
-            st.session_state.selected_models = selected_models
+       # Location selector
+        with st.expander("Select Location", expanded=True):
+            if locations_df is not None:
+                state_locations_df = locations_df[locations_df['location'] != 'US']
+                location_options = ['US'] + state_locations_df['location'].tolist()
+                location_names = ['United States'] + state_locations_df['location_name'].tolist()
+                location_dict = dict(zip(location_names, location_options))
+                selected_location_name = st.selectbox(
+                    "Select Location",
+                    location_names,
+                    index=0,
+                    key="forecast_location"
+                )
+                selected_location = location_dict[selected_location_name]
+            else:
+                selected_location = st.text_input("Enter Location Code", value="US", key="forecast_location_text")
+
 
 
     with chart_col:
@@ -914,122 +899,7 @@ with tab_forecasts:
                     pass
             
             st.markdown("**Tip:** Change the location, forecast date, models shown, or historical date range in the sidebar.")
-            st.markdown("---")
-
-
-            st.markdown(
-            """
-            <style>
-            .tooltip {
-                position: relative;
-                display: inline-block;
-            }
-            .tooltip .tooltiptext {
-                visibility: hidden;
-                width: 650px;
-                background-color: #555;
-                color: #fff;
-                text-align: center;
-                border-radius: 6px;
-                padding: 10px;
-                position: absolute;
-                z-index: 1;
-                bottom: 125%;
-                left: 50%;
-                margin-left: -150px;
-                opacity: 0;
-                transition: opacity 0.3s;
-                font-size: 18px;
-            }
-            .tooltip:hover .tooltiptext {
-                visibility: visible;
-                opacity: 1;
-            }
-            </style>
-            <h3 class="tooltip" style="color: #518fb0;">Categorical Forecasts: Weekly Hospitalization Rate Change
-                <span class="tooltiptext">For the categorical forecasts, teams predict the trend of weekly hospitalization rates over 1-4 weeks, with predictions submitted as probabilities. These plots show the probability of each trend category (increasing, decreasing, or stable) for each week ahead. The ensemble is computed by taking the mean of the individual model predictions and ensuring the probabilities sum to 1.</span>
-            </h3>
-            """,
-            unsafe_allow_html=True
-        )
-
-            ensemble_cat_data = forecast_data[
-                (forecast_data['model'] == 'Median Epistorm Ensemble') &
-                (forecast_data['location'] == selected_location) &
-                (forecast_data['reference_date'] == selected_date) &
-                (forecast_data['horizon'] == 3) &
-                (forecast_data['output_type'] == 'pmf') &
-                (forecast_data['target'] == 'wk flu hosp rate change')
-            ].copy()
-
-            if not ensemble_cat_data.empty:
-                ensemble_cat_data['category'] = ensemble_cat_data['output_type_id'].apply(format_category)
-                ensemble_cat_data = ensemble_cat_data[ensemble_cat_data['category'].isin(CATEGORY_ORDER)]
-                
-                if not ensemble_cat_data.empty:
-                    sorted_cats = ensemble_cat_data.sort_values('value', ascending=False)
-                    
-                    if len(sorted_cats) >= 1:
-                        max_prob = sorted_cats.iloc[0]['value']
-                        highest_cats = sorted_cats[sorted_cats['value'] == max_prob]
-                        
-                        if len(highest_cats) == 1:
-                            cat_name = highest_cats.iloc[0]['category']
-                            cat_color = CATEGORY_COLORS.get(cat_name, '#000000')
-                            if cat_name == 'Stable':
-                                cat_color = 'dimgray'
-                            prob_pct = max_prob * 100
-                            heading = f"As of {selected_date.strftime('%B %d, %Y')}, the Epistorm Ensemble forecasts a trend of: <b><span style='color:{cat_color}'>{cat_name}</span></b> with <b>{prob_pct:.1f}%</b> probability by {end_date_4_weeks} for {location_name}."
-                        else:
-                            cat_texts = []
-                            for _, row in highest_cats.iterrows():
-                                cat_name = row['category']
-                                cat_color = CATEGORY_COLORS.get(cat_name, '#000000')
-                                cat_texts.append(f"<b><span style='color:{cat_color}'>{cat_name}</span></b>")
-                            cat_list = " and ".join(cat_texts) if len(cat_texts) == 2 else ", ".join(cat_texts[:-1]) + f", and {cat_texts[-1]}"
-                            prob_pct = max_prob * 100
-                            heading = f"As of {selected_date.strftime('%B %d, %Y')}, the Epistorm Ensemble forecasts {cat_list} (tied) with <b>{prob_pct:.1f}%</b> probability each by {end_date_4_weeks} for {location_name}."
-                        
-                        st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
-                        
-                        remaining_cats = sorted_cats[sorted_cats['value'] < max_prob]
-                        if len(remaining_cats) >= 1:
-                            second_max_prob = remaining_cats.iloc[0]['value']
-                            second_highest_cats = remaining_cats[remaining_cats['value'] == second_max_prob]
-                            
-                            if len(second_highest_cats) == 1:
-                                cat_name = second_highest_cats.iloc[0]['category']
-                                cat_color = CATEGORY_COLORS.get(cat_name, '#000000')
-                                if cat_name == 'Stable':
-                                    cat_color = 'dimgray'
-                                prob_pct = second_max_prob * 100
-                                secondary_text = f"A rate trend of <b><span style='color:{cat_color}'>{cat_name}</span></b> is the next most likely with <b>{prob_pct:.1f}%</b> probability."
-                            else:
-                                cat_texts = []
-                                for _, row in second_highest_cats.iterrows():
-                                    cat_name = row['category']
-                                    cat_color = CATEGORY_COLORS.get(cat_name, '#000000')
-                                    cat_texts.append(f"<b><span style='color:{cat_color}'>{cat_name}</span></b>")
-                                cat_list = " and ".join(cat_texts) if len(cat_texts) == 2 else ", ".join(cat_texts[:-1]) + f", and {cat_texts[-1]}"
-                                prob_pct = second_max_prob * 100
-                                secondary_text = f"Second most likely (tied): {cat_list} with <b>{prob_pct:.1f}%</b> probability each."
-                            
-                            st.markdown(f"<p style='font-size: 18px;'>{secondary_text}</p>", unsafe_allow_html=True)
-            else:
-                st.markdown("<p style='font-size: 22px;'>No categorical forecast available for the Epistorm Ensemble for this forecast date.</p>", unsafe_allow_html=True)
-
-            cat_fig, models_without_data = plot_categorical_forecasts(
-                forecast_data, selected_location, selected_date, selected_models
-            )
-            
-            if cat_fig is not None:
-                st.plotly_chart(cat_fig, use_container_width=True, config={'displayModeBar': False})
-                if models_without_data:
-                    st.info(f"ℹ️ The following models do not have categorical forecast data for this forecast date: {', '.join(models_without_data)}")
-            else:
-                st.warning("⚠️ No categorical forecast data available for the selected models, location, and date.")
-                if models_without_data:
-                    st.info(f"Models without categorical data: {', '.join(models_without_data)}")
+           
         else:
             st.warning("Please select at least one model to display")
 
