@@ -935,15 +935,15 @@ with tab_forecasts:
 
             # Date range
             
-            with st.expander("Historical Data Range", expanded=True):
-                cols = st.columns(len(range_options))
-                for col, label in zip(cols, range_options):
-                    with col:
-                        if st.button(label, key=f"range_{label}", use_container_width=True):
-                            st.session_state.selected_range = label
-                            st.rerun()
+           # with st.expander("Historical Data Range", expanded=True):
+            #    cols = st.columns(len(range_options))
+             #   for col, label in zip(cols, range_options):
+              #      with col:
+               #         if st.button(label, key=f"range_{label}", use_container_width=True):
+                #            st.session_state.selected_range = label
+                 #           st.rerun()
 
-            st.markdown("<style>.stPlotlyChart { margin-top: -5rem; }</style>", unsafe_allow_html=True)
+            #st.markdown("<style>.stPlotlyChart { margin-top: -5rem; }</style>", unsafe_allow_html=True)
 
             event = st.plotly_chart(fig, key="forecast_plot", on_select="rerun", use_container_width=True, config={'displayModeBar': False})
             
@@ -959,6 +959,17 @@ with tab_forecasts:
                 except:
                     pass
             
+            # Date range
+            
+            with st.expander("Historical Data Range", expanded=True):
+                cols = st.columns(len(range_options))
+                for col, label in zip(cols, range_options):
+                    with col:
+                        if st.button(label, key=f"range_{label}", use_container_width=True):
+                            st.session_state.selected_range = label
+                            st.rerun()
+
+
             #st.markdown("**Tip:** Change the location, forecast date, or historical date range in the sidebar.")
            
         else:
