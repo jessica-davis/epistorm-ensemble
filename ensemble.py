@@ -217,8 +217,13 @@ def create_ensemble_method2(forecast_data: pd.DataFrame) -> pd.DataFrame:
     if not results_list:
         return pd.DataFrame()
     
+
+    # Add model identifier
+    ensemble = pd.concat(results_list, ignore_index=True)
+    ensemble['model'] = 'LOP Epistorm Ensemble'
+    
     # Single concatenation at the end
-    return pd.concat(results_list, ignore_index=True)
+    return ensemble
 
 
 def process_location_date(group_data: pd.DataFrame, date, location) -> pd.DataFrame:

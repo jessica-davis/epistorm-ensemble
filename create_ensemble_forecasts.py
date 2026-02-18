@@ -5,7 +5,7 @@ Runs as part of GitHub Actions workflow.
 
 import pandas as pd
 import numpy as np
-from ensemble import create_ensemble_method1, create_categorical_ensemble_quantile, create_activity_level_ensemble
+from ensemble import create_ensemble_method1, create_ensemble_method2, create_categorical_ensemble_quantile, create_activity_level_ensemble
 from pathlib import Path
 import sys
 
@@ -66,6 +66,36 @@ def main():
         quantile_ensemble.to_parquet(quantile_output_path, index=False)
         print(f"   ✓ Saved to {quantile_output_path}")
         
+
+
+        print("\n" + "=" * 60)
+        print("PART 1: Creating Quantile Ensemble (LOP Method)")
+        print("=" * 60)
+        
+        quantile_ensemble_LOP = create_ensemble_method2(df)
+        
+        if len(quantile_ensemble_LOP) == 0:
+            print("ERROR: No LOP quantile ensemble forecasts generated!")
+            sys.exit(1)
+        
+        # Add model identifier
+        quantile_ensemble_LOP['model'] = 'LOP Epistorm Ensemble'
+        
+        print(f"   ✓ Generated {len(quantile_ensemble_LOP):,} quantile forecast rows")
+        print(f"   Reference dates: {quantile_ensemble_LOP['reference_date'].nunique()}")
+        print(f"   Locations: {quantile_ensemble_LOP['location'].nunique()}")
+        print(f"   Quantiles: {sorted(quantile_ensemble_LOP['output_type_id'].unique())}")
+        
+        # Save quantile ensemble
+        print("\n   Saving quantile ensemble...")
+        quantile_output_path = Path('data/quantile_ensemble_LOP.pq')
+        quantile_output_path.parent.mkdir(parents=True, exist_ok=True)
+        quantile_ensemble_LOP.to_parquet(quantile_output_path, index=False)
+        print(f"   ✓ Saved to {quantile_output_path}")
+        
+
+
+
     
         # =====================================================================
         # PART 2: Create Categorical Ensemble
@@ -265,14 +295,19 @@ def main():
             categorical_ensemble = categorical_ensemble.rename(columns={'Model': 'model'})
         elif 'Model' in quantile_ensemble.columns and 'model' in categorical_ensemble.columns:
             quantile_ensemble = quantile_ensemble.rename(columns={'model': 'Model'})
+        if 'model' in quantile_ensemble_LOP.columns and 'Model' in categorical_ensemble.columns:
+            categorical_ensemble = categorical_ensemble.rename(columns={'Model': 'model'})
+        elif 'Model' in quantile_ensemble_LOP.columns and 'model' in categorical_ensemble.columns:
+            quantile_ensemble_LOP = quantile_ensemble_LOP.rename(columns={'model': 'Model'})
         
-        combined_ensemble = pd.concat([quantile_ensemble, categorical_ensemble], ignore_index=True)
+        combined_ensemble = pd.concat([quantile_ensemble, categorical_ensemble, quantile_ensemble_LOP], ignore_index=True)
         combined_all = pd.concat([combined_ensemble, activity_level_ensemble], ignore_index=True)
         print(f"   ✓ Combined ensemble (with activity levels) has {len(combined_all):,} total rows")
         
         print(f"   ✓ Combined ensemble has {len(combined_ensemble):,} total rows")
         print(f"      - Quantile forecasts: {len(quantile_ensemble):,}")
         print(f"      - Categorical forecasts: {len(categorical_ensemble):,}")
+        print(f"      - LOP Quantile forecasts: {len(quantile_ensemble_LOP):,}")
         print(f"      - Activity level forecasts: {len(activity_level_ensemble):,}")
         
        
