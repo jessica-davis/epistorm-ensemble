@@ -641,15 +641,15 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
                 hovertemplate='Median: %{customdata[0]:,.0f}<extra></extra>',
                 legendgroup=model
             ))
-    for ref_date in available_dates:
-        fig.add_shape(
-            type="line",
-            x0=ref_date, x1=ref_date,
-            y0=0, y1=1,
-            yref="paper",
-            line=dict(color='gray', width=1, dash='dot'),
-            opacity=0.3
-        )
+    #for ref_date in available_dates:
+     #   fig.add_shape(
+      #      type="line",
+       #     x0=ref_date, x1=ref_date,
+        #    y0=0, y1=1,
+         #   yref="paper",
+          #  line=dict(color='gray', width=1, dash='dot'),
+           # opacity=0.3
+       # )
     fig.add_shape(
         type="line",
         x0=selected_date, x1=selected_date,
