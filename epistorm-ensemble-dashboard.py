@@ -802,8 +802,28 @@ with tab_forecasts:
     with chart_col:
        
         if selected_models:
-            start_date_ts = pd.Timestamp(st.session_state.get('start_date', datetime.now().date() - pd.DateOffset(months=3)))
-            end_date_ts = pd.Timestamp(st.session_state.get('end_date', datetime.now().date()))
+            
+            if not observed_data.empty:
+                min_obs_date = observed_data['date'].min().date()
+                max_obs_date = observed_data['date'].max().date()
+            else:
+                min_obs_date = datetime(2024, 1, 1).date()
+                max_obs_date = datetime.now().date()
+
+            latest_forecast_date = None
+            if not forecast_data.empty and 'target_end_date' in forecast_data.columns:
+                selected_forecast_data = forecast_data[forecast_data['reference_date'] == selected_date]
+                if not selected_forecast_data.empty:
+                    latest_forecast_date = pd.Timestamp(selected_forecast_data['target_end_date'].max()).date()
+
+            max_end_date = max(max_obs_date, latest_forecast_date) if latest_forecast_date else max_obs_date
+
+            start_date = max_end_date - pd.DateOffset(months=3)
+            start_date = max(start_date.date(), min_obs_date)
+
+            end_date = max_end_date
+            start_date_ts = pd.Timestamp(start_date)
+            end_date_ts = pd.Timestamp(end_date)        
 
             
             fig, location_name = plot_forecasts(observed_data, forecast_data, selected_location, selected_date, selected_models, available_dates, start_date_ts, end_date_ts)
@@ -920,7 +940,7 @@ with tab_forecasts:
                 except:
                     pass
             
-            st.markdown("**Tip:** Change the location, forecast date, or historical date range in the sidebar.")
+            #st.markdown("**Tip:** Change the location, forecast date, or historical date range in the sidebar.")
            
         else:
             st.warning("Please select at least one model to display")
