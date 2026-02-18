@@ -1307,7 +1307,7 @@ with tab_overview:
 
     
     with row1_col1:
-        with st.container(border=True, height=620):
+        with st.container(border=True, height=650):
            # st.markdown("### Observed Hospitalizations")
 
            # Filter and plot
@@ -1451,7 +1451,7 @@ with tab_overview:
 
 
     with row1_col2:
-        with st.container(border=True, height=620):
+        with st.container(border=True, height=650):
             st.markdown("<p style='font-size: 22px;'><b>What are Flu Activity Levels?</b></p>", unsafe_allow_html=True)
             st.markdown(
                 """
