@@ -556,6 +556,7 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
             x=obs_filtered['date'],
             y=obs_filtered['value'],
             mode='lines',
+            showlegend=False,
             line=dict(color='black', width=2),
             hovertemplate='Value: %{y:,.0f}<extra></extra>'
         ))
