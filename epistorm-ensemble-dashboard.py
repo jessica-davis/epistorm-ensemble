@@ -556,7 +556,6 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
             x=obs_filtered['date'],
             y=obs_filtered['value'],
             mode='lines',
-            name='Observed',
             line=dict(color='black', width=2),
             hovertemplate='Value: %{y:,.0f}<extra></extra>'
         ))
@@ -566,8 +565,8 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
             fig.add_trace(go.Scatter(
                 x=obs_past['date'],
                 y=obs_past['value'],
-                mode='markers',
-                name='Observed',
+                mode='lines+markers',
+                name='Observed (in sample)',
                 showlegend=False,
                 marker=dict(size=6, symbol='circle', color='black'),
                 hovertemplate='Value: %{y:,.0f}<extra></extra>'
@@ -578,8 +577,8 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
             fig.add_trace(go.Scatter(
                 x=obs_future['date'],
                 y=obs_future['value'],
-                mode='markers',
-                name='Observed (preliminary)',
+                mode='lines+markers',
+                name='Observed (out of sample)',
                 marker=dict(size=6, symbol='circle-open', color='black'),
                 hovertemplate='Value: %{y:,.0f}<extra></extra>'
             ))
