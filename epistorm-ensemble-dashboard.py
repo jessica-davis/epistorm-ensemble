@@ -769,51 +769,8 @@ with tab_forecasts:
             st.error("No forecast dates available")
             st.stop()
 
-        # Date range
-        with st.expander("Historical Data Range", expanded=True):
-            if not observed_data.empty:
-                min_obs_date = observed_data['date'].min().date()
-                max_obs_date = observed_data['date'].max().date()
-            else:
-                min_obs_date = datetime(2024, 1, 1).date()
-                max_obs_date = datetime.now().date()
 
-            latest_forecast_date = None
-            if not forecast_data.empty and 'target_end_date' in forecast_data.columns:
-                selected_forecast_data = forecast_data[forecast_data['reference_date'] == selected_date]
-                if not selected_forecast_data.empty:
-                    latest_forecast_date = pd.Timestamp(selected_forecast_data['target_end_date'].max()).date()
 
-            max_end_date = max(max_obs_date, latest_forecast_date) if latest_forecast_date else max_obs_date
-
-            range_options = {
-                "Last 3 Months": 3,
-                "Last 6 Months": 6,
-                "Last year": 12,
-                "Last 2 Years": 24,
-                "All data": None,
-            }
-
-            if 'selected_range' not in st.session_state:
-                st.session_state.selected_range = "Last 6 Months"
-
-            for label in range_options:
-                if st.button(label, key=f"range_{label}", use_container_width=True):
-                    st.session_state.selected_range = label
-
-            months = range_options[st.session_state.selected_range]
-            if months is None:
-                start_date = min_obs_date
-            else:
-                start_date = max_end_date - pd.DateOffset(months=months)
-                start_date = max(start_date.date(), min_obs_date)
-
-            end_date = max_end_date
-            st.session_state.start_date = start_date
-            st.session_state.end_date = end_date
-
-        start_date_ts = pd.Timestamp(start_date)
-        end_date_ts = pd.Timestamp(end_date)
 
         # Model selection (ensemble only)
         selected_models = ['Median Epistorm Ensemble']
@@ -845,6 +802,52 @@ with tab_forecasts:
     with chart_col:
        
         if selected_models:
+
+            # Date range
+            with st.expander("Historical Data Range", expanded=True):
+                if not observed_data.empty:
+                    min_obs_date = observed_data['date'].min().date()
+                    max_obs_date = observed_data['date'].max().date()
+                else:
+                    min_obs_date = datetime(2024, 1, 1).date()
+                    max_obs_date = datetime.now().date()
+
+                latest_forecast_date = None
+                if not forecast_data.empty and 'target_end_date' in forecast_data.columns:
+                    selected_forecast_data = forecast_data[forecast_data['reference_date'] == selected_date]
+                    if not selected_forecast_data.empty:
+                        latest_forecast_date = pd.Timestamp(selected_forecast_data['target_end_date'].max()).date()
+
+                max_end_date = max(max_obs_date, latest_forecast_date) if latest_forecast_date else max_obs_date
+
+                range_options = {
+                    "Last 3 Months": 3,
+                    "Last 6 Months": 6,
+                    "Last year": 12,
+                    "Last 2 Years": 24,
+                    "All data": None,
+                }
+
+                if 'selected_range' not in st.session_state:
+                    st.session_state.selected_range = "Last 6 Months"
+
+                for label in range_options:
+                    if st.button(label, key=f"range_{label}", use_container_width=True):
+                        st.session_state.selected_range = label
+
+                months = range_options[st.session_state.selected_range]
+                if months is None:
+                    start_date = min_obs_date
+                else:
+                    start_date = max_end_date - pd.DateOffset(months=months)
+                    start_date = max(start_date.date(), min_obs_date)
+
+                end_date = max_end_date
+                st.session_state.start_date = start_date
+                st.session_state.end_date = end_date
+
+            start_date_ts = pd.Timestamp(start_date)
+            end_date_ts = pd.Timestamp(end_date)
             
             fig, location_name = plot_forecasts(observed_data, forecast_data, selected_location, selected_date, selected_models, available_dates, start_date_ts, end_date_ts)
             
