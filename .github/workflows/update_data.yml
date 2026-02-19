@@ -88,3 +88,7 @@ jobs:
             git log HEAD..origin/main --oneline
             exit 1
           fi
+      - name: Force Streamlit redeploy
+        run: |
+          git commit --allow-empty -m "Force Streamlit redeploy [skip ci]"
+          git push origin main
