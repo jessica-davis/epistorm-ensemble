@@ -1537,7 +1537,7 @@ with outer_left:
             f"""
             <div style="padding: 2px 4px 8px 4px; color:#666; font-size:0.95rem;">
                 Over the next <b>{horizon_weeks} week{'s' if horizon_weeks > 1 else ''}</b>, 
-                flu hospitalizations in <b>{overview_location}</b> are projected to 
+                flu hospitalizations in {'the ' if overview_location == 'US' else ''} <b>{overview_location}</b> are projected to 
                 <b style="color:{cat_color};">{cat_label.lower()}</b> — 
                 activity levels are forecast to stay <b style="color:{act_color};">{act_level}</b> 
                 through <b>{target_date}</b>.
