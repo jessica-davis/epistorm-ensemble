@@ -1383,6 +1383,13 @@ with tab_overview:
                     (obs_loc['date'] <= pd.Timestamp(prior_end))
                 ]
 
+                st.write("current_date", current_date)
+                st.write("prior_epiweek", str(prior_epiweek))
+                st.write("prior_row empty", prior_row.empty)
+                st.write("current_value", current_value)
+                st.write("current_threshold", current_threshold)
+                st.write("threshold_dat", threshold_dat)
+
                 # Calculate current threshold
                 recent_date       = obs_loc[obs_loc['date'] == current_date]
                 current_value     = recent_date['value'].iloc[0] if not recent_date.empty else None
