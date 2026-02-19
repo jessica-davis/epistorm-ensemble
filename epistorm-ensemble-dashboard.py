@@ -1307,7 +1307,7 @@ with tab_overview:
 
     
     with row1_col1:
-        with st.container(border=True, height=650):
+        with st.container(border=True, height=800):
             st.write("obs_filtered shape", obs_filtered.shape)
            # st.markdown("### Observed Hospitalizations")
            # Filter and plot
