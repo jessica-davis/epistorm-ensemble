@@ -1683,7 +1683,7 @@ with outer_right:
         st.markdown("#### Trend forecasts")
         st.markdown(
             """
-            **Trend direction** describes how hospitalization levels are expected to change 
+            **Trend direction** describes how activity levels are expected to change 
             over the selected forecast horizon relative to the current period.
 
             Forecasts are expressed as probabilities across five categories:
@@ -1695,12 +1695,19 @@ with outer_right:
                 <li><span style="color:#e29578; font-weight:700;">Increase</span> — a moderate rise in activity</li>
                 <li><span style="color:#bc4749; font-weight:700;">Large Increase</span> — a substantial rise in activity</li>
             </ul>
+            """,
+            unsafe_allow_html=True
+        )
 
+        st.markdown(
+            """
             Probabilities collective uncertainty in these categories. The highlighted bar represents 
             the most likely outcome, but the full distribution should be considered 
             when interpreting the forecast.
             """
-            )
+        )
+
+    
 
 
 st.divider()
