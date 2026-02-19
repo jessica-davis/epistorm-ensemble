@@ -1308,7 +1308,7 @@ with tab_overview:
     
     with row1_col1:
         with st.container(border=True, height=650):
-            st.write("obs_filtered shape", obs_filtered.shape)
+            
            # st.markdown("### Observed Hospitalizations")
            # Filter and plot
             obs_filtered = observed_data[ (observed_data['location'] == overview_location)
@@ -1349,6 +1349,8 @@ with tab_overview:
                     obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(years=1)]
                 elif date_range_option == "Last 2 years":
                     obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(years=2)]
+
+                st.write("obs_filtered shape", obs_filtered.shape)
 
                 recent_date = obs_filtered[obs_filtered['date'] == obs_filtered['date'].max()] if not obs_filtered.empty else None
                 value = recent_date['value'].iloc[0] if recent_date is not None else None
