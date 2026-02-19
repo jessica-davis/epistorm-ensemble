@@ -1350,7 +1350,6 @@ with tab_overview:
                 elif date_range_option == "Last 2 years":
                     obs_filtered = obs_filtered[obs_filtered['date'] >= max_date - pd.DateOffset(years=2)]
 
-                st.write("obs_filtered shape", obs_filtered.shape)
 
                 recent_date = obs_filtered[obs_filtered['date'] == obs_filtered['date'].max()] if not obs_filtered.empty else None
                 value = recent_date['value'].iloc[0] if recent_date is not None else None
@@ -1386,14 +1385,6 @@ with tab_overview:
                     (obs_loc['date'] >= pd.Timestamp(prior_start)) &
                     (obs_loc['date'] <= pd.Timestamp(prior_end))
                 ]
-
-                st.write("current_date", current_date)
-                st.write("prior_epiweek", str(prior_epiweek))
-                st.write("prior_row empty", prior_row.empty)
-                st.write("current_value", current_value)
-                st.write("current_threshold", current_threshold)
-                st.write("threshold_dat", threshold_dat)
-
 
                 # Calculate current threshold
                 recent_date       = obs_loc[obs_loc['date'] == current_date]

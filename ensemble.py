@@ -197,7 +197,7 @@ def create_ensemble_method2(forecast_data: pd.DataFrame) -> pd.DataFrame:
     df['target_end_date'] = pd.to_datetime(df['target_end_date'])
     
     # Exclude specific locations upfront
-    df = df[~df['location'].isin(['66', '72'])]
+    df = df[~df['location'].isin(['66',])]
     
     # Group by date and location to process in batches
     grouped = df.groupby(['reference_date', 'location'])
@@ -221,6 +221,7 @@ def create_ensemble_method2(forecast_data: pd.DataFrame) -> pd.DataFrame:
     # Add model identifier
     ensemble = pd.concat(results_list, ignore_index=True)
     ensemble['model'] = 'LOP Epistorm Ensemble'
+    ensemble['output_type_id'] = ensemble['output_type_id'].astype(str)
     
     # Single concatenation at the end
     return ensemble
