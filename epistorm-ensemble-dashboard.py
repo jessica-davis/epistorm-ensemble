@@ -1512,261 +1512,261 @@ with tab_overview:
 
     # ── Replace your row2_col1 and row2_col2 blocks with this ──────────────────────
 
-# ── Outer layout: forecast card (60) + new container (40) ─────────────────────
-outer_left, outer_right = st.columns([4,2], gap="large")
+    # ── Outer layout: forecast card (60) + new container (40) ─────────────────────
+    outer_left, outer_right = st.columns([4,2], gap="large")
 
-with outer_left:
-    with st.container(border=True, height=600):
+    with outer_left:
+        with st.container(border=True, height=600):
 
-        # ── Load & filter activity level data ──────────────────────────────────
-        act_df = pd.read_parquet('./data/activity_level_ensemble.pq')
-        act_df['reference_date'] = pd.to_datetime(act_df['reference_date'])
-        act_df = act_df[act_df['location'] == overview_location]
-        act_plot = act_df[
-            (act_df['reference_date'] == st.session_state.overview_ref_date) &
-            (act_df['horizon'] == st.session_state.overview_horizon)
-        ].copy()
+            # ── Load & filter activity level data ──────────────────────────────────
+            act_df = pd.read_parquet('./data/activity_level_ensemble.pq')
+            act_df['reference_date'] = pd.to_datetime(act_df['reference_date'])
+            act_df = act_df[act_df['location'] == overview_location]
+            act_plot = act_df[
+                (act_df['reference_date'] == st.session_state.overview_ref_date) &
+                (act_df['horizon'] == st.session_state.overview_horizon)
+            ].copy()
 
-        # ── Load & filter trend data ────────────────────────────────────────────
-        cat_df = pd.read_parquet('./data/categorical_ensemble.pq')
-        cat_df['reference_date'] = pd.to_datetime(cat_df['reference_date'])
-        cat_df = cat_df[cat_df['location'] == overview_location]
-        cat_plot = cat_df[
-            (cat_df['reference_date'] == st.session_state.overview_ref_date) &
-            (cat_df['horizon'] == st.session_state.overview_horizon)
-        ].copy()
+            # ── Load & filter trend data ────────────────────────────────────────────
+            cat_df = pd.read_parquet('./data/categorical_ensemble.pq')
+            cat_df['reference_date'] = pd.to_datetime(cat_df['reference_date'])
+            cat_df = cat_df[cat_df['location'] == overview_location]
+            cat_plot = cat_df[
+                (cat_df['reference_date'] == st.session_state.overview_ref_date) &
+                (cat_df['horizon'] == st.session_state.overview_horizon)
+            ].copy()
 
-        # ── Derive headline values ──────────────────────────────────────────────
-        act_max_idx = act_plot['value'].dropna().idxmax()
-        act_level   = act_plot.loc[act_max_idx, 'output_type_id']
-        act_prob    = act_plot.loc[act_max_idx, 'value']
-        act_color   = ACTIVITY_COLORS.get(act_level, 'black')
+            # ── Derive headline values ──────────────────────────────────────────────
+            act_max_idx = act_plot['value'].dropna().idxmax()
+            act_level   = act_plot.loc[act_max_idx, 'output_type_id']
+            act_prob    = act_plot.loc[act_max_idx, 'value']
+            act_color   = ACTIVITY_COLORS.get(act_level, 'black')
 
-        cat_max_idx = cat_plot['value'].dropna().idxmax()
-        cat_label   = format_category(cat_plot.loc[cat_max_idx, 'output_type_id'])
-        cat_prob    = cat_plot.loc[cat_max_idx, 'value']
-        cat_color   = CATEGORY_COLORS.get(cat_label, 'black')
-        if cat_label == 'Stable':
-            cat_color = 'dimgray'
+            cat_max_idx = cat_plot['value'].dropna().idxmax()
+            cat_label   = format_category(cat_plot.loc[cat_max_idx, 'output_type_id'])
+            cat_prob    = cat_plot.loc[cat_max_idx, 'value']
+            cat_color   = CATEGORY_COLORS.get(cat_label, 'black')
+            if cat_label == 'Stable':
+                cat_color = 'dimgray'
 
-        # ── Headline ───────────────────────────────────────────────────────────
-        st.markdown(
-            f"""
-            <div style="padding: 8px 4px 4px 4px;">
-                <span style="font-size:1.25rem; font-weight:600; color:#333;">
-                    Forecast summary &nbsp;·&nbsp;
-                </span>
-                <span style="font-size:1.25rem; font-weight:700; color:{act_color};">
-                    {act_level}
-                </span>
-                <span style="font-size:1.25rem; font-weight:600; color:#333;">
-                    &nbsp;activity, trending&nbsp;
-                </span>
-                <span style="font-size:1.25rem; font-weight:700; color:{cat_color};">
-                    {cat_label.lower()}
-                </span>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        # ── Dynamic summary sentence ───────────────────────────────────────────
-        horizon_weeks = st.session_state.overview_horizon + 1
-        target_date   = (pd.Timestamp(st.session_state.overview_ref_date) +
-                         pd.Timedelta(weeks=horizon_weeks)).strftime('%B %d, %Y')
-
-        st.markdown(
-            f"""
-            <div style="padding: 2px 4px 8px 4px; color:#666; font-size:0.95rem;">
-                Over the next <b>{horizon_weeks} week{'s' if horizon_weeks > 1 else ''}</b>, 
-                flu hospitalizations in {'the ' if overview_location == 'US' else ''} <b>{overview_location}</b> are projected to 
-                <b style="color:{cat_color};">{cat_label.lower()}</b> — 
-                activity levels are forecast to stay <b style="color:{act_color};">{act_level}</b> 
-                through <b>{target_date}</b>.
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-
-        # ── Controls row ───────────────────────────────────────────────────────
-        ctrl1, ctrl2, _ = st.columns([1, 1, 2])
-        with ctrl1:
-            cat_dates = sorted(forecast_data['reference_date'].unique(), reverse=True)
-            st.selectbox(
-                "Forecast Date",
-                cat_dates,
-                format_func=lambda x: pd.Timestamp(x).strftime('%Y-%m-%d'),
-                index=0,
-                key="overview_ref_date"
-            )
-        with ctrl2:
-            horizon_labels = {0: "1 week ahead", 1: "2 weeks ahead",
-                              2: "3 weeks ahead", 3: "4 weeks ahead"}
-            st.selectbox(
-                "Forecast Horizon",
-                [0, 1, 2, 3],
-                index=3,
-                format_func=lambda x: horizon_labels[x],
-                key="overview_horizon"
-            )
-
-        st.divider()
-
-        # ── Chart columns ──────────────────────────────────────────────────────
-        left_col, mid_col, right_col = st.columns([10, 1, 10])
-
-        # ── LEFT: Activity level donut ─────────────────────────────────────────
-        with left_col:
-            act_order = ['Low', 'Moderate', 'High', 'Very High']
-            act_colors_map = {
-                'Low':       '#7DD4C8',
-                'Moderate':  '#3CAAA0',
-                'High':      '#2B7A8F',
-                'Very High': '#3D5A80',
-            }
-
-            act_plot = act_plot.set_index('output_type_id').reindex(act_order).reset_index()
-            act_plot['value'] = act_plot['value'].fillna(0)
-
-            slice_colors = [act_colors_map[r] for r in act_order]
-
-            fig_act = go.Figure()
-            fig_act.add_trace(go.Pie(
-                labels=act_order,
-                values=act_plot['value'],
-                hole=0.6,
-                marker=dict(colors=slice_colors, line=dict(color='white', width=2)),
-                textinfo='none',
-                hovertemplate='%{label}: %{percent}<extra></extra>',
-                sort=False,
-                direction='clockwise',
-            ))
-
-            fig_act.update_layout(
-                title=dict(text="Activity Level", font=dict(size=13, color='#555'), x=0),
-                annotations=[
-                    dict(
-                        text=f"<b>{act_level}</b><br>{act_prob:.0%}",
-                        x=0.5, y=0.5,
-                        font=dict(size=14, color=act_color),
-                        showarrow=False
-                    )
-                ],
-                showlegend=True,
-                legend=dict(
-                    orientation='v',
-                    x=1.0, y=0.5,
-                    font=dict(size=11),
-                    itemsizing='constant'
-                ),
-                height=260,
-                margin=dict(l=20, r=80, t=40, b=20),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-            )
-
-            st.plotly_chart(fig_act, use_container_width=True, config={'displayModeBar': False})
-
-        # ── MIDDLE: Vertical divider ───────────────────────────────────────────
-        with mid_col:
+            # ── Headline ───────────────────────────────────────────────────────────
             st.markdown(
-                """
-                <div style="display:flex; justify-content:center; height:260px;
-                            margin-top:40px;">
-                    <div style="width:1px; background-color:#e0e0e0; height:100%;"></div>
+                f"""
+                <div style="padding: 8px 4px 4px 4px;">
+                    <span style="font-size:1.25rem; font-weight:600; color:#333;">
+                        Forecast summary &nbsp;·&nbsp;
+                    </span>
+                    <span style="font-size:1.25rem; font-weight:700; color:{act_color};">
+                        {act_level}
+                    </span>
+                    <span style="font-size:1.25rem; font-weight:600; color:#333;">
+                        &nbsp;activity, trending&nbsp;
+                    </span>
+                    <span style="font-size:1.25rem; font-weight:700; color:{cat_color};">
+                        {cat_label.lower()}
+                    </span>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
-        # ── RIGHT: Trend horizontal bars ───────────────────────────────────────
-        with right_col:
-            cat_order  = ['large_decrease', 'decrease', 'stable', 'increase', 'large_increase']
-            cat_labels = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Increase']
-            cat_colors_map = {
-                'Large Decrease': '#006d77',
-                'Decrease':       '#83c5be',
-                'Stable':         '#aaaaaa',
-                'Increase':       '#e29578',
-                'Large Increase': '#bc4749',
-            }
+            # ── Dynamic summary sentence ───────────────────────────────────────────
+            horizon_weeks = st.session_state.overview_horizon + 1
+            target_date   = (pd.Timestamp(st.session_state.overview_ref_date) +
+                            pd.Timedelta(weeks=horizon_weeks)).strftime('%B %d, %Y')
 
-            cat_plot = cat_plot.set_index('output_type_id').reindex(cat_order).reset_index()
-            cat_plot['value'] = cat_plot['value'].fillna(0)
-
-            # Winner full opacity, others muted but still their own color
-            bar_colors = []
-            for lbl in cat_labels:
-                hex_col = cat_colors_map[lbl]
-                if lbl == cat_label:
-                    bar_colors.append(hex_col)
-                else:
-                    # Convert hex to rgba with reduced opacity
-                    h = hex_col.lstrip('#')
-                    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-                    bar_colors.append(f'rgba({r},{g},{b},0.35)')
-
-            fig_cat = go.Figure()
-            fig_cat.add_trace(go.Bar(
-                y=cat_labels,
-                x=cat_plot['value'],
-                orientation='h',
-                marker_color=bar_colors,
-                marker_line_width=0,
-                text=[f"{v:.0%}" if v > 0 else "" for v in cat_plot['value']],
-                textposition='outside',
-                textfont=dict(size=11, color='#555'),
-                hovertemplate='%{y}: %{x:.1%}<extra></extra>',
-                showlegend=False
-            ))
-
-            fig_cat.update_layout(
-                title=dict(text="Trend Direction", font=dict(size=13, color='#555'), x=0),
-                xaxis=dict(
-                    tickformat='.0%', range=[0, 1.15],
-                    showgrid=False, zeroline=False, showticklabels=False
-                ),
-                yaxis=dict(
-                    categoryorder='array', categoryarray=list(reversed(cat_labels)),
-                    showgrid=False, tickfont=dict(size=12)
-                ),
-                height=260,
-                margin=dict(l=110, r=60, t=40, b=20),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
+            st.markdown(
+                f"""
+                <div style="padding: 2px 4px 8px 4px; color:#666; font-size:0.95rem;">
+                    Over the next <b>{horizon_weeks} week{'s' if horizon_weeks > 1 else ''}</b>, 
+                    flu hospitalizations in {'the ' if overview_location == 'US' else ''} <b>{overview_location}</b> are projected to 
+                    <b style="color:{cat_color};">{cat_label.lower()}</b> — 
+                    activity levels are forecast to stay <b style="color:{act_color};">{act_level}</b> 
+                    through <b>{target_date}</b>.
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
-            st.plotly_chart(fig_cat, use_container_width=True, config={'displayModeBar': False})
 
-with outer_right:
-    with st.container(border=True, height=600):
-        st.markdown("#### Trend forecasts")
-        st.markdown(
-            """
-            **Trend direction** describes how hospitalization levels are expected to change 
-            over time, relative to the current period. Forecasts are expressed as probabilities across five categories:
+            # ── Controls row ───────────────────────────────────────────────────────
+            ctrl1, ctrl2, _ = st.columns([1, 1, 2])
+            with ctrl1:
+                cat_dates = sorted(forecast_data['reference_date'].unique(), reverse=True)
+                st.selectbox(
+                    "Forecast Date",
+                    cat_dates,
+                    format_func=lambda x: pd.Timestamp(x).strftime('%Y-%m-%d'),
+                    index=0,
+                    key="overview_ref_date"
+                )
+            with ctrl2:
+                horizon_labels = {0: "1 week ahead", 1: "2 weeks ahead",
+                                2: "3 weeks ahead", 3: "4 weeks ahead"}
+                st.selectbox(
+                    "Forecast Horizon",
+                    [0, 1, 2, 3],
+                    index=3,
+                    format_func=lambda x: horizon_labels[x],
+                    key="overview_horizon"
+                )
 
-            <ul style="line-height:2;">
-                <li><span style="color:#006d77; font-weight:700;">Large Decrease</span> — a substantial decline in activity</li>
-                <li><span style="color:#83c5be; font-weight:700;">Decrease</span> — a moderate decline in activity</li>
-                <li><span style="color:#aaaaaa; font-weight:700;">Stable</span> — little to no change expected</li>
-                <li><span style="color:#e29578; font-weight:700;">Increase</span> — a moderate rise in activity</li>
-                <li><span style="color:#bc4749; font-weight:700;">Large Increase</span> — a substantial rise in activity</li>
-            </ul>
-            """,
-            unsafe_allow_html=True
-        )
+            st.divider()
 
-        st.markdown(
-            """
-            Probabilities collective uncertainty in these categories. The highlighted bar represents 
-            the most likely outcome, but the full distribution should be considered 
-            when interpreting the forecast.
-            """
-        )
+            # ── Chart columns ──────────────────────────────────────────────────────
+            left_col, mid_col, right_col = st.columns([10, 1, 10])
 
-    
+            # ── LEFT: Activity level donut ─────────────────────────────────────────
+            with left_col:
+                act_order = ['Low', 'Moderate', 'High', 'Very High']
+                act_colors_map = {
+                    'Low':       '#7DD4C8',
+                    'Moderate':  '#3CAAA0',
+                    'High':      '#2B7A8F',
+                    'Very High': '#3D5A80',
+                }
+
+                act_plot = act_plot.set_index('output_type_id').reindex(act_order).reset_index()
+                act_plot['value'] = act_plot['value'].fillna(0)
+
+                slice_colors = [act_colors_map[r] for r in act_order]
+
+                fig_act = go.Figure()
+                fig_act.add_trace(go.Pie(
+                    labels=act_order,
+                    values=act_plot['value'],
+                    hole=0.6,
+                    marker=dict(colors=slice_colors, line=dict(color='white', width=2)),
+                    textinfo='none',
+                    hovertemplate='%{label}: %{percent}<extra></extra>',
+                    sort=False,
+                    direction='clockwise',
+                ))
+
+                fig_act.update_layout(
+                    title=dict(text="Activity Level", font=dict(size=13, color='#555'), x=0),
+                    annotations=[
+                        dict(
+                            text=f"<b>{act_level}</b><br>{act_prob:.0%}",
+                            x=0.5, y=0.5,
+                            font=dict(size=14, color=act_color),
+                            showarrow=False
+                        )
+                    ],
+                    showlegend=True,
+                    legend=dict(
+                        orientation='v',
+                        x=1.0, y=0.5,
+                        font=dict(size=11),
+                        itemsizing='constant'
+                    ),
+                    height=260,
+                    margin=dict(l=20, r=80, t=40, b=20),
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                )
+
+                st.plotly_chart(fig_act, use_container_width=True, config={'displayModeBar': False})
+
+            # ── MIDDLE: Vertical divider ───────────────────────────────────────────
+            with mid_col:
+                st.markdown(
+                    """
+                    <div style="display:flex; justify-content:center; height:260px;
+                                margin-top:40px;">
+                        <div style="width:1px; background-color:#e0e0e0; height:100%;"></div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            # ── RIGHT: Trend horizontal bars ───────────────────────────────────────
+            with right_col:
+                cat_order  = ['large_decrease', 'decrease', 'stable', 'increase', 'large_increase']
+                cat_labels = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Increase']
+                cat_colors_map = {
+                    'Large Decrease': '#006d77',
+                    'Decrease':       '#83c5be',
+                    'Stable':         '#aaaaaa',
+                    'Increase':       '#e29578',
+                    'Large Increase': '#bc4749',
+                }
+
+                cat_plot = cat_plot.set_index('output_type_id').reindex(cat_order).reset_index()
+                cat_plot['value'] = cat_plot['value'].fillna(0)
+
+                # Winner full opacity, others muted but still their own color
+                bar_colors = []
+                for lbl in cat_labels:
+                    hex_col = cat_colors_map[lbl]
+                    if lbl == cat_label:
+                        bar_colors.append(hex_col)
+                    else:
+                        # Convert hex to rgba with reduced opacity
+                        h = hex_col.lstrip('#')
+                        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+                        bar_colors.append(f'rgba({r},{g},{b},0.35)')
+
+                fig_cat = go.Figure()
+                fig_cat.add_trace(go.Bar(
+                    y=cat_labels,
+                    x=cat_plot['value'],
+                    orientation='h',
+                    marker_color=bar_colors,
+                    marker_line_width=0,
+                    text=[f"{v:.0%}" if v > 0 else "" for v in cat_plot['value']],
+                    textposition='outside',
+                    textfont=dict(size=11, color='#555'),
+                    hovertemplate='%{y}: %{x:.1%}<extra></extra>',
+                    showlegend=False
+                ))
+
+                fig_cat.update_layout(
+                    title=dict(text="Trend Direction", font=dict(size=13, color='#555'), x=0),
+                    xaxis=dict(
+                        tickformat='.0%', range=[0, 1.15],
+                        showgrid=False, zeroline=False, showticklabels=False
+                    ),
+                    yaxis=dict(
+                        categoryorder='array', categoryarray=list(reversed(cat_labels)),
+                        showgrid=False, tickfont=dict(size=12)
+                    ),
+                    height=260,
+                    margin=dict(l=110, r=60, t=40, b=20),
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                )
+
+                st.plotly_chart(fig_cat, use_container_width=True, config={'displayModeBar': False})
+
+    with outer_right:
+        with st.container(border=True, height=600):
+            st.markdown("#### Trend forecasts")
+            st.markdown(
+                """
+                **Trend direction** describes how hospitalization levels are expected to change 
+                over time, relative to the current period. Forecasts are expressed as probabilities across five categories:
+
+                <ul style="line-height:2;">
+                    <li><span style="color:#006d77; font-weight:700;">Large Decrease</span> — a substantial decline in activity</li>
+                    <li><span style="color:#83c5be; font-weight:700;">Decrease</span> — a moderate decline in activity</li>
+                    <li><span style="color:#aaaaaa; font-weight:700;">Stable</span> — little to no change expected</li>
+                    <li><span style="color:#e29578; font-weight:700;">Increase</span> — a moderate rise in activity</li>
+                    <li><span style="color:#bc4749; font-weight:700;">Large Increase</span> — a substantial rise in activity</li>
+                </ul>
+                """,
+                unsafe_allow_html=True
+            )
+
+            st.markdown(
+                """
+                Probabilities collective uncertainty in these categories. The highlighted bar represents 
+                the most likely outcome, but the full distribution should be considered 
+                when interpreting the forecast.
+                """
+            )
+
+        
 
 
 st.divider()
