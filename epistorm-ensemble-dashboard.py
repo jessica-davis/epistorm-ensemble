@@ -108,7 +108,7 @@ DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
 
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=1)
 def load_locations():
     """Load locations from local file or fallback to original source"""
     try:
@@ -118,7 +118,7 @@ def load_locations():
         st.error(f"Error loading locations: {e}")
         return None
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=1)
 def load_observed_data():
     """Load observed data from local cache or fetch if not available"""
     local_file = DATA_DIR / "observed_data.csv"
@@ -144,7 +144,7 @@ def load_observed_data():
         return None
 
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=1)
 def load_thresholds():
     """Load observed data from local cache or fetch if not available"""
     local_file = DATA_DIR / "threshold_levels.csv"
@@ -159,7 +159,7 @@ def load_thresholds():
     
 
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=1)
 def load_all_forecasts():
     """Load all forecasts from local cache or fetch if not available"""
     local_file = DATA_DIR / "all_forecasts.parquet"
@@ -197,7 +197,7 @@ def load_all_forecasts():
         return combined
     return pd.DataFrame()
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=1)
 def load_baseline_forecasts():
     """Load baseline forecasts from local cache or fetch if not available"""
     local_file = DATA_DIR / "baseline_forecasts.parquet"
@@ -222,7 +222,7 @@ def load_baseline_forecasts():
 
 
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=1)
 def load_model_forecasts(model_name):
     base_url = f"https://raw.githubusercontent.com/cdcepi/FluSight-forecast-hub/main/model-output/{model_name}"
     all_forecasts = []
@@ -250,7 +250,7 @@ def load_model_forecasts(model_name):
     return pd.DataFrame()
 
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=1)
 def load_wis_data():
     try:
         df = pd.read_parquet('./data/wis_ratio_epistorm_models_2526.pq')
@@ -262,7 +262,7 @@ def load_wis_data():
         st.error(f"Error loading WIS data: {e}")
         return None
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=1)
 def load_coverage_data():
     try:
         df = pd.read_parquet('./data/coverage_epistorm_models_2526.pq')
