@@ -237,7 +237,10 @@ class scoring_functions:
         DataFrame with WIS scores
         """
         dfwis = pd.DataFrame()
+        results = []
         
+        surv= surv.copy()
+        surv['date'] = pd.to_datetime(surv['date'])
         for horizon in [0, 1, 2, 3]:
             for model in models:
                 for date in dates: 
@@ -254,20 +257,19 @@ class scoring_functions:
                         if len(predsfilt) == 0:
                             continue
 
-                        observations = surv.copy()
-                        observations['date'] = pd.to_datetime(observations['date'])
-
                         # Filter date and location
-                        observations = observations[
-                            (observations['date'] == predsfilt.target_end_date.unique()[0]) &
-                            (observations['location'] == location)
+                        observations = surv[
+                            (surv['date'] == predsfilt.target_end_date.unique()[0]) &
+                            (surv['location'] == location)
                         ]
 
                         if len(observations) == 0:
                             continue
 
                         out = self.timestamp_wis(observations, predsfilt)
-                        dfwis = pd.concat([dfwis, out])
+                        results.append(out)
+                        #dfwis = pd.concat([dfwis, out])
+        dfwis = pd.concat(results, ignore_index=True)
 
         if save_location:
             dfwis.to_pickle(f'{save_location}fluforecast_timestamp_wis_{datetime.today().date()}.pkl')
@@ -296,7 +298,11 @@ class scoring_functions:
         --------
         DataFrame with coverage values
         """
-        dfcoverage = pd.DataFrame()
+        #dfcoverage = pd.DataFrame()
+        results = []
+
+        surv = surv.copy()
+        surv['date'] = pd.to_datetime(surv['date'])
 
         for date in dates:
             for model in models:
@@ -310,16 +316,13 @@ class scoring_functions:
                             (predsall.target_end_date <= surv.date.max()) &
                             (predsall.location == location)
                         ]
-                        
+                         
                         if len(pred) == 0:
                             continue
 
-                        observations = surv.copy()
-                        observations['date'] = pd.to_datetime(observations['date'])
-
                         # Filter date and location
-                        observations = observations[
-                            observations['date'] == pred.target_end_date.unique()[0]
+                        observations = surv[
+                            surv['date'] == pred.target_end_date.unique()[0]
                         ]
                         observations = observations[
                             observations['location'] == location
@@ -337,9 +340,11 @@ class scoring_functions:
                         out['horizon'] = horizon
                         out['location'] = location
 
-                        dfcoverage = pd.concat([dfcoverage, out])
+                        #dfcoverage = pd.concat([dfcoverage, out])
+                        results.append(out)
+        dfcoverage = pd.concat(results, ignore_index=True)
 
-        dfcoverage = dfcoverage.reset_index().drop(columns=['index'])
+        #dfcoverage = dfcoverage.reset_index().drop(columns=['index'])
 
         if save_location:
             dfcoverage.to_pickle(f'{save_location}fluforecast_coverage_{datetime.today().date()}.pkl')
