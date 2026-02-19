@@ -1307,7 +1307,7 @@ with tab_overview:
 
     
     with row1_col1:
-        with st.container(border=True, height=850):
+        with st.container(border=True, height=650):
             
            # st.markdown("### Observed Hospitalizations")
            # Filter and plot
