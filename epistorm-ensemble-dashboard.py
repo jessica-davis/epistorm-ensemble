@@ -1367,6 +1367,47 @@ with tab_overview:
                 threshold_color = ACTIVITY_COLORS.get(current_threshold, 'black')
                 heading = f"The flu activity level in {loc_text} is currently " f"<b style='color: {threshold_color};'>{current_threshold}</b> " + \
                     f"as of {obs_filtered['date'].max().strftime('%B %d, %Y')}."
+                
+
+                current_date = obs_filtered['date'].max()
+                current_epiweek = Week.fromdate(current_date)
+
+                # Same epiweek, prior year
+                prior_epiweek = Week(current_epiweek.year - 1, current_epiweek.week)
+                prior_start   = prior_epiweek.startdate()
+                prior_end     = prior_epiweek.enddate()
+
+                obs_loc   = obs_filtered[obs_filtered['location'] == overview_location].copy()
+                prior_row = obs_loc[
+                    (obs_loc['date'] >= pd.Timestamp(prior_start)) &
+                    (obs_loc['date'] <= pd.Timestamp(prior_end))
+                ]
+
+                if not prior_row.empty:
+                    prior_threshold = prior_row['value'].values[0]
+                    prior_date_str  = prior_row['date'].values[0]
+                    prior_date_fmt  = pd.Timestamp(prior_date_str).strftime('%B %d, %Y')
+                    prior_color     = ACTIVITY_COLORS.get(prior_threshold, 'black')
+
+                    if prior_threshold == current_threshold:
+                        comparison = (
+                            f"This is <b>consistent</b> with the same time last year, "
+                            f"when activity was also <b style='color:{prior_color};'>{prior_threshold}</b> "
+                            f"({prior_date_fmt})."
+                        )
+                    else:
+                        comparison = (
+                            f"This compares to <b style='color:{prior_color};'>{prior_threshold}</b> "
+                            f"activity at the same time last year ({prior_date_fmt})."
+                        )
+
+                    st.markdown(
+                        f"<div style='padding: 2px 4px 8px 4px; color:#666; font-size:0.95rem;'>"
+                        f"{comparison}</div>",
+                        unsafe_allow_html=True
+                    )
+
+                st.divider()
 
                 st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
                     
