@@ -1369,7 +1369,7 @@ with tab_overview:
                     f"as of {obs_filtered['date'].max().strftime('%B %d, %Y')}."
                 
 
-                current_date = pd.to_datetime(obs_filtered['date'].max())
+                current_date    = obs_filtered['date'].max()
                 current_epiweek = Week.fromdate(current_date)
 
                 # Same epiweek, prior year
@@ -1378,11 +1378,56 @@ with tab_overview:
                 prior_end     = prior_epiweek.enddate()
 
                 obs_loc   = obs_filtered[obs_filtered['location'] == overview_location].copy()
-                obs_loc['date'] = pd.to_datetime(obs_loc['date'])
                 prior_row = obs_loc[
                     (obs_loc['date'] >= pd.Timestamp(prior_start)) &
                     (obs_loc['date'] <= pd.Timestamp(prior_end))
                 ]
+
+                # Calculate current threshold
+                recent_date       = obs_loc[obs_loc['date'] == current_date]
+                current_value     = recent_date['value'].iloc[0] if not recent_date.empty else None
+                threshold_dat     = thresholds[thresholds['location'] == overview_location].iloc[0]
+
+                def get_threshold(val):
+                    if val is None:
+                        return None
+                    if val >= threshold_dat['Very High']:
+                        return 'Very High'
+                    elif val >= threshold_dat['High']:
+                        return 'High'
+                    elif val >= threshold_dat['Medium']:
+                        return 'Moderate'
+                    else:
+                        return 'Low'
+
+                current_threshold = get_threshold(current_value)
+
+                if not prior_row.empty and current_threshold is not None:
+                    prior_value     = prior_row['value'].iloc[0]
+                    prior_threshold = get_threshold(prior_value)
+                    prior_date_fmt  = prior_row['date'].iloc[0].strftime('%B %d, %Y')
+                    prior_color     = ACTIVITY_COLORS.get(prior_threshold, 'black')
+                    cur_color       = ACTIVITY_COLORS.get(current_threshold, 'black')
+
+                    if prior_threshold == current_threshold:
+                        comparison = (
+                            f"This is <b>consistent</b> with the same epiweek last year, "
+                            f"when activity was also "
+                            f"<b style='color:{prior_color};'>{prior_threshold}</b> "
+                            f"({prior_date_fmt})."
+                        )
+                    else:
+                        comparison = (
+                            f"This compares to "
+                            f"<b style='color:{prior_color};'>{prior_threshold}</b> "
+                            f"activity during the same epiweek last year ({prior_date_fmt})."
+                        )
+
+                    st.markdown(
+                        f"<div style='padding: 2px 4px 8px 4px; color:#666; font-size:0.95rem;'>"
+                        f"{comparison}</div>",
+                        unsafe_allow_html=True
+                    )
 
                 if not prior_row.empty:
                     prior_threshold = prior_row['value'].values[0]
@@ -1408,7 +1453,6 @@ with tab_overview:
                         unsafe_allow_html=True
                     )
 
-                #st.divider()
 
                 st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
                     
