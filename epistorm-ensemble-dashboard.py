@@ -1474,7 +1474,7 @@ with tab_overview:
 outer_left, outer_right = st.columns([4,2], gap="large")
 
 with outer_left:
-    with st.container(border=True, height=600):
+    with st.container(border=True, height=550):
 
         # ── Load & filter activity level data ──────────────────────────────────
         act_df = pd.read_parquet('./data/activity_level_ensemble.pq')
@@ -1679,14 +1679,12 @@ with outer_left:
             st.plotly_chart(fig_cat, use_container_width=True, config={'displayModeBar': False})
 
 with outer_right:
-    with st.container(border=True, height=600):
+    with st.container(border=True, height=550):
         st.markdown("#### Trend forecasts")
         st.markdown(
             """
-            **Trend direction** describes how activity levels are expected to change 
-            over the selected forecast horizon relative to the current period.
-
-            Forecasts are expressed as probabilities across five categories:
+            **Trend direction** describes how hospitalization levels are expected to change 
+            over time, relative to the current period. Forecasts are expressed as probabilities across five categories:
 
             <ul style="line-height:2;">
                 <li><span style="color:#006d77; font-weight:700;">Large Decrease</span> — a substantial decline in activity</li>
