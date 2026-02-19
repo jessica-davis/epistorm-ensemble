@@ -222,6 +222,7 @@ def create_ensemble_method2(forecast_data: pd.DataFrame) -> pd.DataFrame:
     ensemble = pd.concat(results_list, ignore_index=True)
     ensemble['model'] = 'LOP Epistorm Ensemble'
     ensemble['output_type_id'] = ensemble['output_type_id'].astype(str)
+    ensemble['output_type'] = 'quantile'
     
     # Single concatenation at the end
     return ensemble

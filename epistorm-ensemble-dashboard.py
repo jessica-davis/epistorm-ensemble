@@ -830,10 +830,12 @@ with tab_forecasts:
             """, unsafe_allow_html=True)
 
             with st.expander("Select Location", expanded=True):
-                for name in location_names:
-                    if st.checkbox(name, key=f"loc_{name}", value=(st.session_state.selected_location_name == name)):
-                        st.session_state.selected_location_name = name
-
+                selected = st.radio(
+                    label="",
+                    options=location_names,
+                    index=location_names.index(st.session_state.selected_location_name),
+                    key="selected_location_name"
+                )
             selected_location_name = st.session_state.selected_location_name
             selected_location = location_dict[selected_location_name]
         else:
