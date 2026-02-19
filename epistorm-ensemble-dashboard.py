@@ -1433,12 +1433,7 @@ with tab_overview:
                     )
 
 
-                    st.markdown(
-                        f"<div style='padding: 2px 4px 8px 4px; color:#666; font-size:0.95rem;'>"
-                        f"{comparison}</div>",
-                        unsafe_allow_html=True
-                    )
-
+                   
 
                 #st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
                     
