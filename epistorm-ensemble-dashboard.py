@@ -1309,7 +1309,7 @@ with tab_overview:
     with row1_col1:
         with st.container(border=True, height=650):
            # st.markdown("### Observed Hospitalizations")
-
+            st.write("hello")
            # Filter and plot
             obs_filtered = observed_data[ (observed_data['location'] == overview_location)
             ].sort_values('date')
@@ -1382,6 +1382,14 @@ with tab_overview:
                     (obs_loc['date'] >= pd.Timestamp(prior_start)) &
                     (obs_loc['date'] <= pd.Timestamp(prior_end))
                 ]
+
+                st.write("current_date", current_date)
+                st.write("prior_epiweek", str(prior_epiweek))
+                st.write("prior_row empty", prior_row.empty)
+                st.write("current_value", current_value)
+                st.write("current_threshold", current_threshold)
+                st.write("threshold_dat", threshold_dat)
+
 
                 # Calculate current threshold
                 recent_date       = obs_loc[obs_loc['date'] == current_date]
