@@ -1474,7 +1474,7 @@ with tab_overview:
 outer_left, outer_right = st.columns([4,2], gap="large")
 
 with outer_left:
-    with st.container(border=True, height=500):
+    with st.container(border=True, height=600):
 
         # ── Load & filter activity level data ──────────────────────────────────
         act_df = pd.read_parquet('./data/activity_level_ensemble.pq')
@@ -1527,6 +1527,24 @@ with outer_left:
             """,
             unsafe_allow_html=True
         )
+
+        # ── Dynamic summary sentence ───────────────────────────────────────────
+        horizon_weeks = st.session_state.overview_horizon + 1
+        target_date   = (pd.Timestamp(st.session_state.overview_ref_date) +
+                         pd.Timedelta(weeks=horizon_weeks)).strftime('%B %d, %Y')
+
+        st.markdown(
+            f"""
+            <div style="padding: 2px 4px 8px 4px; color:#666; font-size:0.95rem;">
+                In the next <b>{horizon_weeks} week{'s' if horizon_weeks > 1 else ''}</b> 
+                by <b>{target_date}</b>, we expect flu hospitalization activity to be 
+                <b style="color:{act_color};">{act_level}</b> with a 
+                <b style="color:{cat_color};">{cat_label.lower()}</b> trend.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
 
         # ── Controls row ───────────────────────────────────────────────────────
         ctrl1, ctrl2, _ = st.columns([1, 1, 2])
@@ -1679,7 +1697,7 @@ with outer_left:
             st.plotly_chart(fig_cat, use_container_width=True, config={'displayModeBar': False})
 
 with outer_right:
-    with st.container(border=True, height=500):
+    with st.container(border=True, height=600):
         st.markdown("#### Trend forecasts")
         st.markdown(
             """
