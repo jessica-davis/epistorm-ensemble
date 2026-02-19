@@ -1369,7 +1369,7 @@ with tab_overview:
                     f"as of {obs_filtered['date'].max().strftime('%B %d, %Y')}."
                 
 
-                current_date = obs_filtered['date'].max()
+                current_date = pd.to_datetime(obs_filtered['date'].max())
                 current_epiweek = Week.fromdate(current_date)
 
                 # Same epiweek, prior year
@@ -1378,6 +1378,7 @@ with tab_overview:
                 prior_end     = prior_epiweek.enddate()
 
                 obs_loc   = obs_filtered[obs_filtered['location'] == overview_location].copy()
+                obs_loc['date'] = pd.to_datetime(obs_loc['date'])
                 prior_row = obs_loc[
                     (obs_loc['date'] >= pd.Timestamp(prior_start)) &
                     (obs_loc['date'] <= pd.Timestamp(prior_end))
@@ -1407,7 +1408,7 @@ with tab_overview:
                         unsafe_allow_html=True
                     )
 
-                st.divider()
+                #st.divider()
 
                 st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
                     
