@@ -1405,6 +1405,9 @@ with tab_overview:
 
                 current_threshold = get_threshold(current_value)
 
+                st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
+                
+
                 if not prior_row.empty and current_threshold is not None:
                     prior_value     = prior_row['value'].iloc[0]
                     prior_threshold = get_threshold(prior_value)
@@ -1423,19 +1426,23 @@ with tab_overview:
                         comparison = (
                             f"This compares to "
                             f"<b style='color:{prior_color};'>{prior_threshold}</b> "
-                            f"activity during the same epiweek last year ({prior_date_fmt})."
+                            f"activity during the same week last year ({prior_date_fmt})."
                         )
-
                     st.markdown(
                         f"<div style='padding: 2px 4px 8px 4px; color:#666; font-size:0.95rem;'>"
                         f"{comparison}</div>",
                         unsafe_allow_html=True
                     )
 
+                  #  st.markdown(
+                  #      f"<div style='padding: 2px 4px 8px 4px; color:#666; font-size:0.95rem;'>"
+                  #      f"{comparison}</div>",
+                  #      unsafe_allow_html=True
+                  #  )
+
 
                    
 
-                #st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
                     
 
 
