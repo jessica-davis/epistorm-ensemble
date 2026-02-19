@@ -1680,30 +1680,27 @@ with outer_left:
 
 with outer_right:
     with st.container(border=True):
-        st.markdown("#### About this forecast")
+        st.markdown("#### Trend forecasts")
         st.markdown(
             """
-            **Trend direction** describes how activity levels are expected to change 
+            **Trend direction** describes how hospitalization levels are expected to change 
             over the selected forecast horizon relative to the current period.
 
             Forecasts are expressed as probabilities across five categories:
 
-            - **Large Decrease** — a substantial decline in activity
-            - **Decrease** — a moderate decline in activity
-            - **Stable** — little to no change expected
-            - **Increase** — a moderate rise in activity
-            - **Large Increase** — a substantial rise in activity
+            <ul style="line-height:2;">
+                <li><span style="color:#006d77; font-weight:700;">Large Decrease</span> — a substantial decline in activity</li>
+                <li><span style="color:#83c5be; font-weight:700;">Decrease</span> — a moderate decline in activity</li>
+                <li><span style="color:#aaaaaa; font-weight:700;">Stable</span> — little to no change expected</li>
+                <li><span style="color:#e29578; font-weight:700;">Increase</span> — a moderate rise in activity</li>
+                <li><span style="color:#bc4749; font-weight:700;">Large Increase</span> — a substantial rise in activity</li>
+            </ul>
 
-            Probabilities are derived from an ensemble of models and reflect the 
-            collective uncertainty across those models. The highlighted bar represents 
+            Probabilities collective uncertainty in these categories. The highlighted bar represents 
             the most likely outcome, but the full distribution should be considered 
             when interpreting the forecast.
-
-            **Forecast horizon** controls how far ahead the prediction looks — from 
-            1 week to 4 weeks. Uncertainty generally increases at longer horizons, 
-            which is reflected in more evenly spread probabilities.
             """
-        )
+            )
 
 
 st.divider()
