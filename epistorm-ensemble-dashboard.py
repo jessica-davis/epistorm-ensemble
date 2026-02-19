@@ -1471,7 +1471,7 @@ with tab_overview:
     # ── Replace your row2_col1 and row2_col2 blocks with this ──────────────────────
 
 # ── Outer layout: forecast card (60) + new container (40) ─────────────────────
-outer_left, outer_right = st.columns([4,2])
+outer_left, outer_right = st.columns([4,2], gap="large")
 
 with outer_left:
     with st.container(border=True):
