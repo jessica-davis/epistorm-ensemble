@@ -1536,10 +1536,10 @@ with outer_left:
         st.markdown(
             f"""
             <div style="padding: 2px 4px 8px 4px; color:#666; font-size:0.95rem;">
-                In the next <b>{horizon_weeks} week{'s' if horizon_weeks > 1 else ''}</b> 
-                by <b>{target_date}</b>, we expect flu hospitalization activity to be 
-                <b style="color:{act_color};">{act_level}</b> with a 
-                <b style="color:{cat_color};">{cat_label.lower()}</b> trend.
+                Over the next <b>{horizon_weeks} week{'s' if horizon_weeks > 1 else ''}</b>, 
+                flu hospitalizations are projected to <b style="color:{cat_color};">{cat_label.lower()}</b> — 
+                activity levels are forecast to stay <b style="color:{act_color};">{act_level}</b> 
+                through <b>{target_date}</b>.
             </div>
             """,
             unsafe_allow_html=True
