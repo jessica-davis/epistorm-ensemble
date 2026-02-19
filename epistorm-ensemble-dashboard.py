@@ -1377,7 +1377,9 @@ with tab_overview:
                 prior_start   = prior_epiweek.startdate()
                 prior_end     = prior_epiweek.enddate()
 
-                obs_loc   = obs_filtered[obs_filtered['location'] == overview_location].copy()
+                obs_all = observed_data[ observed_data['location'] == overview_location].sort_values('date')
+                obs_loc = obs_all.copy()
+
                 prior_row = obs_loc[
                     (obs_loc['date'] >= pd.Timestamp(prior_start)) &
                     (obs_loc['date'] <= pd.Timestamp(prior_end))
