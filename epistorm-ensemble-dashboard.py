@@ -1432,23 +1432,6 @@ with tab_overview:
                         unsafe_allow_html=True
                     )
 
-                if not prior_row.empty:
-                    prior_threshold = prior_row['value'].values[0]
-                    prior_date_str  = prior_row['date'].values[0]
-                    prior_date_fmt  = pd.Timestamp(prior_date_str).strftime('%B %d, %Y')
-                    prior_color     = ACTIVITY_COLORS.get(prior_threshold, 'black')
-
-                    if prior_threshold == current_threshold:
-                        comparison = (
-                            f"This is <b>consistent</b> with the same time last year, "
-                            f"when activity was also <b style='color:{prior_color};'>{prior_threshold}</b> "
-                            f"({prior_date_fmt})."
-                        )
-                    else:
-                        comparison = (
-                            f"This compares to <b style='color:{prior_color};'>{prior_threshold}</b> "
-                            f"activity at the same time last year ({prior_date_fmt})."
-                        )
 
                     st.markdown(
                         f"<div style='padding: 2px 4px 8px 4px; color:#666; font-size:0.95rem;'>"
