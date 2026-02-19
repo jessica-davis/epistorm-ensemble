@@ -1308,8 +1308,8 @@ with tab_overview:
     
     with row1_col1:
         with st.container(border=True, height=650):
+            st.write("obs_filtered shape", obs_filtered.shape)
            # st.markdown("### Observed Hospitalizations")
-            st.write("hello")
            # Filter and plot
             obs_filtered = observed_data[ (observed_data['location'] == overview_location)
             ].sort_values('date')
