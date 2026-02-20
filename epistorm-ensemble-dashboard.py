@@ -282,11 +282,13 @@ def create_ensemble_forecasts(forecast_data):
 
     ensemble1 = pd.read_parquet('./data/quantile_ensemble.pq')
     categorical_ensemble = pd.read_parquet('./data/categorical_ensemble.pq')
+    ensemble2 = pd.read_parquet('./data/quantile_ensemble_LOP.pq')
 
     ensemble1['model'] = 'Median Epistorm Ensemble'
     categorical_ensemble['model'] = 'Median Epistorm Ensemble'
+    ensemble2['model'] = 'LOP Epistorm Ensemble'
 
-    return pd.concat([ensemble1, categorical_ensemble], ignore_index=True)
+    return pd.concat([ensemble1, categorical_ensemble, ensemble2], ignore_index=True)
 
 def hex_to_rgba(hex_color, alpha):
     hex_color = hex_color.lstrip('#')
@@ -324,8 +326,8 @@ def plot_wis_boxplot_evaluation(wis_df, selected_models, locations_df):
     # Calculate median WIS ratio for each model and sort
     model_medians = {}
     for model in models_with_data:
-        if model=='FluSight-ensemble':
-            continue
+       # if model=='FluSight-ensemble':
+        #    continue
         model_data = wis_df[wis_df['Model'] == model]
         if not model_data.empty:
             model_medians[model] = model_data['wis_ratio'].median()
@@ -593,12 +595,6 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
         (forecast_data['model'].isin(selected_models))
     ].copy()
 
-    # ADD THIS DEBUG HERE:
-    print(f"DEBUG plot_forecasts:")
-    print(f"  forecast_filtered shape: {forecast_filtered.shape}")
-    print(f"  selected_models: {selected_models}")
-    print(f"  models in filtered data: {forecast_filtered['model'].unique()}")
-    
 
     max_forecast_date = end_date
     for model in selected_models:
@@ -765,7 +761,7 @@ if observed_data is None or observed_data.empty:
 
 with st.spinner("Creating ensemble forecasts..."):
     try:
-        if 'Median Epistorm Ensemble' not in forecast_data['model'].values:
+        if 'Median Epistorm Ensemble' not in forecast_data['model'].values or 'LOP Epistorm Ensemble' not in forecast_data['model'].values:
             ensemble_data = create_ensemble_forecasts(forecast_data)
             forecast_data = pd.concat([forecast_data, ensemble_data], ignore_index=True)
         forecast_data = forecast_data[forecast_data['horizon'] >= 0]
@@ -806,8 +802,17 @@ with tab_forecasts:
 
 
         # Model selection (ensemble only)
-        selected_models = ['Median Epistorm Ensemble']
-        st.session_state.selected_models = selected_models
+        #selected_models = ['Median Epistorm Ensemble']
+        #st.session_state.selected_models = selected_models
+
+        with st.expander("Select Model", expanded=True):
+            selected_models = st.radio(
+                label="",
+                options=['Median Epistorm Ensemble', 'LOP Epistorm Ensemble'],
+                index=0,
+                key="selected_model"
+            )
+            st.session_state.selected_models = [selected_models]
 
 
        # Location selector
@@ -817,7 +822,7 @@ with tab_forecasts:
             location_names = ['United States'] + state_locations_df['location_name'].tolist()
             location_dict = dict(zip(location_names, location_options))
 
-            if 'selected_location_name' not in st.session_state:
+            if 'selected_location_name' not in st.session_state: 
                 st.session_state.selected_location_name = 'United States'
 
             st.markdown("""
