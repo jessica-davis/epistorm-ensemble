@@ -94,7 +94,7 @@ def create_ensemble_method1(forecast_data):
     """
     
     # Filter for quantile forecasts only
-    quantile_data = forecast_data[(forecast_data['output_type'] == 'quantile') & (forecast_data['target']=='wk inc flu hosp')].copy() 
+    quantile_data = forecast_data[(forecast_data['output_type'] == 'quantile') & (forecast_data['target']=='wk inc flu hosp') & (forecast_data.model!='FluSight-ensemble')].copy() 
     
     # Group by all relevant columns except model and value
     grouping_cols = ['reference_date', 'location', 'horizon', 'target',  'target_end_date', 'output_type', 'output_type_id']
@@ -188,7 +188,8 @@ def create_ensemble_method2(forecast_data: pd.DataFrame) -> pd.DataFrame:
     # Filter once at the beginning
     df = forecast_data[
         (forecast_data['output_type'] == 'quantile') & 
-        (forecast_data['target'] == 'wk inc flu hosp')
+        (forecast_data['target'] == 'wk inc flu hosp') &
+        (forecast_data['model'] != 'FluSight-ensemble')
     ].copy()
     
     # Convert types once

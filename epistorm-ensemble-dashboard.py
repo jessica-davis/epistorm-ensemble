@@ -89,7 +89,8 @@ COLOR_MAP = {
     'NEU_ISI-FluBcast': '#bcbd22',
     'NEU_ISI-AdaptiveEnsemble': '#17becf',
     'Gatech-ensemble_prob': '#ff7f0e',
-    'Gatech-ensemble_stat': '#aec7e8'
+    'Gatech-ensemble_stat': '#aec7e8',
+    'FluSight-ensemble': '#1f77b4'
 }
 
 CATEGORY_COLORS = {

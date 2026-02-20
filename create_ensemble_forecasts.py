@@ -32,6 +32,7 @@ def main():
             sys.exit(1)
             
         df = pd.read_parquet(forecast_path)
+        df = df[df.model!='FluSight-ensemble'].copy()  # Exclude existing ensemble forecasts
         print(f"   Loaded {len(df):,} forecast rows")
         print(f"   Models: {df['model'].nunique()}")
         print(f"   Reference dates: {df['reference_date'].nunique()}")

@@ -24,7 +24,8 @@ MODELS = [
     'NEU_ISI-FluBcast', 
     'NEU_ISI-AdaptiveEnsemble',
     'Gatech-ensemble_prob',
-    'Gatech-ensemble_stat'
+    'Gatech-ensemble_stat',
+    'FluSight-ensemble'
 ]
 
 def fetch_observed_data():
