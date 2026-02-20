@@ -406,8 +406,8 @@ def plot_coverage_evaluation(coverage_df, selected_models):
     ))
     models_with_data = [m for m in selected_models if m in coverage_df['Model'].unique()]
     for model in models_with_data:
-        if model=='FluSight-ensemble':
-            continue
+        #if model=='FluSight-ensemble':
+         #   continue
         model_data = coverage_df[coverage_df['Model'] == model]
         if not model_data.empty:
             avg_coverage = []
