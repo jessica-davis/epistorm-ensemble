@@ -592,7 +592,7 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
         (forecast_data['location'] == selected_location) &
         (forecast_data['reference_date'] == selected_date) &
         (forecast_data['target'] == 'wk inc flu hosp') &
-        (forecast_data['model'].isin(selected_models))
+        (forecast_data['model'].isin([st.session_state.get('selected_model', 'Median Epistorm Ensemble')]))
     ].copy()
 
 
