@@ -595,12 +595,9 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
         (forecast_data['model'].isin([st.session_state.get('selected_model', 'Median Epistorm Ensemble')]))
     ].copy()
 
-    st.write("selected_model:", st.session_state.get('selected_model'))
-    st.write("filtered rows:", len(forecast_data[forecast_data['model'].isin([st.session_state.get('selected_model', 'Median Epistorm Ensemble')])]))
-    st.write("models in data:", forecast_data['model'].unique())
-
     max_forecast_date = end_date
-    for model in selected_models:
+    #for model in selected_models:
+    for model in [st.session_state.get('selected_model', 'Median Epistorm Ensemble')]:
         model_data = forecast_filtered[forecast_filtered['model'] == model]
         if model_data.empty:
             continue
@@ -805,18 +802,17 @@ with tab_forecasts:
 
 
         # Model selection (ensemble only)
-        #selected_models = ['Median Epistorm Ensemble']
-        #st.session_state.selected_models = selected_models
+       # selected_models = ['Median Epistorm Ensemble']
+       # st.session_state.selected_models = selected_models
 
         with st.expander("Select Model", expanded=True):
-            selected_models = st.radio(
+            selected_model = st.radio(
                 label="",
-                options=['Median Epistorm Ensemble', 'LOP Epistorm Ensemble'],
+                options=['Median Epistorm Ensemble', 'Mean Epistorm Ensemble'],
                 index=0,
                 key="selected_model"
             )
-            st.session_state.selected_models = [selected_models]
-
+            st.session_state.selected_models = [selected_model]
 
        # Location selector
         if locations_df is not None:
