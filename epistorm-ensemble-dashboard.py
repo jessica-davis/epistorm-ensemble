@@ -592,12 +592,12 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
         (forecast_data['location'] == selected_location) &
         (forecast_data['reference_date'] == selected_date) &
         (forecast_data['target'] == 'wk inc flu hosp') &
-        (forecast_data['model'].isin([st.session_state.get('selected_model', 'Median Epistorm Ensemble')]))
+        (forecast_data['model'].isin(selected_models))
     ].copy()
 
     max_forecast_date = end_date
-    #for model in selected_models:
-    for model in [st.session_state.get('selected_model', 'Median Epistorm Ensemble')]:
+    for model in selected_models:
+    
         model_data = forecast_filtered[forecast_filtered['model'] == model]
         if model_data.empty:
             continue
@@ -802,18 +802,10 @@ with tab_forecasts:
 
 
         # Model selection (ensemble only)
-       # selected_models = ['Median Epistorm Ensemble']
-       # st.session_state.selected_models = selected_models
+        selected_models = ['Median Epistorm Ensemble']
+        st.session_state.selected_models = selected_models
 
-        with st.expander("Select Model", expanded=True):
-            selected_model = st.radio(
-                label="",
-                options=['Median Epistorm Ensemble', 'Mean Epistorm Ensemble'],
-                index=0,
-                key="selected_model"
-            )
-            st.session_state.selected_models = [selected_model]
-
+       
        # Location selector
         if locations_df is not None:
             state_locations_df = locations_df[locations_df['location'] != 'US']
