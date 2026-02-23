@@ -892,6 +892,8 @@ with tab_forecasts:
             start_date_ts = pd.Timestamp(start_date)
             end_date_ts = pd.Timestamp(end_date)
 
+            st.write("calling plot_forecasts with models:", selected_models)
+
             fig, location_name = plot_forecasts(observed_data, forecast_data, selected_location, selected_date, selected_models, available_dates, start_date_ts, end_date_ts)
             
             st.markdown(f"<h2 style='color: #518fb0;'>Flu Hospitalization Forecasts - {location_name}</h2>", unsafe_allow_html=True)
