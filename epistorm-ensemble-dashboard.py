@@ -764,8 +764,8 @@ if observed_data is None or observed_data.empty:
 with st.spinner("Creating ensemble forecasts..."):
     try:
         if 'Median Epistorm Ensemble' not in forecast_data['model'].values or 'LOP Epistorm Ensemble' not in forecast_data['model'].values:
-            ensemble_data = create_ensemble_forecasts(forecast_data)
-            forecast_data = pd.concat([forecast_data, ensemble_data], ignore_index=True)
+            ensemble1, categorical_ensemble, ensemble2 = create_ensemble_forecasts(forecast_data)
+            forecast_data = pd.concat([forecast_data, ensemble1, ensemble2], ignore_index=True)
         forecast_data = forecast_data[forecast_data['horizon'] >= 0]
     except Exception as e:
         st.warning(f"Could not create ensemble forecasts: {e}")
