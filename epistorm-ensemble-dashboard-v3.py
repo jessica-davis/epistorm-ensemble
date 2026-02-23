@@ -803,8 +803,8 @@ with tab_forecasts:
 
 
         # Model selection (ensemble only)
-       # selected_models = ['Median Epistorm Ensemble']
-        #st.session_state.selected_models = selected_models
+        selected_models = ['Median Epistorm Ensemble']
+        st.session_state.selected_models = selected_models
 
        
        # Location selector
@@ -841,15 +841,6 @@ with tab_forecasts:
 
 
     with chart_col:
-
-        # Model selection (ensemble only)
-       # selected_models = ['Median Epistorm Ensemble']
-        #st.session_state.selected_models = selected_models
-
-        if 'selected_model' not in st.session_state:
-            selected_models = ['Median Epistorm Ensemble']
-            st.session_state.selected_model = "Median Epistorm Ensemble"
-
        
         if selected_models:
             
@@ -967,23 +958,8 @@ with tab_forecasts:
                 except:
                     pass
             
-
-            model_options = {
-                "Median Epistorm Ensemble": "Median Epistorm Ensemble",
-                "LOP Epistorm Ensemble": "LOP Epistorm Ensemble",
-               }
-
-            with st.expander("Choose Model", expanded=True):
-                cols = st.columns(2)
-                for col, label in zip(cols, list(model_options.keys())):
-                    with col:
-                        if st.button(label, key=f"model_{label}", use_container_width=True):
-                            st.session_state.selected_model = model_options[label]
-                            st.rerun()
-
+            # Date range
             
-
-
             with st.expander("Historical Data Range", expanded=True):
                 cols = st.columns(len(range_options))
                 for col, label in zip(cols, range_options):
