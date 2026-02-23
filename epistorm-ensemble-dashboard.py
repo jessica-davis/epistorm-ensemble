@@ -979,6 +979,7 @@ with tab_forecasts:
                     with col:
                         if st.button(label, key=f"model_{label}", use_container_width=True):
                             st.session_state.selected_model = model_options[label]
+                            selected_models = [model_options[label]]
                             st.rerun()
 
             
