@@ -851,6 +851,22 @@ with tab_forecasts:
             st.session_state.selected_model = "Median Epistorm Ensemble"
 
        
+        model_options = {
+                "Median Epistorm Ensemble": "Median Epistorm Ensemble",
+                "LOP Epistorm Ensemble": "LOP Epistorm Ensemble",
+               }
+
+        with st.expander("Choose Model", expanded=True):
+            cols = st.columns(2)
+            for col, label in zip(cols, list(model_options.keys())):
+                with col:
+                    if st.button(label, key=f"model_{label}", use_container_width=True):
+                        st.session_state.selected_model = model_options[label]
+                        selected_models = [model_options[label]]
+                        st.rerun()
+
+
+
         if selected_models:
             
             if not observed_data.empty:
@@ -966,22 +982,7 @@ with tab_forecasts:
                             st.rerun()
                 except:
                     pass
-            
-
-            model_options = {
-                "Median Epistorm Ensemble": "Median Epistorm Ensemble",
-                "LOP Epistorm Ensemble": "LOP Epistorm Ensemble",
-               }
-
-            with st.expander("Choose Model", expanded=True):
-                cols = st.columns(2)
-                for col, label in zip(cols, list(model_options.keys())):
-                    with col:
-                        if st.button(label, key=f"model_{label}", use_container_width=True):
-                            st.session_state.selected_model = model_options[label]
-                            selected_models = [model_options[label]]
-                            st.rerun()
-
+        
             
 
 
