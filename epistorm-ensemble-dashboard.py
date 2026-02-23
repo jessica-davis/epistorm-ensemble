@@ -842,30 +842,15 @@ with tab_forecasts:
 
     with chart_col:
 
-        # Model selection (ensemble only)
-       # selected_models = ['Median Epistorm Ensemble']
-        #st.session_state.selected_models = selected_models
+        model_options = {
+            "Median Epistorm Ensemble": "Median Epistorm Ensemble",
+            "LOP Epistorm Ensemble": "LOP Epistorm Ensemble",
+        }
 
         if 'selected_model' not in st.session_state:
-            selected_models = ['Median Epistorm Ensemble']
             st.session_state.selected_model = "Median Epistorm Ensemble"
 
-       
-        model_options = {
-                "Median Epistorm Ensemble": "Median Epistorm Ensemble",
-                "LOP Epistorm Ensemble": "LOP Epistorm Ensemble",
-               }
-
-       # with st.expander("Choose Model", expanded=True):
-        #    cols = st.columns(2)
-         #   for col, label in zip(cols, list(model_options.keys())):
-          #      with col:
-           #         if st.button(label, key=f"model_{label}", use_container_width=True):
-            #            st.session_state.selected_model = model_options[label]
-             #           selected_models = [model_options[label]]
-              #          st.rerun()
-
-
+        selected_models = [st.session_state.selected_model]
 
         if selected_models:
             
@@ -984,6 +969,19 @@ with tab_forecasts:
                     pass
         
             
+            with st.expander("Choose Model", expanded=True):
+                cols = st.columns(2)
+                for col, label in zip(cols, list(model_options.keys())):
+                    with col:
+                        is_selected = st.session_state.selected_model == label
+                        if st.button(
+                            f"✓ {label}" if is_selected else label,
+                            key=f"model_{label}",
+                            use_container_width=True,
+                            type="primary" if is_selected else "secondary"
+                        ):
+                            st.session_state.selected_model = label
+                            st.rerun()
 
 
             with st.expander("Historical Data Range", expanded=True):
