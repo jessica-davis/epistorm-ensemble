@@ -599,6 +599,7 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
 
     max_forecast_date = end_date
     for model in selected_models:
+        st.write(f"model: '{model}', rows: {len(forecast_filtered[forecast_filtered['model'] == model])}")
     
         model_data = forecast_filtered[forecast_filtered['model'] == model]
         if model_data.empty:
@@ -892,7 +893,7 @@ with tab_forecasts:
             start_date_ts = pd.Timestamp(start_date)
             end_date_ts = pd.Timestamp(end_date)
 
-            st.write("calling plot_forecasts with models:", selected_models)
+            #st.write("calling plot_forecasts with models:", selected_models)
 
             fig, location_name = plot_forecasts(observed_data, forecast_data, selected_location, selected_date, selected_models, available_dates, start_date_ts, end_date_ts)
             
