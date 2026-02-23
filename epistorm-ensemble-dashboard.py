@@ -79,18 +79,19 @@ QUANTILES = ['0.01', '0.025', '0.05', '0.1', '0.15', '0.2', '0.25', '0.3', '0.35
              '0.85', '0.9', '0.95', '0.975', '0.99']
 
 COLOR_MAP = {
-    'Median Epistorm Ensemble': '#2e8b57',
-    'MIGHTE-Nsemble': '#2ca02c',
-    'MIGHTE-Joint': '#d62728',
-    'CEPH-Rtrend_fluH': '#9467bd',
-    'MOBS-EpyStrain_Flu': '#8c564b',
-    'MOBS-GLEAM_RL_FLUH': '#e377c2',
-    'NU-PGF_FLUH': '#7f7f7f',
-    'NEU_ISI-FluBcast': '#bcbd22',
-    'NEU_ISI-AdaptiveEnsemble': '#17becf',
-    'Gatech-ensemble_prob': '#ff7f0e',
-    'Gatech-ensemble_stat': '#aec7e8',
-    'FluSight-ensemble': '#1f77b4'
+    'Median Epistorm Ensemble': '#2B7A8F',   # teal blue — your primary ensemble
+    'LOP Epistorm Ensemble':    '#3CAAA0',   # lighter teal — secondary ensemble
+    'FluSight-ensemble':        '#3D5A80',   # navy
+    'CEPH-Rtrend_fluH':         '#E07B54',   # warm orange
+    'MOBS-EpyStrain_Flu':       '#C94F7C',   # raspberry
+    'MOBS-GLEAM_RL_FLUH':       '#7B61A0',   # purple
+    'NU-PGF_FLUH':              '#4A9E6F',   # green
+    'NEU_ISI-FluBcast':         '#D4A843',   # amber
+    'NEU_ISI-AdaptiveEnsemble': '#5B8DB8',   # steel blue
+    'Gatech-ensemble_prob':     '#A0522D',   # sienna
+    'Gatech-ensemble_stat':     '#7A9E7E',   # sage green
+    'MIGHTE-Nsemble':           '#C06B3A',   # burnt orange
+    'MIGHTE-Joint':             '#6B8E9F',   # slate
 }
 
 CATEGORY_COLORS = {
