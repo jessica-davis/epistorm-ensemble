@@ -600,7 +600,7 @@ def plot_forecasts(observed_data, forecast_data, selected_location, selected_dat
 
     max_forecast_date = end_date
     for model in selected_models:
-        st.write(f"model: '{model}', rows: {len(forecast_filtered[forecast_filtered['model'] == model])}")
+        #st.write(f"model: '{model}', rows: {len(forecast_filtered[forecast_filtered['model'] == model])}")
     
         model_data = forecast_filtered[forecast_filtered['model'] == model]
         if model_data.empty:
