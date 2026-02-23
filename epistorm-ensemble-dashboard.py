@@ -856,14 +856,14 @@ with tab_forecasts:
                 "LOP Epistorm Ensemble": "LOP Epistorm Ensemble",
                }
 
-        with st.expander("Choose Model", expanded=True):
-            cols = st.columns(2)
-            for col, label in zip(cols, list(model_options.keys())):
-                with col:
-                    if st.button(label, key=f"model_{label}", use_container_width=True):
-                        st.session_state.selected_model = model_options[label]
-                        selected_models = [model_options[label]]
-                        st.rerun()
+       # with st.expander("Choose Model", expanded=True):
+        #    cols = st.columns(2)
+         #   for col, label in zip(cols, list(model_options.keys())):
+          #      with col:
+           #         if st.button(label, key=f"model_{label}", use_container_width=True):
+            #            st.session_state.selected_model = model_options[label]
+             #           selected_models = [model_options[label]]
+              #          st.rerun()
 
 
 
