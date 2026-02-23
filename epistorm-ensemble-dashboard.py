@@ -289,7 +289,7 @@ def create_ensemble_forecasts(forecast_data):
     ensemble1['model'] = 'Median Epistorm Ensemble'
     categorical_ensemble['model'] = 'Median Epistorm Ensemble'
     ensemble2['model'] = 'LOP Epistorm Ensemble'
-    ensemble2['target'] = 'wk inc flu hosp'  # Ensure target is set correctly
+    #ensemble2['target'] = 'wk inc flu hosp'  # Ensure target is set correctly
 
     return pd.concat([ensemble1, categorical_ensemble, ensemble2], ignore_index=True)
 
