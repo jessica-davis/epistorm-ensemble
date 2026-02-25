@@ -976,9 +976,11 @@ with tab_forecasts:
                 .stSlider [data-baseweb="slider"] div[data-testid="stSliderTrackFill"] {
                     background-color: #2B7A8F;
                 }
+                .stSlider [data-baseweb="slider"] [data-testid="stSliderTrack"] {
+                    background-color: #a8d4db;
+                }
                 </style>
             """, unsafe_allow_html=True)
-
 
             # Slider lives below the plot
             selected_date = st.select_slider(
@@ -992,20 +994,33 @@ with tab_forecasts:
 
 
 
-            with st.expander("Choose Model", expanded=True):
-                cols = st.columns(2)
-                for col, label in zip(cols, list(model_options.keys())):
-                    with col:
-                        is_selected = st.session_state.selected_model == label
-                        if st.button(
-                            f"✓ {label}" if is_selected else label,
-                            key=f"model_{label}",
-                            use_container_width=True,
-                            type="primary" if is_selected else "secondary"
-                        ):
-                            st.session_state.selected_model = label
-                            st.rerun()
+            st.markdown("""
+                <style>
+                div[data-testid="stHorizontalBlock"] button[kind="primary"] {
+                    background-color: #2B7A8F;
+                    border-color: #2B7A8F;
+                    color: white;
+                }
+                div[data-testid="stHorizontalBlock"] button[kind="secondary"] {
+                    background-color: white;
+                    border-color: #2B7A8F;
+                    color: #2B7A8F;
+                }
+                </style>
+            """, unsafe_allow_html=True)
 
+            cols = st.columns(2)
+            for col, label in zip(cols, list(model_options.keys())):
+                with col:
+                    is_selected = st.session_state.selected_model == label
+                    if st.button(
+                        f"✓ {label}" if is_selected else label,
+                        key=f"model_{label}",
+                        use_container_width=True,
+                        type="primary" if is_selected else "secondary"
+                    ):
+                        st.session_state.selected_model = label
+                        st.rerun()
 
             with st.expander("Historical Data Range", expanded=True):
                 cols = st.columns(len(range_options))
