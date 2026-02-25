@@ -1841,7 +1841,7 @@ with tab_overview:
                     showlegend=False
                 ))
 
-                for i in range(len(act_order) - 1):
+                for i in range(len(cat_labels) - 1):
                     fig_cat.add_shape(
                         type='line',
                         x0=0, x1=1.15,
