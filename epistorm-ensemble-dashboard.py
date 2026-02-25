@@ -1764,7 +1764,7 @@ with tab_overview:
                 ))
 
                 fig_act.update_layout(
-                    title=dict(text="Activity Level", font=dict(size=13, color='#555'), x=0),
+                    title=dict(text="Activity Level Predictions", font=dict(size=13, color='#555'), x=0),
                     xaxis=dict(
                         tickformat='.0%', range=[0, 1.15],
                         showgrid=False, zeroline=False, showticklabels=False
@@ -1853,7 +1853,7 @@ with tab_overview:
 
     with outer_right:
         with st.container(border=True, height=600):
-            st.markdown("#### Trend forecasts")
+            st.markdown("#### Trend & Activity level forecasts")
             st.markdown(
                 """
                 **Trend direction** describes how hospitalization levels are expected to change 
@@ -1872,11 +1872,18 @@ with tab_overview:
 
             st.markdown(
                 """
-                Probabilities collective uncertainty in these categories. The highlighted bar represents 
-                the most likely outcome, but the full distribution should be considered 
-                when interpreting the forecast.
-                """
-            )
+                ** Activity level forecast** predict changes in the intensity of flu hospitalization activity, 
+                based on thresholds derived from historical data for each location.
+
+                <ul style="line-height:2;">
+                <li><span style="color:#006d77; font-weight:700;">Low</span> — Flu hospitalizations are below typical seasonal levels. Little to no widespread activity.</li>
+                <li><span style="color:#006d77; font-weight:700;">Moderate</span> — Flu activity is picking up. Hospitalizations are above baseline but within expected seasonal range.</li>
+                <li><span style="color:#006d77; font-weight:700;">High</span> — Elevated flu activity. Hospitalizations are significantly above typical levels.</li>
+                <li><span style="color:#006d77; font-weight:700;">Very High</span> — Exceptional flu activity. Hospitalizations are at or near peak seasonal levels.</li>
+                </ul>
+                """,
+                unsafe_allow_html=True
+            )      
 
         
 
