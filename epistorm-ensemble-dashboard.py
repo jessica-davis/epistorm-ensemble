@@ -904,7 +904,7 @@ with tab_forecasts:
 
             fig, location_name = plot_forecasts(observed_data, forecast_data, selected_location, selected_date, selected_models, available_dates, start_date_ts, end_date_ts)
             
-            st.markdown(f"<h2 style='color: #518fb0;'>Flu Hospitalization Forecasts - {location_name}</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='color: #518fb0;font-family: Lora, Georgia, serif;'>Flu Hospitalization Forecasts - {location_name}</h2>", unsafe_allow_html=True)
 
             ensemble_forecast_data = forecast_data[
                 (forecast_data['model'] == st.session_state.selected_model) &
@@ -1236,7 +1236,7 @@ with tab_evaluation:
             selected_eval_models = st.session_state.get('selected_eval_models', [])
             selected_eval_location = st.session_state.get('eval_location', 'All Locations')
 
-            st.markdown(f"<h2 style='color: #518fb0;'>Forecast Evaluation - {selected_eval_location}</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='color: #518fb0;font-family: Lora, Georgia, serif;'>Forecast Evaluation - {selected_eval_location}</h2>", unsafe_allow_html=True)
             st.markdown("Evaluate forecast performance using the Weighted Interval Score (WIS) and prediction interval coverage metrics.")
         
 
@@ -1317,7 +1317,7 @@ with tab_evaluation:
                 ]
             
             # Display WIS boxplot
-            st.markdown("### Weighted Interval Score (WIS) Ratio")
+            st.markdown("<h3 style= font-family: Lora, Georgia, serif;'>Weighted Interval Score (WIS) Ratio</h3>", unsafe_allow_html=True)
             st.markdown("""
             The WIS ratio compares each model's Weighted Interval Score to the FluSight-baseline model. 
             A ratio less than 1 indicates better performance than baseline, while a ratio greater than 1 indicates worse performance.
@@ -1335,7 +1335,7 @@ with tab_evaluation:
             st.markdown("---")
             
             # Display coverage plot
-            st.markdown("### Prediction Interval Coverage")
+            st.markdown("<h3 style= font-family: Lora, Georgia, serif;'>Prediction Interval Coverage</h3>", unsafe_allow_html=True)
             st.markdown("""
             Coverage measures the proportion of observed values that fall within each prediction interval. 
             A well-calibrated model should have coverage close to the diagonal line (e.g., 50% of observations within the 50% prediction interval).
