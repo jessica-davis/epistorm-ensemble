@@ -1626,7 +1626,7 @@ with tab_overview:
     outer_left, outer_right = st.columns([2,2], gap="large")
 
     with outer_left:
-        with st.container(border=True, height=550):
+        with st.container(border=True, height=580):
 
             # ── Load & filter activity level data ──────────────────────────────────
             act_df = pd.read_parquet('./data/activity_level_ensemble.pq')
@@ -1868,7 +1868,7 @@ with tab_overview:
                 st.plotly_chart(fig_cat, use_container_width=True, config={'displayModeBar': False})
 
     with outer_right:
-        with st.container(border=True, height=550):
+        with st.container(border=True, height=580):
             st.markdown("##### What are Trend & Activity level forecasts?")
             st.markdown(
                 """
