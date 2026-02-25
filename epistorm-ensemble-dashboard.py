@@ -939,15 +939,6 @@ with tab_forecasts:
                     st.markdown(f"<p style='font-size: 22px;'>{heading}</p>", unsafe_allow_html=True)
                     st.markdown(f"<p style='font-size: 18px;'>{pi_text}</p>", unsafe_allow_html=True)
 
-            # Date range
-            
-           # with st.expander("Historical Data Range", expanded=True):
-            #    cols = st.columns(len(range_options))
-             #   for col, label in zip(cols, range_options):
-              #      with col:
-               #         if st.button(label, key=f"range_{label}", use_container_width=True):
-                #            st.session_state.selected_range = label
-                 #           st.rerun()
 
             #st.markdown("<style>.stPlotlyChart { margin-top: -5rem; }</style>", unsafe_allow_html=True)
 
@@ -1045,6 +1036,15 @@ with tab_forecasts:
                 "The shaded regions around the forecast line show the range of values the model expects future observations to fall within. "
                 "The darker shaded region represents the **50% interval** — there is a 50% chance the true value will fall within this range. "
                 "The lighter shaded region represents the **90% interval** — there is a 90% chance the true value will fall within this range."
+            )
+
+        with st.container(border=True):
+            st.markdown("**How are the ensemble models created?**")
+            st.markdown(
+                "Both ensemble models combine forecasts from multiple independent models to produce a single unified forecast. The **Median Ensemble** " \
+                "takes the median value across all models at each quantile, making it robust to outliers and extreme predictions from any single model. " \
+                "The **LOP (Linear Opinion Pool) Ensemble** takes an average of the cumulative probabilities of each model,  which can produce a wider, " \
+                "more uncertain forecasts that capture a broader range of possible outcomes."
             )
 
 
