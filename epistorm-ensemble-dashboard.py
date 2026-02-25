@@ -1852,7 +1852,7 @@ with tab_overview:
                 st.plotly_chart(fig_cat, use_container_width=True, config={'displayModeBar': False})
 
     with outer_right:
-        with st.container(border=True, height=340):
+        with st.container(border=True, height=680):
             st.markdown("##### What are Trend & Activity level forecasts?")
             st.markdown(
                 """
@@ -1869,7 +1869,8 @@ with tab_overview:
                 """,
                 unsafe_allow_html=True
             )
-        with st.container(border=True, height=320):
+            st.markdown("<hr style='border: none; border-top: 1px solid #e0e0e0; margin: 16px 0;'>", unsafe_allow_html=True)
+        
             st.markdown(
                 """
                 **Activity level forecasts** predict changes in the intensity of flu hospitalization activity, 
