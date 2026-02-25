@@ -1756,24 +1756,24 @@ with tab_overview:
                     orientation='h',
                     marker_color=bar_colors,
                     marker_line_width=0,
-                    text=[f"{v:.0%}" if v > 0 else "" for v in act_plot['value']],
+                    text=[f"{v:.0%}" for v in act_plot['value']],
                     textposition='outside',
-                    textfont=dict(size=11, color='#555'),
+                    textfont=dict(size=13, color='#555'),
                     hovertemplate='%{y}: %{x:.1%}<extra></extra>',
                     showlegend=False
                 ))
 
                 fig_act.update_layout(
-                    title=dict(text="Activity Level Predictions", font=dict(size=13, color='#555'), x=0),
+                    title=dict(text="Activity Level Predictions", font=dict(size=15, color='#555'), x=0),
                     xaxis=dict(
                         tickformat='.0%', range=[0, 1.15],
                         showgrid=False, zeroline=False, showticklabels=False
                     ),
                     yaxis=dict(
                         categoryorder='array', categoryarray=list(reversed(act_order)),
-                        showgrid=False, tickfont=dict(size=12)
+                        showgrid=True, tickfont=dict(size=13)
                     ),
-                    height=260,
+                    height=300,
                     margin=dict(l=90, r=60, t=40, b=20),
                     plot_bgcolor='rgba(0,0,0,0)',
                     paper_bgcolor='rgba(0,0,0,0)',
@@ -1826,24 +1826,24 @@ with tab_overview:
                     orientation='h',
                     marker_color=bar_colors,
                     marker_line_width=0,
-                    text=[f"{v:.0%}" if v > 0 else "" for v in cat_plot['value']],
+                    text=[f"{v:.0%}" for v in cat_plot['value']],
                     textposition='outside',
-                    textfont=dict(size=11, color='#555'),
+                    textfont=dict(size=13, color='#555'),
                     hovertemplate='%{y}: %{x:.1%}<extra></extra>',
                     showlegend=False
                 ))
 
                 fig_cat.update_layout(
-                    title=dict(text="Trend Direction", font=dict(size=13, color='#555'), x=0),
+                    title=dict(text="Trend Direction", font=dict(size=15, color='#555'), x=0),
                     xaxis=dict(
                         tickformat='.0%', range=[0, 1.15],
                         showgrid=False, zeroline=False, showticklabels=False
                     ),
                     yaxis=dict(
                         categoryorder='array', categoryarray=list(reversed(cat_labels)),
-                        showgrid=False, tickfont=dict(size=12)
+                        showgrid=True, tickfont=dict(size=13)
                     ),
-                    height=260,
+                    height=300,
                     margin=dict(l=110, r=60, t=40, b=20),
                     plot_bgcolor='rgba(0,0,0,0)',
                     paper_bgcolor='rgba(0,0,0,0)',
