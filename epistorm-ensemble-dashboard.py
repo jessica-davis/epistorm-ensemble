@@ -1009,7 +1009,7 @@ with tab_forecasts:
                 </style>
             """, unsafe_allow_html=True)
 
-            st.markdown("***Select Model***")
+            st.markdown("**Select Model**")
 
             cols = st.columns(2)
             for col, label in zip(cols, list(model_options.keys())):
