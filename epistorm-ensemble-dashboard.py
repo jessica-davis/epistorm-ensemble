@@ -831,7 +831,7 @@ with tab_forecasts:
         if available_dates:
             if 'selected_date' not in st.session_state:
                 st.session_state.selected_date = available_dates[-1]
-            selected_date = st.session_state.selected_date
+            selected_date = st.session_state.get('forecast_date', st.session_state.selected_date)
         else:
             st.error("No forecast dates available")
             st.stop()
@@ -965,6 +965,20 @@ with tab_forecasts:
                 except:
                     pass
         
+            st.markdown("""
+                <style>
+                .stSlider [data-baseweb="slider"] [role="slider"] {
+                    background-color: #2B7A8F;
+                }
+                .stSlider [data-baseweb="slider"] [data-testid="stThumbValue"] {
+                    color: #2B7A8F;
+                }
+                .stSlider [data-baseweb="slider"] div[data-testid="stSliderTrackFill"] {
+                    background-color: #2B7A8F;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+
 
             # Slider lives below the plot
             selected_date = st.select_slider(
@@ -974,7 +988,7 @@ with tab_forecasts:
                 format_func=lambda x: x.strftime('%Y-%m-%d'),
                 key="forecast_date"
             )
-            st.session_state.selected_date = selected_date
+           # st.session_state.selected_date = selected_date
 
 
 
