@@ -1763,6 +1763,14 @@ with tab_overview:
                     showlegend=False
                 ))
 
+                for i in range(len(act_order) - 1):
+                    fig_act.add_shape(
+                        type='line',
+                        x0=0, x1=1.15,
+                        y0=i + 0.5, y1=i + 0.5,
+                        line=dict(color='#e0e0e0', width=1),
+                        xref='x', yref='y')
+
                 fig_act.update_layout(
                     title=dict(text="Activity Level Predictions", font=dict(size=15, color='#555'), x=0),
                     xaxis=dict(
@@ -1771,7 +1779,7 @@ with tab_overview:
                     ),
                     yaxis=dict(
                         categoryorder='array', categoryarray=list(reversed(act_order)),
-                        showgrid=True, tickfont=dict(size=13)
+                        showgrid=False, tickfont=dict(size=13)
                     ),
                     height=300,
                     margin=dict(l=90, r=60, t=40, b=20),
@@ -1833,6 +1841,14 @@ with tab_overview:
                     showlegend=False
                 ))
 
+                for i in range(len(act_order) - 1):
+                    fig_cat.add_shape(
+                        type='line',
+                        x0=0, x1=1.15,
+                        y0=i + 0.5, y1=i + 0.5,
+                        line=dict(color='#e0e0e0', width=1),
+                        xref='x', yref='y')
+
                 fig_cat.update_layout(
                     title=dict(text="Trend Direction", font=dict(size=15, color='#555'), x=0),
                     xaxis=dict(
@@ -1841,7 +1857,7 @@ with tab_overview:
                     ),
                     yaxis=dict(
                         categoryorder='array', categoryarray=list(reversed(cat_labels)),
-                        showgrid=True, tickfont=dict(size=13)
+                        showgrid=False, tickfont=dict(size=13)
                     ),
                     height=300,
                     margin=dict(l=110, r=60, t=40, b=20),
