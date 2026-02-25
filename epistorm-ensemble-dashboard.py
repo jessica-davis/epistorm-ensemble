@@ -1872,8 +1872,8 @@ with tab_overview:
 
             st.markdown(
                 """
-                ** Activity level forecast** predict changes in the intensity of flu hospitalization activity, 
-                based on thresholds derived from historical data for each location.
+                **Activity level forecasts** predict changes in the intensity of flu hospitalization activity, 
+                based on thresholds derived from historical data for each location. They are described with four categories:
 
                 <ul style="line-height:2;">
                 <li><span style="color:#006d77; font-weight:700;">Low</span> — Flu hospitalizations are below typical seasonal levels. Little to no widespread activity.</li>
