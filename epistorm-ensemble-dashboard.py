@@ -984,7 +984,7 @@ with tab_forecasts:
 
             # Slider lives below the plot
             selected_date = st.select_slider(
-                "*Select Forecast Date*",
+                "**Select Forecast Date**",
                 options=available_dates,
                 value=st.session_state.selected_date if st.session_state.selected_date in available_dates else available_dates[-1],
                 format_func=lambda x: x.strftime('%Y-%m-%d'),
@@ -1009,7 +1009,7 @@ with tab_forecasts:
                 </style>
             """, unsafe_allow_html=True)
 
-            st.markdown("**Select Model**")
+            st.markdown("***Select Model***")
 
             cols = st.columns(2)
             for col, label in zip(cols, list(model_options.keys())):
