@@ -1853,7 +1853,7 @@ with tab_overview:
 
     with outer_right:
         with st.container(border=True, height=600):
-            st.markdown("#### Trend & Activity level forecasts")
+            st.markdown("### What are Trend & Activity level forecasts?", unsafe_allow_html=True)
             st.markdown(
                 """
                 **Trend direction** describes how hospitalization levels are expected to change 
