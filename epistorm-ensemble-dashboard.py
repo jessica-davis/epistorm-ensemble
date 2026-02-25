@@ -18,6 +18,19 @@ from ensemble import create_ensemble_method1, create_ensemble_method2, create_ca
 
 import plotly.io as pio
 
+
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap');
+    
+    html, body, [class*="css"], [data-testid="stMarkdownContainer"] {
+        font-family: 'Lora', Georgia, serif;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
+
 def img_to_html(path, width=150):
     with open(path, "rb") as f:
         data = base64.b64encode(f.read()).decode()
