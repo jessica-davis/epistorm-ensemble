@@ -783,27 +783,6 @@ with tab_forecasts:
         #st.markdown("### Forecast Controls")
         
         # Date selector
-        available_dates = sorted(
-            [pd.Timestamp(d).to_pydatetime() for d in forecast_data['reference_date'].unique()],
-            reverse=True
-        )
-        if available_dates:
-            if 'selected_date' not in st.session_state:
-                st.session_state.selected_date = available_dates[0]
-            selected_date = st.selectbox(
-                "Select Forecast Date",
-                available_dates,
-                format_func=lambda x: x.strftime('%Y-%m-%d'),
-                index=available_dates.index(st.session_state.selected_date) if st.session_state.selected_date in available_dates else 0,
-                key="forecast_date"
-            )
-            st.session_state.selected_date = selected_date
-        else:
-            st.error("No forecast dates available")
-            st.stop()
-
-
-
 
         # Model selection (ensemble only)
        # selected_models = ['Median Epistorm Ensemble']
@@ -844,6 +823,19 @@ with tab_forecasts:
 
 
     with chart_col:
+
+        available_dates = sorted(
+            [pd.Timestamp(d).to_pydatetime() for d in forecast_data['reference_date'].unique()]
+        )
+
+        if available_dates:
+            if 'selected_date' not in st.session_state:
+                st.session_state.selected_date = available_dates[-1]
+            selected_date = st.session_state.selected_date
+        else:
+            st.error("No forecast dates available")
+            st.stop()
+
 
         model_options = {
             "Median Epistorm Ensemble": "Median Epistorm Ensemble",
@@ -973,7 +965,19 @@ with tab_forecasts:
                 except:
                     pass
         
-            
+
+            # Slider lives below the plot
+            selected_date = st.select_slider(
+                "Select Forecast Date",
+                options=available_dates,
+                value=st.session_state.selected_date if st.session_state.selected_date in available_dates else available_dates[-1],
+                format_func=lambda x: x.strftime('%Y-%m-%d'),
+                key="forecast_date"
+            )
+            st.session_state.selected_date = selected_date
+
+
+
             with st.expander("Choose Model", expanded=True):
                 cols = st.columns(2)
                 for col, label in zip(cols, list(model_options.keys())):
