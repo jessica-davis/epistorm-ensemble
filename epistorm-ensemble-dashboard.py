@@ -1379,7 +1379,8 @@ with tab_overview:
 
         
 
-    row1_col1, row1_col2 = st.columns([4,2], gap="large")
+    #row1_col1, row1_col2 = st.columns([4,2], gap="large")
+    row1_col1 = st.container()
     row2_col1, row2_col2 = st.columns(2, gap="large")
 
     
@@ -1601,28 +1602,28 @@ with tab_overview:
   
 
 
-    with row1_col2:
-        with st.container(border=True, height=700):
-            st.markdown("<p style='font-size: 22px;'><b>What are Flu Activity Levels?</b></p>", unsafe_allow_html=True)
-            st.markdown(
-                """
-                Activity levels describe the intensity of flu hospitalization activity in a given location, 
-                based on thresholds derived from historical data.
-
-                - <b style='color: #7DD4C8;'>Low</b> — Flu hospitalizations are below typical seasonal levels. Little to no widespread activity.
-                - <b style='color: #3CAAA0;'>Moderate</b> — Flu activity is picking up. Hospitalizations are above baseline but within expected seasonal range.
-                - <b style='color: #2B7A8F;'>High</b> — Elevated flu activity. Hospitalizations are significantly above typical levels.
-                - <b style='color: #3D5A80;'>Very High</b> — Exceptional flu activity. Hospitalizations are at or near peak seasonal levels.
-
-                Thresholds are location-specific and are calculated based on historical flu hospitalization patterns for each state and the United States overall.
-                """,
-                unsafe_allow_html=True
-            )      
+   # with row1_col2:
+      #  with st.container(border=True, height=700):
+       #     st.markdown("<p style='font-size: 22px;'><b>What are Flu Activity Levels?</b></p>", unsafe_allow_html=True)
+        #    st.markdown(
+         #       """
+          #      Activity levels describe the intensity of flu hospitalization activity in a given location, 
+           #     based on thresholds derived from historical data.
+#
+ #               - <b style='color: #7DD4C8;'>Low</b> — Flu hospitalizations are below typical seasonal levels. Little to no widespread activity.
+  #              - <b style='color: #3CAAA0;'>Moderate</b> — Flu activity is picking up. Hospitalizations are above baseline but within expected seasonal range.
+   #             - <b style='color: #2B7A8F;'>High</b> — Elevated flu activity. Hospitalizations are significantly above typical levels.
+    #            - <b style='color: #3D5A80;'>Very High</b> — Exceptional flu activity. Hospitalizations are at or near peak seasonal levels.
+#
+ #               Thresholds are location-specific and are calculated based on historical flu hospitalization patterns for each state and the United States overall.
+  #              """,
+   #             unsafe_allow_html=True
+    #        )      
 
     # ── Replace your row2_col1 and row2_col2 blocks with this ──────────────────────
 
     # ── Outer layout: forecast card (60) + new container (40) ─────────────────────
-    outer_left, outer_right = st.columns([4,2], gap="large")
+    outer_left, outer_right = st.columns([2,2], gap="large")
 
     with outer_left:
         with st.container(border=True, height=600):
@@ -1738,45 +1739,47 @@ with tab_overview:
                 act_plot = act_plot.set_index('output_type_id').reindex(act_order).reset_index()
                 act_plot['value'] = act_plot['value'].fillna(0)
 
-                slice_colors = [act_colors_map[r] for r in act_order]
+                bar_colors = []
+                for lbl in act_order:
+                    hex_col = act_colors_map[lbl]
+                    if lbl == act_level:
+                        bar_colors.append(hex_col)
+                    else:
+                        h = hex_col.lstrip('#')
+                        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+                        bar_colors.append(f'rgba({r},{g},{b},0.35)')
 
                 fig_act = go.Figure()
-                fig_act.add_trace(go.Pie(
-                    labels=act_order,
-                    values=act_plot['value'],
-                    hole=0.6,
-                    marker=dict(colors=slice_colors, line=dict(color='white', width=2)),
-                    textinfo='none',
-                    hovertemplate='%{label}: %{percent}<extra></extra>',
-                    sort=False,
-                    direction='clockwise',
+                fig_act.add_trace(go.Bar(
+                    y=act_order,
+                    x=act_plot['value'],
+                    orientation='h',
+                    marker_color=bar_colors,
+                    marker_line_width=0,
+                    text=[f"{v:.0%}" if v > 0 else "" for v in act_plot['value']],
+                    textposition='outside',
+                    textfont=dict(size=11, color='#555'),
+                    hovertemplate='%{y}: %{x:.1%}<extra></extra>',
+                    showlegend=False
                 ))
 
                 fig_act.update_layout(
                     title=dict(text="Activity Level", font=dict(size=13, color='#555'), x=0),
-                    annotations=[
-                        dict(
-                            text=f"<b>{act_level}</b><br>{act_prob:.0%}",
-                            x=0.5, y=0.5,
-                            font=dict(size=14, color=act_color),
-                            showarrow=False
-                        )
-                    ],
-                    showlegend=True,
-                    legend=dict(
-                        orientation='v',
-                        x=1.0, y=0.5,
-                        font=dict(size=11),
-                        itemsizing='constant'
+                    xaxis=dict(
+                        tickformat='.0%', range=[0, 1.15],
+                        showgrid=False, zeroline=False, showticklabels=False
+                    ),
+                    yaxis=dict(
+                        categoryorder='array', categoryarray=list(reversed(act_order)),
+                        showgrid=False, tickfont=dict(size=12)
                     ),
                     height=260,
-                    margin=dict(l=20, r=80, t=40, b=20),
+                    margin=dict(l=90, r=60, t=40, b=20),
                     plot_bgcolor='rgba(0,0,0,0)',
                     paper_bgcolor='rgba(0,0,0,0)',
                 )
 
                 st.plotly_chart(fig_act, use_container_width=True, config={'displayModeBar': False})
-
             # ── MIDDLE: Vertical divider ───────────────────────────────────────────
             with mid_col:
                 st.markdown(
