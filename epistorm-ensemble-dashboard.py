@@ -893,7 +893,7 @@ with tab_forecasts:
             st.markdown(f"<h2 style='color: #518fb0;'>Flu Hospitalization Forecasts - {location_name}</h2>", unsafe_allow_html=True)
 
             ensemble_forecast_data = forecast_data[
-                (forecast_data['model'] == 'Median Epistorm Ensemble') &
+                (forecast_data['model'] == st.session_state.selected_model) &
                 (forecast_data['location'] == selected_location) &
                 (forecast_data['reference_date'] == selected_date) &
                 (forecast_data['horizon'] == 3) &
@@ -921,7 +921,7 @@ with tab_forecasts:
                             population = pop_row.iloc[0]['population']
                     
                     end_date_4_weeks = ensemble_forecast_data['target_end_date'].iloc[0].strftime('%B %d, %Y')
-                    heading = f"As of {selected_date.strftime('%B %d, %Y')}, the Epistorm Ensemble forecasts <b>{median:,}</b> influenza hospital admissions"
+                    heading = f"As of {selected_date.strftime('%B %d, %Y')}, the {st.session_state.selected_model} forecasts <b>{median:,}</b> influenza hospital admissions"
                     
                     if population and population > 0:
                         per_capita_median = int(round((median / population) * 100000))
