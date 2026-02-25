@@ -1894,9 +1894,9 @@ with tab_overview:
 
                 <ul style="line-height:1.5;">
                 <li><span style="color:#7DD4C8; font-weight:700;">Low</span> — Flu hospitalizations are below typical seasonal levels. </li>
-                <li><span style="color:#3CAAA0; font-weight:700;">Moderate</span> — Flu activity is picking up. Hospitalizations are above baseline but within expected seasonal range.</li>
-                <li><span style="color:#2B7A8F; font-weight:700;">High</span> — Elevated flu activity. Hospitalizations are significantly above typical levels.</li>
-                <li><span style="color:#3D5A80; font-weight:700;">Very High</span> — Exceptional flu activity. Hospitalizations are at or near peak seasonal levels.</li>
+                <li><span style="color:#3CAAA0; font-weight:700;">Moderate</span> — Flu activity is elevated but within normal seasonal bounds.</li>
+                <li><span style="color:#2B7A8F; font-weight:700;">High</span> — Elevated flu activity. Hospitalizations are above typical levels.</li>
+                <li><span style="color:#3D5A80; font-weight:700;">Very High</span> — Exceptional flu activity. Hospitalizations are near peak levels.</li>
                 </ul>
                 """,
                 unsafe_allow_html=True
