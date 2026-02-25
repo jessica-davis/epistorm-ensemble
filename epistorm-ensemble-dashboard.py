@@ -1859,7 +1859,7 @@ with tab_overview:
                 **Trend direction** describes how hospitalization levels are expected to change 
                 over time, relative to the current period. Forecasts are expressed as probabilities across five categories:
 
-                <ul style="line-height:2;">
+                <ul style="line-height:1;">
                     <li><span style="color:#006d77; font-weight:700;">Large Decrease</span> — a substantial decline in activity</li>
                     <li><span style="color:#83c5be; font-weight:700;">Decrease</span> — a moderate decline in activity</li>
                     <li><span style="color:#aaaaaa; font-weight:700;">Stable</span> — little to no change expected</li>
@@ -1875,17 +1875,16 @@ with tab_overview:
                 **Activity level forecasts** predict changes in the intensity of flu hospitalization activity, 
                 based on thresholds derived from historical data for each location. They are described with four categories:
 
-                <ul style="line-height:2;">
-                <li><span style="color:#006d77; font-weight:700;">Low</span> — Flu hospitalizations are below typical seasonal levels. Little to no widespread activity.</li>
-                <li><span style="color:#006d77; font-weight:700;">Moderate</span> — Flu activity is picking up. Hospitalizations are above baseline but within expected seasonal range.</li>
-                <li><span style="color:#006d77; font-weight:700;">High</span> — Elevated flu activity. Hospitalizations are significantly above typical levels.</li>
-                <li><span style="color:#006d77; font-weight:700;">Very High</span> — Exceptional flu activity. Hospitalizations are at or near peak seasonal levels.</li>
+                <ul style="line-height:1;">
+                <li><span style="color:#7DD4C8; font-weight:700;">Low</span> — Flu hospitalizations are below typical seasonal levels. Little to no widespread activity.</li>
+                <li><span style="color:#3CAAA0; font-weight:700;">Moderate</span> — Flu activity is picking up. Hospitalizations are above baseline but within expected seasonal range.</li>
+                <li><span style="color:#2B7A8F; font-weight:700;">High</span> — Elevated flu activity. Hospitalizations are significantly above typical levels.</li>
+                <li><span style="color:#3D5A80; font-weight:700;">Very High</span> — Exceptional flu activity. Hospitalizations are at or near peak seasonal levels.</li>
                 </ul>
                 """,
                 unsafe_allow_html=True
             )      
 
-        
 
 
 st.divider()
