@@ -23,7 +23,8 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&display=swap');
     
-    html, body, [class*="css"], [data-testid="stMarkdownContainer"] {
+    html, body, [class*="css"], [data-testid="stMarkdownContainer"],
+    h1, h2, h3, h4, h5, h6 {
         font-family: 'Lora', Georgia, serif;
     }
     </style>
