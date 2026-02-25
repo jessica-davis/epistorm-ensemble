@@ -1626,7 +1626,7 @@ with tab_overview:
     outer_left, outer_right = st.columns([2,2], gap="large")
 
     with outer_left:
-        with st.container(border=True, height=600):
+        with st.container(border=True, height=680):
 
             # ── Load & filter activity level data ──────────────────────────────────
             act_df = pd.read_parquet('./data/activity_level_ensemble.pq')
@@ -1852,7 +1852,7 @@ with tab_overview:
                 st.plotly_chart(fig_cat, use_container_width=True, config={'displayModeBar': False})
 
     with outer_right:
-        with st.container(border=True, height=300):
+        with st.container(border=True, height=340):
             st.markdown("##### What are Trend & Activity level forecasts?")
             st.markdown(
                 """
@@ -1869,7 +1869,7 @@ with tab_overview:
                 """,
                 unsafe_allow_html=True
             )
-        with st.container(border=True, height=300):
+        with st.container(border=True, height=320):
             st.markdown(
                 """
                 **Activity level forecasts** predict changes in the intensity of flu hospitalization activity, 
