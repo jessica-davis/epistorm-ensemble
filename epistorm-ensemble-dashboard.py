@@ -1165,8 +1165,8 @@ with tab_evaluation:
 
         # Model selection
         with st.expander("Select Models", expanded=True):
-            eval_ensemble_models = [m for m in eval_models if m == 'Median Epistorm Ensemble']
-            eval_individual_models = [m for m in eval_models if m != 'Median Epistorm Ensemble' ]
+            eval_ensemble_models = [m for m in eval_models if m in [ 'Median Epistorm Ensemble', 'LOP Epistorm Ensemble']]
+            eval_individual_models = [m for m in eval_models if m not in eval_ensemble_models]
 
             if 'selected_eval_models' not in st.session_state:
                 st.session_state.selected_eval_models = eval_models.copy()
