@@ -25,7 +25,7 @@ st.markdown("""
     
     html, body, [class*="css"], [data-testid="stMarkdownContainer"],
     h1, h2, h3, h4, h5, h6 {
-        font-family: 'Lora', Georgia, serif;
+        font-family: 'Lora', Georgia, serif !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -1317,7 +1317,7 @@ with tab_evaluation:
                 ]
             
             # Display WIS boxplot
-            st.markdown("<h3 style= font-family: Lora, Georgia, serif;'>Weighted Interval Score (WIS) Ratio</h3>", unsafe_allow_html=True)
+            st.markdown("### Weighted Interval Score (WIS) Ratio")
             st.markdown("""
             The WIS ratio compares each model's Weighted Interval Score to the FluSight-baseline model. 
             A ratio less than 1 indicates better performance than baseline, while a ratio greater than 1 indicates worse performance.
@@ -1335,7 +1335,7 @@ with tab_evaluation:
             st.markdown("---")
             
             # Display coverage plot
-            st.markdown("<h3 style= font-family: Lora, Georgia, serif;'>Prediction Interval Coverage</h3>", unsafe_allow_html=True)
+            st.markdown("### Prediction Interval Coverage")
             st.markdown("""
             Coverage measures the proportion of observed values that fall within each prediction interval. 
             A well-calibrated model should have coverage close to the diagonal line (e.g., 50% of observations within the 50% prediction interval).
