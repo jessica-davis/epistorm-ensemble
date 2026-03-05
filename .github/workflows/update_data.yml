@@ -56,15 +56,20 @@ jobs:
           echo "Calculating scores..."
           python calculate_scores.py
       
+      - name: Prepare dashboard JSON data
+        run: |
+          echo "Preparing dashboard data..."
+          python dashboard/scripts/prepare_data.py
+
       - name: Commit and push if changed
         run: |
           echo "=== Before commit - Local HEAD ==="
           git log -1 --oneline
-    
+
           echo "=== Before commit - Remote ==="
           git ls-remote origin main
-    
-          git add data/ *.pq
+
+          git add data/ *.pq dashboard/data/
     
           if git diff --staged --quiet; then
             echo "No changes to commit"

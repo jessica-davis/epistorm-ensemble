@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Epistorm Ensemble — Influenza Hospitalization Forecasts</title>
+  <link rel="stylesheet" href="css/style.css?v=25">
+</head>
+<body>
+  <!-- LOADING OVERLAY -->
+  <div id="loading">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Loading dashboard data...</p>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="container header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="assets/epistorm-ensemble-logo.png" alt="Epistorm Ensemble" class="header-logo">
+      </a>
+      <nav>
+        <a href="about.html" class="nav-link">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <div class="container">
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="forecasts">Forecasts</button>
+      <button class="tab" data-tab="evaluation">Evaluation</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main class="container">
+
+    <!-- ============ OVERVIEW TAB ============ -->
+    <section id="tab-overview" class="tab-content active">
+
+      <!-- Location selector -->
+      <div class="card card-compact overview-location-bar">
+        <label class="control-label" for="overview-location-select">Location</label>
+        <select id="overview-location-select" class="overview-loc-select"></select>
+      </div>
+
+      <!-- Activity headline -->
+      <div class="card card-compact" id="activity-headline-card">
+        <p id="activity-headline" class="headline-text"></p>
+        <p id="activity-comparison" class="comparison-text"></p>
+      </div>
+
+      <!-- Main row: chart (left) + forecast summary (right) — equal height -->
+      <div class="overview-main-row">
+        <!-- Observed chart -->
+        <div class="overview-chart-col">
+          <div class="card card-compact overview-match-height">
+            <h3 class="section-title-sm">Observed Flu Hospitalizations</h3>
+            <div id="activity-chart-container" class="chart-container chart-container-overview"></div>
+            <div class="overview-chart-footer">
+              <div id="activity-legend" class="activity-legend activity-legend-compact"></div>
+              <div class="range-buttons" id="overview-range-buttons">
+                <button class="range-btn active" data-range="3months">Last 3 Months</button>
+                <button class="range-btn" data-range="6months">Last 6 Months</button>
+                <button class="range-btn" data-range="1year">Last Year</button>
+                <button class="range-btn" data-range="2years">Last 2 Years</button>
+                <button class="range-btn" data-range="all">All Data</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Forecast summary -->
+        <div class="overview-forecast-col">
+          <div class="card card-compact overview-match-height" id="forecast-summary-card">
+            <h3 class="section-title-sm" id="forecast-summary-headline"></h3>
+            <p id="forecast-summary-narrative" class="narrative-text-sm"></p>
+            <div class="forecast-controls-compact">
+              <div>
+                <label class="control-label" for="overview-date-select">Forecast Date</label>
+                <select id="overview-date-select" class="compact-select"></select>
+              </div>
+              <div>
+                <label class="control-label" for="overview-horizon-select">Horizon</label>
+                <select id="overview-horizon-select" class="compact-select">
+                  <option value="0">1 Week Ahead</option>
+                  <option value="1">2 Weeks Ahead</option>
+                  <option value="2">3 Weeks Ahead</option>
+                  <option value="3" selected>4 Weeks Ahead</option>
+                </select>
+              </div>
+            </div>
+            <div class="probability-bars-col">
+              <div>
+                <h4 class="prob-bars-title">Activity Level</h4>
+                <div id="activity-bars-container"></div>
+              </div>
+              <div>
+                <h4 class="prob-bars-title">Trend Direction</h4>
+                <div id="trend-bars-container"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+    </section>
+
+    <!-- ============ FORECASTS TAB ============ -->
+    <section id="tab-forecasts" class="tab-content">
+      <div class="sidebar-layout">
+        <!-- Sidebar: location list -->
+        <aside class="sidebar">
+          <div class="card sidebar-card">
+            <h4 class="sidebar-title">Location</h4>
+            <div id="forecast-location-list" class="location-radio-list"></div>
+          </div>
+        </aside>
+
+        <!-- Main chart area -->
+        <div class="main-area">
+          <h2 class="chart-headline" id="forecast-chart-headline">Flu Hospitalization Forecasts</h2>
+          <p class="forecast-summary-text" id="forecast-summary-text"></p>
+          <p class="forecast-pi-text" id="forecast-pi-text"></p>
+
+          <!-- Top controls: date slider + model toggle -->
+          <div class="forecast-controls forecast-controls-top">
+            <div class="control-group">
+              <label class="control-label">Forecast Date</label>
+              <div class="slider-container">
+                <input type="range" id="forecast-date-slider" class="date-slider" min="0" max="100" value="100">
+                <span id="forecast-date-label" class="slider-label"></span>
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label">Ensemble Model</label>
+              <div class="model-toggle" id="model-toggle">
+                <button class="toggle-btn active" data-model="Median Epistorm Ensemble">Median Ensemble</button>
+                <button class="toggle-btn" data-model="LOP Epistorm Ensemble">LOP Ensemble</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forecast Map -->
+          <div class="card" id="forecast-map-card">
+            <div class="forecast-map-header">
+              <div>
+                <h3 class="section-title-sm" style="margin-bottom:2px;">Forecast Map</h3>
+                <p class="chart-description">Median forecast hospitalizations by state. Click a state to view its detailed forecast below.</p>
+              </div>
+              <div class="forecast-map-controls">
+                <div class="control-group-inline">
+                  <label class="control-label" for="forecast-horizon-select">Horizon</label>
+                  <select id="forecast-horizon-select" class="compact-select compact-select-sm">
+                    <option value="0" selected>1 Week Ahead</option>
+                    <option value="1">2 Weeks Ahead</option>
+                    <option value="2">3 Weeks Ahead</option>
+                    <option value="3">4 Weeks Ahead</option>
+                  </select>
+                </div>
+                <div class="control-group-inline">
+                  <label class="control-label">Values</label>
+                  <div class="model-toggle" id="percapita-toggle">
+                    <button class="toggle-btn toggle-btn-sm active" data-mode="raw">Raw Counts</button>
+                    <button class="toggle-btn toggle-btn-sm" data-mode="percapita">Per 100k</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="forecast-map-container" class="forecast-map-container"></div>
+            <div id="forecast-map-legend" class="forecast-map-legend"></div>
+          </div>
+
+          <div class="card">
+            <div class="forecast-chart-header">
+              <div>
+                <h3 class="section-title-sm" style="margin-bottom:2px;">Forecast Time Series</h3>
+                <p class="chart-description">Observed admissions (black line) with forecast median and prediction intervals. Shaded bands show the 50% and 95% ranges.</p>
+              </div>
+              <div class="range-buttons" id="forecast-range-buttons">
+                <button class="range-btn active" data-range="3months">Last 3 Months</button>
+                <button class="range-btn" data-range="6months">Last 6 Months</button>
+                <button class="range-btn" data-range="1year">Last Year</button>
+                <button class="range-btn" data-range="2years">Last 2 Years</button>
+                <button class="range-btn" data-range="all">All Data</button>
+              </div>
+            </div>
+            <div id="forecast-chart-container" class="chart-container chart-container-lg"></div>
+          </div>
+
+
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ EVALUATION TAB ============ -->
+    <section id="tab-evaluation" class="tab-content">
+      <div class="sidebar-layout">
+        <!-- Sidebar: filters -->
+        <aside class="sidebar">
+          <div class="card sidebar-card">
+            <h4 class="sidebar-title">Filters</h4>
+
+            <div class="filter-group">
+              <label class="control-label" for="eval-location-select">Location</label>
+              <select id="eval-location-select" class="compact-select">
+                <option value="all">All Locations</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label class="control-label" for="eval-horizon-select">Horizon</label>
+              <select id="eval-horizon-select" class="compact-select">
+                <option value="all" selected>All Horizons</option>
+                <option value="0">1 Week Ahead</option>
+                <option value="1">2 Weeks Ahead</option>
+                <option value="2">3 Weeks Ahead</option>
+                <option value="3">4 Weeks Ahead</option>
+              </select>
+            </div>
+
+            <details class="filter-details" open>
+              <summary class="filter-summary">Forecast Date</summary>
+              <div class="filter-group">
+                <label class="control-label" for="eval-ref-start">Start</label>
+                <input type="date" id="eval-ref-start" class="compact-input">
+              </div>
+              <div class="filter-group">
+                <label class="control-label" for="eval-ref-end">End</label>
+                <input type="date" id="eval-ref-end" class="compact-input">
+              </div>
+            </details>
+
+            <details class="filter-details" open>
+              <summary class="filter-summary">Models</summary>
+              <div id="eval-model-checkboxes" class="model-checkbox-list"></div>
+            </details>
+
+            <p class="filter-caption" id="eval-model-count"></p>
+          </div>
+        </aside>
+
+        <!-- Main chart area -->
+        <div class="main-area">
+          <!-- WIS Boxplot -->
+          <div class="card">
+            <h3 class="section-title">Weighted Interval Score (WIS) Ratio</h3>
+            <p class="chart-description">The WIS ratio compares each model's Weighted Interval Score to the FluSight-baseline model. A ratio less than 1 indicates better performance than baseline.</p>
+            <div id="wis-chart-container" class="chart-container chart-container-lg"></div>
+            <div id="wis-empty" class="empty-state" style="display:none;">No data available for selected filters.</div>
+          </div>
+
+          <!-- Coverage Calibration -->
+          <div class="card">
+            <h3 class="section-title">Prediction Interval Coverage</h3>
+            <p class="chart-description">Coverage measures the proportion of observed values that fall within each prediction interval. A well-calibrated model should have coverage close to the diagonal.</p>
+            <div id="coverage-chart-container" class="chart-container chart-container-lg"></div>
+            <div id="coverage-empty" class="empty-state" style="display:none;">No data available for selected filters.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-logos">
+        <img src="assets/northeastern-logo.png" alt="Northeastern University" class="footer-logo">
+        <img src="assets/epistorm-logo.png" alt="Epistorm" class="footer-logo">
+      </div>
+      <p class="footer-text">Epistorm Ensemble Flu Forecasting Dashboard</p>
+    </div>
+  </footer>
+
+  <!-- TOOLTIP -->
+  <div id="tooltip" class="tooltip"></div>
+
+  <!-- SCRIPTS -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/topojson.v3.min.js"></script>
+  <script src="js/colors.js?v=25"></script>
+  <script src="js/utils.js?v=25"></script>
+  <script src="js/controls.js?v=25"></script>
+  <script src="js/overview.js?v=25"></script>
+  <script src="js/forecasts.js?v=25"></script>
+  <script src="js/forecast-map.js?v=25"></script>
+  <script src="js/evaluation.js?v=25"></script>
+  <script src="js/main.js?v=25"></script>
+</body>
+</html>

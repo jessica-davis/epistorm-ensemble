@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Epistorm Ensemble</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="background:#fff;">
+
+  <!-- HEADER -->
+  <header>
+    <div class="container header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="assets/epistorm-ensemble-logo.png" alt="Epistorm Ensemble" class="header-logo">
+      </a>
+      <nav>
+        <a href="index.html" class="nav-link">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top:32px; padding-bottom:60px; max-width:800px;">
+    <h1 style="font-family:Georgia,serif; font-size:28px; color:#1a1a1a; margin-bottom:24px;">About the Epistorm Ensemble</h1>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h3 class="section-title">Project Overview</h3>
+      <p class="narrative-text">The Epistorm Ensemble Flu Forecasting Dashboard provides weekly forecasts of influenza-associated hospital admissions across the United States. The ensemble combines predictions from multiple individual forecasting models to produce robust probabilistic forecasts of hospitalization trends.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h3 class="section-title">Ensemble Methodology</h3>
+      <p class="narrative-text">Two ensemble methods are used:</p>
+      <ul style="font-family:Georgia,serif; font-size:16px; color:#333; line-height:1.8; padding-left:24px; margin-bottom:12px;">
+        <li><strong>Median Ensemble</strong> — Combines forecasts by taking the median across individual model quantiles at each prediction interval level.</li>
+        <li><strong>LOP (Linear Opinion Pool) Ensemble</strong> — Combines full probability distributions from each model, often producing smoother and wider prediction intervals.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h3 class="section-title">Component Models</h3>
+      <p class="narrative-text">The ensemble includes forecasts from the following individual models:</p>
+      <ul style="font-family:Georgia,serif; font-size:16px; color:#333; line-height:1.8; padding-left:24px;">
+        <li>MIGHTE-Nsemble</li>
+        <li>MIGHTE-Joint</li>
+        <li>CEPH-Rtrend_fluH</li>
+        <li>MOBS-EpyStrain_Flu</li>
+        <li>MOBS-GLEAM_RL_FLUH</li>
+        <li>NU-PGF_FLUH</li>
+        <li>NEU_ISI-FluBcast</li>
+        <li>NEU_ISI-AdaptiveEnsemble</li>
+        <li>Gatech-ensemble_prob</li>
+        <li>Gatech-ensemble_stat</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h3 class="section-title">Activity Levels</h3>
+      <p class="narrative-text">Activity levels are determined by comparing current hospitalization rates to historical thresholds set by the CDC. Levels range from <strong>Low</strong> to <strong>Very High</strong> based on the number of weekly hospital admissions per location.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h3 class="section-title">Trend Forecasts</h3>
+      <p class="narrative-text">Trend categories describe the expected direction and magnitude of change in hospitalizations over the forecast horizon. They range from <strong>Large Decrease</strong> to <strong>Large Increase</strong>, helping public health officials anticipate surges or declines.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h3 class="section-title">Prediction Intervals</h3>
+      <p class="narrative-text">Prediction intervals show the range of likely outcomes for hospitalization forecasts. The <strong>50% interval</strong> (darker shaded band) contains the middle half of predictions, while the <strong>95% interval</strong> (lighter band) captures nearly all expected outcomes. Wider intervals indicate greater uncertainty in the forecast.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h3 class="section-title">Data Sources</h3>
+      <p class="narrative-text">Observed hospitalization data is sourced from the CDC's National Healthcare Safety Network (NHSN). Activity level thresholds are based on CDC-established benchmarks for influenza hospitalization rates.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h3 class="section-title">Evaluation Metrics</h3>
+      <p class="narrative-text"><strong>Weighted Interval Score (WIS)</strong> measures the accuracy and calibration of probabilistic forecasts. The WIS ratio compares each model's score to the FluSight-baseline — values below 1 indicate better-than-baseline performance.</p>
+      <p class="narrative-text"><strong>Prediction Interval Coverage</strong> measures the proportion of observed values falling within each prediction interval. Well-calibrated models should have coverage close to the nominal interval level (e.g., a 90% PI should contain 90% of observations).</p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-logos">
+        <img src="assets/northeastern-logo.png" alt="Northeastern University" class="footer-logo">
+        <img src="assets/epistorm-logo.png" alt="Epistorm" class="footer-logo">
+      </div>
+      <p class="footer-text">Epistorm Ensemble Flu Forecasting Dashboard</p>
+    </div>
+  </footer>
+</body>
+</html>
