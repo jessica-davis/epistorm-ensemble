@@ -66,8 +66,10 @@ function updateForecastText(forecastData, locObs, loc, refDate, modelName) {
     (perCapMedian != null ? ` (<strong>${perCapMedian.toFixed(1)}</strong> per 100,000)` : '') +
     ` in ${locName} by ${targetDate} (${weeksAhead} week${weeksAhead > 1 ? 's' : ''} ahead).`;
 
-  // Compare to most recent observed value
-  const obsBeforeRef = locObs.filter(d => d.date <= refDate);
+  // Compare to observed value one week before the forecast date
+  const obsCutoff = new Date(refDate);
+  obsCutoff.setDate(obsCutoff.getDate() - 7);
+  const obsBeforeRef = locObs.filter(d => d.date <= obsCutoff);
   if (obsBeforeRef.length > 0) {
     const latestObs = obsBeforeRef[obsBeforeRef.length - 1];
     const diff = median - latestObs.value;

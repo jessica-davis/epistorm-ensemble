@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   update-data-and-scores:
@@ -18,44 +20,50 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          fetch-depth: 0
+          fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+          cache: 'pip'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --no-cache-dir -r requirements.txt
-      
+          pip install --no-cache-dir -r requirements-workflow.txt
+
       - name: Sync with remote and generate data
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          
-          # Ensure we're on main branch (not detached)
-          git checkout main
-          
+
           # Get latest from remote and merge
           git pull origin main
-          
+
           # Run the data generation
           echo "Fetching forecast data..."
           python fetch_data.py
 
-      - name: Create ensemble forecasts
+      - name: Create ensemble forecasts and calculate scores
         env:
           COVIDCAST_API_KEY: ${{ secrets.COVIDCAST_API_KEY }}
         run: |
-          echo "Creating ensemble forecasts..."
-          python create_ensemble_forecasts.py
-          
-          echo "Calculating scores..."
-          python calculate_scores.py
-      
+          echo "Creating ensemble forecasts (background)..."
+          python create_ensemble_forecasts.py &
+          PID_ENS=$!
+
+          echo "Calculating scores (background)..."
+          python calculate_scores.py &
+          PID_SCORES=$!
+
+          echo "Waiting for both to finish..."
+          wait $PID_ENS || { echo "ERROR: Ensemble forecasts failed"; exit 1; }
+          echo "✓ Ensemble forecasts done"
+          wait $PID_SCORES || { echo "ERROR: Score calculation failed"; exit 1; }
+          echo "✓ Scores done"
+
       - name: Prepare dashboard JSON data
         run: |
           echo "Preparing dashboard data..."
@@ -63,37 +71,38 @@ jobs:
 
       - name: Commit and push if changed
         run: |
-          echo "=== Before commit - Local HEAD ==="
-          git log -1 --oneline
-
-          echo "=== Before commit - Remote ==="
-          git ls-remote origin main
-
           git add data/ *.pq dashboard/data/
-    
+
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-    
+
           git commit -m "Update forecast data, scores, and categorical ensemble - $(date +'%Y-%m-%d')"
-    
-          echo "=== After commit - Local HEAD ==="
-          git log -1 --oneline
-    
-          echo "=== After commit - Remote ==="
-          git ls-remote origin main
-    
-          echo "=== Attempting push ==="
-          if ! git push origin main; then
-            echo "=== Push failed - checking remote again ==="
-            git ls-remote origin main
-            git fetch origin main
-            echo "=== Remote commits that we don't have ==="
-            git log HEAD..origin/main --oneline
-            exit 1
-          fi
-      - name: Force Streamlit redeploy
-        run: |
-          git commit --allow-empty -m "Force Streamlit redeploy [skip ci]"
+
+          # Pull any changes that happened during the long run, then push
+          git pull --rebase origin main
           git push origin main
+  deploy-dashboard:
+    needs: update-data-and-scores
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
