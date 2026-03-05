@@ -38,8 +38,20 @@ function updateOverview() {
   updateForecastSummary(loc);
 }
 
+function getObsCutoffDate() {
+  // Observed data available at forecast time is ~1 week before the reference date
+  const refDate = AppState.overviewRefDate;
+  const cutoff = new Date(refDate);
+  cutoff.setDate(cutoff.getDate() - 7);
+  return cutoff;
+}
+
 function updateHeadline(loc, locThresh) {
-  const locObs = DATA.observed.filter(d => d.location === loc).sort((a, b) => a.date - b.date);
+  const obsCutoff = getObsCutoffDate();
+  // Filter observed data to what was available at forecast time
+  const locObs = DATA.observed
+    .filter(d => d.location === loc && d.date <= obsCutoff)
+    .sort((a, b) => a.date - b.date);
   const headlineEl = document.getElementById('activity-headline');
   const compEl = document.getElementById('activity-comparison');
 
@@ -56,7 +68,7 @@ function updateHeadline(loc, locThresh) {
   const dateStr = fmtDate(latest.date);
 
   headlineEl.innerHTML =
-    `The flu activity level in ${locName} is currently <strong style="color:${levelColor}">${level}</strong> as of <strong>${dateStr}</strong>.`;
+    `The flu activity level in ${locName} is <strong style="color:${levelColor}">${level}</strong> as of <strong>${dateStr}</strong>.`;
 
   // Year-over-year comparison
   const oneYearAgo = new Date(latest.date);
@@ -84,8 +96,9 @@ function updateHeadline(loc, locThresh) {
 
 function updateActivityChart(loc, locThresh) {
   const container = document.getElementById('activity-chart-container');
+  const obsCutoff = getObsCutoffDate();
   const locObs = DATA.observed
-    .filter(d => d.location === loc && d.value != null)
+    .filter(d => d.location === loc && d.value != null && d.date <= obsCutoff)
     .sort((a, b) => a.date - b.date);
 
   if (locObs.length === 0) {
@@ -93,7 +106,7 @@ function updateActivityChart(loc, locThresh) {
     return;
   }
 
-  // Date range filter
+  // Date range filter (relative to the selected forecast date, not absolute latest)
   const maxDate = locObs[locObs.length - 1].date;
   const cutoff = getDateRangeCutoff(maxDate, AppState.dateRange);
   const filtered = cutoff ? locObs.filter(d => d.date >= cutoff) : locObs;

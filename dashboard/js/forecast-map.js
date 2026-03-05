@@ -5,6 +5,9 @@ let fmapPath = null;
 let fmapStates = null;
 let fmapFipsToLoc = {};
 let fmapColorScale = null;
+let fmapDcRect = null;
+let fmapPrEl = null;
+let fmapUsRect = null;
 
 function initForecastMap() {
   const container = document.getElementById('forecast-map-container');
@@ -25,6 +28,20 @@ function initForecastMap() {
     .append('svg')
     .attr('viewBox', `0 0 ${width} ${height}`)
     .attr('preserveAspectRatio', 'xMidYMid meet');
+
+  // Hatch pattern for no-data states
+  const defs = fmapSvg.append('defs');
+  const hatch = defs.append('pattern')
+    .attr('id', 'fmap-hatch')
+    .attr('patternUnits', 'userSpaceOnUse')
+    .attr('width', 6).attr('height', 6);
+  hatch.append('rect')
+    .attr('width', 6).attr('height', 6)
+    .attr('fill', '#f0f0f0');
+  hatch.append('path')
+    .attr('d', 'M0,6 L6,0')
+    .attr('stroke', '#d0d0d0')
+    .attr('stroke-width', 1);
 
   const projection = d3.geoAlbersUsa()
     .fitSize([width - 40, height - 40],
@@ -49,7 +66,8 @@ function initForecastMap() {
     })
     .on('mouseenter', function(event, d) {
       d3.select(this).attr('stroke', '#333').attr('stroke-width', 2);
-      showForecastMapTooltip(event, d);
+      const locCode = fmapFipsToLoc[d.id];
+      if (locCode) showMapTooltipForLoc(event, locCode);
     })
     .on('mousemove', function(event) {
       d3.select('#tooltip')
@@ -70,13 +88,125 @@ function initForecastMap() {
     .attr('d', fmapPath)
     .style('pointer-events', 'none');
 
+  // --- DC Inset (small square near DC's actual position) ---
+  const dcFeature = states.find(f => String(f.id) === '11');
+  if (dcFeature) {
+    const dcCentroid = fmapPath.centroid(dcFeature);
+    if (dcCentroid && !isNaN(dcCentroid[0])) {
+      const dcSize = 16;
+      const dcX = dcCentroid[0] + 16;
+      const dcY = dcCentroid[1] + 8;
+      const dcG = fmapSvg.append('g').attr('class', 'fmap-dc-inset');
+
+      // Leader line from actual DC to inset square
+      dcG.append('line')
+        .attr('x1', dcCentroid[0]).attr('y1', dcCentroid[1])
+        .attr('x2', dcX + dcSize / 2).attr('y2', dcY + dcSize / 2)
+        .attr('stroke', '#a0aec0').attr('stroke-width', 0.7)
+        .attr('stroke-dasharray', '2,1')
+        .style('pointer-events', 'none');
+
+      fmapDcRect = dcG.append('rect')
+        .attr('x', dcX).attr('y', dcY)
+        .attr('width', dcSize).attr('height', dcSize)
+        .attr('rx', 2)
+        .attr('fill', '#ddd')
+        .attr('stroke', '#fff').attr('stroke-width', 1);
+      attachInsetEvents(fmapDcRect, '11');
+    }
+  }
+
+  // --- PR Inset (bottom-right area, near Florida) ---
+  const prFeature = states.find(f => String(f.id) === '72');
+  const prInsetX = 570;
+  const prInsetY = 365;
+
+  if (prFeature) {
+    // Render actual PR shape with a separate projection
+    const prGeo = { type: 'FeatureCollection', features: [prFeature] };
+    const prProj = d3.geoMercator().fitExtent([[0, 0], [50, 28]], prGeo);
+    const prPathGen = d3.geoPath().projection(prProj);
+
+    const prG = fmapSvg.append('g')
+      .attr('class', 'fmap-pr-inset')
+      .attr('transform', `translate(${prInsetX}, ${prInsetY})`);
+
+    const prBounds = prPathGen.bounds(prFeature);
+    const prCx = (prBounds[0][0] + prBounds[1][0]) / 2;
+
+    fmapPrEl = prG.append('path')
+      .datum(prFeature)
+      .attr('d', prPathGen)
+      .attr('fill', '#ddd')
+      .attr('stroke', '#fff').attr('stroke-width', 0.8);
+    attachInsetEvents(fmapPrEl, '72');
+  } else {
+    // Fallback: rectangle for PR if not in TopoJSON
+    const prG = fmapSvg.append('g')
+      .attr('class', 'fmap-pr-inset')
+      .attr('transform', `translate(${prInsetX}, ${prInsetY})`);
+
+    fmapPrEl = prG.append('rect')
+      .attr('x', 0).attr('y', 0)
+      .attr('width', 40).attr('height', 18)
+      .attr('rx', 3)
+      .attr('fill', '#ddd')
+      .attr('stroke', '#fff').attr('stroke-width', 1);
+    attachInsetEvents(fmapPrEl, '72');
+  }
+
+  // --- US National box (top center, above MI/NY area) ---
+  const usBoxW = 54;
+  const usBoxH = 28;
+  const usBoxX = 490;
+  const usBoxY = 6;
+  const usG = fmapSvg.append('g').attr('class', 'fmap-us-inset');
+
+  usG.append('text')
+    .attr('x', usBoxX + usBoxW / 2).attr('y', usBoxY + usBoxH + 12)
+    .attr('text-anchor', 'middle')
+    .attr('font-size', '8px').attr('fill', '#718096').attr('font-weight', '500')
+    .text('National-Level Forecast')
+    .style('pointer-events', 'none');
+
+  fmapUsRect = usG.append('rect')
+    .attr('x', usBoxX).attr('y', usBoxY)
+    .attr('width', usBoxW).attr('height', usBoxH)
+    .attr('rx', 4)
+    .attr('fill', '#ddd')
+    .attr('stroke', '#fff').attr('stroke-width', 1);
+  attachInsetEvents(fmapUsRect, 'US');
+
   initForecastMapControls();
 }
 
+/* Shared event wiring for inset elements (DC, PR, US) */
+function attachInsetEvents(el, locCode) {
+  el.style('cursor', 'pointer')
+    .on('click', () => setLocation(locCode))
+    .on('mouseenter', function(event) {
+      d3.select(this).attr('stroke', '#333').attr('stroke-width', 2);
+      showMapTooltipForLoc(event, locCode);
+    })
+    .on('mousemove', function(event) {
+      d3.select('#tooltip')
+        .style('left', (event.clientX + 14) + 'px')
+        .style('top', (event.clientY - 10) + 'px');
+    })
+    .on('mouseleave', function() {
+      updateForecastMapHighlight();
+      d3.select('#tooltip').classed('visible', false);
+    });
+}
+
 function initForecastMapControls() {
-  document.getElementById('forecast-horizon-select').addEventListener('change', function(e) {
-    AppState.forecastHorizon = +e.target.value;
-    updateForecastMap();
+  document.querySelectorAll('#horizon-toggle .toggle-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('#horizon-toggle .toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      AppState.forecastHorizon = +btn.dataset.horizon;
+      updateForecastMap();
+    });
   });
 
   document.querySelectorAll('#percapita-toggle .toggle-btn').forEach(btn => {
@@ -100,7 +230,7 @@ function updateForecastMap() {
 
   const ensData = modelName === 'LOP Epistorm Ensemble' ? DATA.ensembleLop : DATA.ensemble;
 
-  // Build location → {median, lo95, hi95} lookup
+  // Build location → {median, lo95, hi95, displayVal} lookup (exclude US for color scale)
   const dataByLoc = {};
   ensData.forEach(d => {
     if (d.reference_date.toISOString().slice(0, 10) === refStr &&
@@ -118,7 +248,7 @@ function updateForecastMap() {
     }
   });
 
-  // Auto-scale color domain
+  // Auto-scale color domain from state values (excludes US to avoid dominating the scale)
   const values = Object.values(dataByLoc).map(d => d.displayVal);
   const maxVal = values.length > 0 ? d3.max(values) : 1;
 
@@ -131,10 +261,42 @@ function updateForecastMap() {
     .transition().duration(300)
     .attr('fill', function(d) {
       const locCode = fmapFipsToLoc[d.id];
-      if (!locCode) return '#eee';
+      if (!locCode) return 'url(#fmap-hatch)';
       const data = dataByLoc[locCode];
-      return data ? fmapColorScale(data.displayVal) : '#eee';
+      return data ? fmapColorScale(data.displayVal) : 'url(#fmap-hatch)';
     });
+
+  // Color DC inset
+  if (fmapDcRect) {
+    const dcData = dataByLoc['11'];
+    fmapDcRect.transition().duration(300)
+      .attr('fill', dcData ? fmapColorScale(dcData.displayVal) : 'url(#fmap-hatch)');
+  }
+
+  // Color PR inset
+  if (fmapPrEl) {
+    const prData = dataByLoc['72'];
+    fmapPrEl.transition().duration(300)
+      .attr('fill', prData ? fmapColorScale(prData.displayVal) : 'url(#fmap-hatch)');
+  }
+
+  // Color US box (US value may exceed state max — clamp to scale)
+  if (fmapUsRect) {
+    const usFc = ensData.find(d =>
+      d.location === 'US' &&
+      d.reference_date.toISOString().slice(0, 10) === refStr &&
+      d.horizon === horizon
+    );
+    if (usFc && usFc['0.5'] != null) {
+      const usPop = getPopulation('US', DATA.locations);
+      const usVal = usePerCapita && usPop ? perCapita(usFc['0.5'], usPop) : usFc['0.5'];
+      fmapUsRect.transition().duration(300)
+        .attr('fill', fmapColorScale(Math.min(usVal, maxVal)));
+    } else {
+      fmapUsRect.transition().duration(300)
+        .attr('fill', 'url(#fmap-hatch)');
+    }
+  }
 
   updateForecastMapHighlight();
   drawForecastMapLegend(maxVal, usePerCapita);
@@ -153,12 +315,29 @@ function updateForecastMapHighlight() {
       const locCode = fmapFipsToLoc[d.id];
       return (locCode === selectedLoc && selectedLoc !== 'US') ? '#1a1a1a' : '#fff';
     });
+
+  // DC inset
+  if (fmapDcRect) {
+    fmapDcRect
+      .attr('stroke', selectedLoc === '11' ? '#1a1a1a' : '#fff')
+      .attr('stroke-width', selectedLoc === '11' ? 2.5 : 1);
+  }
+  // PR inset
+  if (fmapPrEl) {
+    fmapPrEl
+      .attr('stroke', selectedLoc === '72' ? '#1a1a1a' : '#fff')
+      .attr('stroke-width', selectedLoc === '72' ? 2.5 : 0.8);
+  }
+  // US inset
+  if (fmapUsRect) {
+    fmapUsRect
+      .attr('stroke', selectedLoc === 'US' ? '#1a1a1a' : '#fff')
+      .attr('stroke-width', selectedLoc === 'US' ? 2.5 : 1);
+  }
 }
 
-function showForecastMapTooltip(event, d) {
-  const locCode = fmapFipsToLoc[d.id];
-  if (!locCode) return;
-
+/* Unified tooltip for any location (states, DC, PR, US) */
+function showMapTooltipForLoc(event, locCode) {
   const locName = getLocationName(locCode, DATA.locations);
   const refDate = AppState.selectedDate;
   const horizon = AppState.forecastHorizon;
@@ -168,7 +347,6 @@ function showForecastMapTooltip(event, d) {
   const ensData = modelName === 'LOP Epistorm Ensemble' ? DATA.ensembleLop : DATA.ensemble;
   const population = getPopulation(locCode, DATA.locations);
 
-  // Find forecast for this state/date/horizon
   const fc = ensData.find(r =>
     r.location === locCode &&
     r.reference_date.toISOString().slice(0, 10) === refStr &&
@@ -191,7 +369,6 @@ function showForecastMapTooltip(event, d) {
     html += `<div style="font-size:11px;color:#aaa;">No forecast data</div>`;
   }
 
-  // Add sparkline
   html += buildSparkline(locCode, refDate, ensData);
 
   d3.select('#tooltip')
@@ -287,12 +464,12 @@ function drawForecastMapLegend(maxVal, usePerCapita) {
 
   if (maxVal <= 0) return;
 
-  const marginL = 30;
-  const marginR = 30;
-  const barW = 240;
+  const marginL = 40;
+  const marginR = 40;
+  const barW = 360;
   const totalW = marginL + barW + marginR;
-  const legendH = 40;
-  const barH = 12;
+  const legendH = 46;
+  const barH = 16;
   const barY = 4;
 
   const svg = d3.select(container)
@@ -336,15 +513,21 @@ function drawForecastMapLegend(maxVal, usePerCapita) {
     .attr('transform', `translate(0, ${barY + barH})`)
     .call(axis)
     .selectAll('text')
-    .style('font-size', '10px')
+    .style('font-size', '11px')
     .style('fill', '#718096');
 
   // Remove axis line
   svg.select('.domain').remove();
 
-  // Unit label
+  // Unit label + no-data indicator
   const unitText = usePerCapita ? 'Median forecast (per 100k)' : 'Median forecast (admissions)';
   container.insertAdjacentHTML('beforeend',
-    `<div style="font-size:11px;color:#a0aec0;margin-top:2px;">${unitText}</div>`
+    `<div style="display:flex;align-items:center;gap:16px;margin-top:4px;">
+      <span style="font-size:12px;color:#718096;">${unitText}</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#a0aec0;">
+        <svg width="14" height="14"><rect width="14" height="14" fill="url(#fmap-hatch)" rx="2" stroke="#d0d0d0" stroke-width="0.5"/></svg>
+        No data
+      </span>
+    </div>`
   );
 }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Epistorm Ensemble — Influenza Hospitalization Forecasts</title>
-  <link rel="stylesheet" href="css/style.css?v=26">
+  <link rel="stylesheet" href="css/style.css?v=30">
 </head>
 <body>
   <!-- LOADING OVERLAY -->
@@ -42,10 +42,23 @@
     <!-- ============ OVERVIEW TAB ============ -->
     <section id="tab-overview" class="tab-content active">
 
-      <!-- Location selector -->
-      <div class="card card-compact overview-location-bar">
-        <label class="control-label" for="overview-location-select">Location</label>
-        <select id="overview-location-select" class="overview-loc-select"></select>
+      <!-- Top controls bar: location + forecast date slider -->
+      <div class="overview-top-controls">
+        <div class="overview-top-group">
+          <label class="control-label" for="overview-location-select">Location</label>
+          <select id="overview-location-select" class="overview-loc-select"></select>
+        </div>
+        <div class="overview-top-group overview-top-slider">
+          <label class="control-label">Forecast Date</label>
+          <div class="slider-container">
+            <div class="slider-track-wrap">
+              <input type="range" id="overview-date-slider" class="date-slider" min="0" max="100" value="100">
+              <div id="overview-slider-ticks" class="slider-ticks"></div>
+            </div>
+            <span id="overview-date-label" class="slider-label"></span>
+            <button id="overview-latest-btn" class="latest-btn" title="Jump to most recent forecast date">Most Recent</button>
+          </div>
+        </div>
       </div>
 
       <!-- Activity headline -->
@@ -82,17 +95,13 @@
             <p id="forecast-summary-narrative" class="narrative-text-sm"></p>
             <div class="forecast-controls-compact">
               <div>
-                <label class="control-label" for="overview-date-select">Forecast Date</label>
-                <select id="overview-date-select" class="compact-select"></select>
-              </div>
-              <div>
-                <label class="control-label" for="overview-horizon-select">Horizon</label>
-                <select id="overview-horizon-select" class="compact-select">
-                  <option value="0">1 Week Ahead</option>
-                  <option value="1">2 Weeks Ahead</option>
-                  <option value="2">3 Weeks Ahead</option>
-                  <option value="3" selected>4 Weeks Ahead</option>
-                </select>
+                <label class="control-label">Horizon</label>
+                <div class="model-toggle" id="overview-horizon-toggle">
+                  <button class="toggle-btn toggle-btn-sm" data-horizon="0">1 Wk</button>
+                  <button class="toggle-btn toggle-btn-sm" data-horizon="1">2 Wk</button>
+                  <button class="toggle-btn toggle-btn-sm" data-horizon="2">3 Wk</button>
+                  <button class="toggle-btn toggle-btn-sm active" data-horizon="3">4 Wk</button>
+                </div>
               </div>
             </div>
             <div class="probability-bars-col">
@@ -135,8 +144,12 @@
             <div class="control-group">
               <label class="control-label">Forecast Date</label>
               <div class="slider-container">
-                <input type="range" id="forecast-date-slider" class="date-slider" min="0" max="100" value="100">
+                <div class="slider-track-wrap">
+                  <input type="range" id="forecast-date-slider" class="date-slider" min="0" max="100" value="100">
+                  <div id="forecast-slider-ticks" class="slider-ticks"></div>
+                </div>
                 <span id="forecast-date-label" class="slider-label"></span>
+                <button id="forecast-latest-btn" class="latest-btn" title="Jump to most recent forecast date">Most Recent</button>
               </div>
             </div>
             <div class="control-group">
@@ -157,13 +170,13 @@
               </div>
               <div class="forecast-map-controls">
                 <div class="control-group-inline">
-                  <label class="control-label" for="forecast-horizon-select">Horizon</label>
-                  <select id="forecast-horizon-select" class="compact-select compact-select-sm">
-                    <option value="0" selected>1 Week Ahead</option>
-                    <option value="1">2 Weeks Ahead</option>
-                    <option value="2">3 Weeks Ahead</option>
-                    <option value="3">4 Weeks Ahead</option>
-                  </select>
+                  <label class="control-label">Horizon</label>
+                  <div class="model-toggle" id="horizon-toggle">
+                    <button class="toggle-btn toggle-btn-sm active" data-horizon="0">1 Wk</button>
+                    <button class="toggle-btn toggle-btn-sm" data-horizon="1">2 Wk</button>
+                    <button class="toggle-btn toggle-btn-sm" data-horizon="2">3 Wk</button>
+                    <button class="toggle-btn toggle-btn-sm" data-horizon="3">4 Wk</button>
+                  </div>
                 </div>
                 <div class="control-group-inline">
                   <label class="control-label">Values</label>
@@ -288,13 +301,13 @@
   <!-- SCRIPTS -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://d3js.org/topojson.v3.min.js"></script>
-  <script src="js/colors.js?v=26"></script>
-  <script src="js/utils.js?v=26"></script>
-  <script src="js/controls.js?v=26"></script>
-  <script src="js/overview.js?v=26"></script>
-  <script src="js/forecasts.js?v=26"></script>
-  <script src="js/forecast-map.js?v=26"></script>
-  <script src="js/evaluation.js?v=26"></script>
-  <script src="js/main.js?v=26"></script>
+  <script src="js/colors.js?v=30"></script>
+  <script src="js/utils.js?v=30"></script>
+  <script src="js/controls.js?v=30"></script>
+  <script src="js/overview.js?v=30"></script>
+  <script src="js/forecasts.js?v=30"></script>
+  <script src="js/forecast-map.js?v=30"></script>
+  <script src="js/evaluation.js?v=30"></script>
+  <script src="js/main.js?v=30"></script>
 </body>
 </html>

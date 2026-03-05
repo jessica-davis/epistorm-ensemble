@@ -231,21 +231,41 @@ header {
 }
 .location-radio-item input { margin-right: 8px; }
 
-/* --- Overview Location Bar --- */
-.overview-location-bar {
+/* --- Overview Top Controls Bar --- */
+.overview-top-controls {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  padding: 8px 14px;
-  background: none;
-  border: none;
-  box-shadow: none;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 12px;
+  padding: 10px 0;
 }
-.overview-location-bar .control-label {
-  margin-bottom: 0;
-  white-space: nowrap;
+.overview-top-group {
   flex-shrink: 0;
+}
+.overview-top-slider {
+  flex: 1;
+  min-width: 0;
+}
+.latest-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  background: #fff;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.latest-btn:hover {
+  background: #2B7A8F;
+  color: #fff;
+  border-color: #2B7A8F;
+}
+.latest-btn.is-latest {
+  opacity: 0.4;
+  pointer-events: none;
 }
 .overview-loc-select {
   padding: 6px 10px;
@@ -432,11 +452,12 @@ header {
   color: #4a5568;
 }
 .range-btn.active {
-  background: #2d3748;
+  background: #2B7A8F;
   color: #fff;
-  border-color: #2d3748;
+  border-color: #2B7A8F;
+  box-shadow: 0 1px 3px rgba(43,122,143,0.3);
 }
-.range-btn.active + .range-btn { border-left-color: #2d3748; }
+.range-btn.active + .range-btn { border-left-color: #2B7A8F; }
 
 /* Model Toggle */
 .model-toggle {
@@ -466,6 +487,13 @@ header {
 }
 
 /* Date Slider */
+.slider-hint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #cbd5e0;
+  font-size: 10px;
+}
 .slider-container {
   display: flex;
   align-items: center;
@@ -475,10 +503,11 @@ header {
   flex: 1;
   -webkit-appearance: none;
   appearance: none;
-  height: 4px;
-  background: #e2e8f0;
-  border-radius: 2px;
+  height: 6px;
+  background: linear-gradient(to right, #e2e8f0, #cbd5e0);
+  border-radius: 3px;
   outline: none;
+  cursor: pointer;
   transition: background 0.15s;
 }
 .date-slider::-webkit-slider-thumb {
@@ -486,13 +515,19 @@ header {
   width: 18px;
   height: 18px;
   background: #2B7A8F;
+  border: 2px solid #fff;
   border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(43,122,143,0.3);
-  transition: transform 0.1s;
+  cursor: grab;
+  box-shadow: 0 1px 4px rgba(43,122,143,0.35), 0 0 0 2px rgba(43,122,143,0.15);
+  transition: transform 0.1s, box-shadow 0.1s;
 }
 .date-slider::-webkit-slider-thumb:hover {
   transform: scale(1.15);
+  box-shadow: 0 2px 6px rgba(43,122,143,0.4), 0 0 0 3px rgba(43,122,143,0.2);
+}
+.date-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.1);
 }
 .slider-label {
   font-size: 13px;
@@ -500,6 +535,39 @@ header {
   color: #2d3748;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  background: #f0f4f8;
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+
+/* Slider Track Wrapper (groups input + ticks so ticks align with track) */
+.slider-track-wrap {
+  flex: 1;
+  min-width: 0;
+}
+.slider-track-wrap .date-slider {
+  width: 100%;
+}
+
+/* Slider Timeline Ticks */
+.slider-ticks {
+  position: relative;
+  height: 16px;
+  margin-top: 2px;
+  /* Inset by half the thumb width (18px/2 = 9px) so ticks align with track travel */
+  margin-left: 9px;
+  margin-right: 9px;
+}
+.slider-tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #718096;
+  white-space: nowrap;
+  border-left: 1px solid #d0d5dd;
+  padding-left: 3px;
+  padding-top: 1px;
+  line-height: 1;
 }
 
 /* Control Group */
@@ -842,7 +910,7 @@ footer {
   .tab { padding: 10px 16px; font-size: 12px; }
   .range-btn { padding: 6px 10px; font-size: 11px; }
   .footer-inner { flex-direction: column; gap: 12px; text-align: center; }
-  .overview-location-bar { flex-direction: column; align-items: stretch; }
+  .overview-top-controls { flex-direction: column; align-items: stretch; }
   .overview-main-row { flex-direction: column; }
   .overview-info-row { flex-direction: column; }
   .overview-chart-footer { flex-direction: column; align-items: flex-start; }

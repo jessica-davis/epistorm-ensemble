@@ -37,25 +37,42 @@ function initControls() {
     forecastList.appendChild(div);
   });
 
-  // --- Overview date dropdown ---
-  const dateSelect = document.getElementById('overview-date-select');
+  // --- Overview date slider ---
   const dates = DATA.availableDates;
-  dates.forEach((d, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = d.toISOString().slice(0, 10);
-    if (i === dates.length - 1) opt.selected = true;
-    dateSelect.appendChild(opt);
-  });
-  dateSelect.addEventListener('change', () => {
-    AppState.overviewRefDate = dates[+dateSelect.value];
+  const ovSlider = document.getElementById('overview-date-slider');
+  const ovDateLabel = document.getElementById('overview-date-label');
+  const ovLatestBtn = document.getElementById('overview-latest-btn');
+
+  ovSlider.max = dates.length - 1;
+  ovSlider.value = dates.length - 1;
+  ovDateLabel.textContent = dates[dates.length - 1].toISOString().slice(0, 10);
+  ovLatestBtn.classList.add('is-latest');
+
+  ovSlider.addEventListener('input', () => {
+    const idx = +ovSlider.value;
+    AppState.overviewRefDate = dates[idx];
+    ovDateLabel.textContent = dates[idx].toISOString().slice(0, 10);
+    ovLatestBtn.classList.toggle('is-latest', idx === dates.length - 1);
     updateAll();
   });
 
-  // --- Overview horizon dropdown ---
-  document.getElementById('overview-horizon-select').addEventListener('change', (e) => {
-    AppState.overviewHorizon = +e.target.value;
+  ovLatestBtn.addEventListener('click', () => {
+    const lastIdx = dates.length - 1;
+    ovSlider.value = lastIdx;
+    AppState.overviewRefDate = dates[lastIdx];
+    ovDateLabel.textContent = dates[lastIdx].toISOString().slice(0, 10);
+    ovLatestBtn.classList.add('is-latest');
     updateAll();
+  });
+
+  // --- Overview horizon toggle ---
+  document.querySelectorAll('#overview-horizon-toggle .toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#overview-horizon-toggle .toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      AppState.overviewHorizon = +btn.dataset.horizon;
+      updateAll();
+    });
   });
 
   // --- Overview range buttons ---
@@ -63,15 +80,34 @@ function initControls() {
 
   // --- Forecast date slider ---
   const slider = document.getElementById('forecast-date-slider');
+  const fcDateLabel = document.getElementById('forecast-date-label');
+  const fcLatestBtn = document.getElementById('forecast-latest-btn');
+
   slider.max = dates.length - 1;
   slider.value = dates.length - 1;
-  document.getElementById('forecast-date-label').textContent = dates[dates.length - 1].toISOString().slice(0, 10);
+  fcDateLabel.textContent = dates[dates.length - 1].toISOString().slice(0, 10);
+  fcLatestBtn.classList.add('is-latest');
+
   slider.addEventListener('input', () => {
     const idx = +slider.value;
     AppState.selectedDate = dates[idx];
-    document.getElementById('forecast-date-label').textContent = dates[idx].toISOString().slice(0, 10);
+    fcDateLabel.textContent = dates[idx].toISOString().slice(0, 10);
+    fcLatestBtn.classList.toggle('is-latest', idx === dates.length - 1);
     updateAll();
   });
+
+  fcLatestBtn.addEventListener('click', () => {
+    const lastIdx = dates.length - 1;
+    slider.value = lastIdx;
+    AppState.selectedDate = dates[lastIdx];
+    fcDateLabel.textContent = dates[lastIdx].toISOString().slice(0, 10);
+    fcLatestBtn.classList.add('is-latest');
+    updateAll();
+  });
+
+  // --- Build timeline ticks for both sliders ---
+  buildSliderTicks('overview-slider-ticks', dates);
+  buildSliderTicks('forecast-slider-ticks', dates);
 
   // --- Model toggle ---
   document.querySelectorAll('#model-toggle .toggle-btn').forEach(btn => {
@@ -202,4 +238,33 @@ function addModelCheckbox(container, model) {
 function updateModelCount() {
   const el = document.getElementById('eval-model-count');
   el.textContent = `${AppState.evalModels.length} of ${ALL_MODELS.length} models selected`;
+}
+
+function buildSliderTicks(containerId, dates) {
+  const container = document.getElementById(containerId);
+  if (!container || dates.length === 0) return;
+
+  // Find the first date of each month represented in the dates array
+  const monthTicks = [];
+  let lastMonth = -1;
+  dates.forEach((d, i) => {
+    const m = d.getMonth();
+    if (m !== lastMonth) {
+      monthTicks.push({ index: i, date: d });
+      lastMonth = m;
+    }
+  });
+
+  const total = dates.length - 1;
+  if (total <= 0) return;
+
+  monthTicks.forEach(tick => {
+    const pct = (tick.index / total) * 100;
+    const label = tick.date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    const el = document.createElement('span');
+    el.className = 'slider-tick';
+    el.style.left = pct + '%';
+    el.textContent = label;
+    container.appendChild(el);
+  });
 }
