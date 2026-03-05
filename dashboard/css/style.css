@@ -112,20 +112,24 @@ header {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 15px;
   font-weight: 500;
-  color: #a0aec0;
+  color: #718096;
   background: none;
   border: none;
   padding: 14px 28px;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s, border-color 0.15s;
+  border-bottom: 3px solid transparent;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
   letter-spacing: 0.01em;
 }
-.tab:hover { color: #4a5568; }
+.tab:hover {
+  color: #2d3748;
+  background: #f7fafc;
+}
 .tab.active {
   color: #1a202c;
   border-bottom-color: #2B7A8F;
   font-weight: 600;
+  background: #f0f9fb;
 }
 
 /* --- Tab Content --- */
@@ -231,8 +235,12 @@ header {
 .overview-location-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 8px;
+  padding: 8px 14px;
+  background: none;
+  border: none;
+  box-shadow: none;
 }
 .overview-location-bar .control-label {
   margin-bottom: 0;
@@ -240,15 +248,15 @@ header {
   flex-shrink: 0;
 }
 .overview-loc-select {
-  padding: 8px 14px;
-  font-size: 14px;
-  font-weight: 600;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 500;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background: #f8f9fb;
+  border-radius: 5px;
+  background: #fff;
   color: #2d3748;
   appearance: auto;
-  min-width: 220px;
+  min-width: 200px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .overview-loc-select:focus {
@@ -270,11 +278,11 @@ header {
   margin-bottom: 0;
 }
 .overview-chart-col {
-  flex: 3;
+  flex: 5;
   min-width: 0;
 }
 .overview-forecast-col {
-  flex: 2;
+  flex: 4;
   min-width: 0;
 }
 
@@ -322,6 +330,11 @@ header {
 .activity-legend-compact .legend-swatch {
   width: 10px;
   height: 10px;
+}
+.data-source-note {
+  font-size: 10px;
+  color: #b0b8c4;
+  margin-top: 2px;
 }
 .range-buttons-sm {
   margin-top: 0;

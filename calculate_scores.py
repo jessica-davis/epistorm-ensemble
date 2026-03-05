@@ -574,13 +574,13 @@ if __name__ == "__main__":
     
     # Prepare data for scoring
     print("\n4. Preparing data for scoring...")
-    predsall = all_forecasts[all_forecasts.output_type == 'quantile']
+    predsall = all_forecasts[all_forecasts.output_type == 'quantile'].copy()  
     predsall['target_end_date'] = pd.to_datetime(predsall['target_end_date'])
     predsall['output_type_id'] = predsall["output_type_id"].astype(float)
     predsall = predsall[predsall.target == 'wk inc flu hosp']
     predsall = predsall.rename(columns={'model': 'Model'})
     print(f"   ✓ Prepared {len(predsall)} quantile predictions")
-    
+        
     # Initialize scoring
     scoring = scoring_functions()
     

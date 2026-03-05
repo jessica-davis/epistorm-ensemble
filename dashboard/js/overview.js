@@ -56,7 +56,7 @@ function updateHeadline(loc, locThresh) {
   const dateStr = fmtDate(latest.date);
 
   headlineEl.innerHTML =
-    `The flu activity level in ${locName} is currently <strong style="color:${levelColor}">${level}</strong> as of ${dateStr}.`;
+    `The flu activity level in ${locName} is currently <strong style="color:${levelColor}">${level}</strong> as of <strong>${dateStr}</strong>.`;
 
   // Year-over-year comparison
   const oneYearAgo = new Date(latest.date);
@@ -149,6 +149,36 @@ function updateActivityChart(loc, locThresh) {
           .attr('x', 0).attr('y', yTop)
           .attr('width', innerW).attr('height', yBot - yTop)
           .attr('fill', b.color).attr('opacity', 0.45);
+        // Direct label on the band (left-aligned, with background pill)
+        const bandMidY = (yTop + yBot) / 2;
+        if (yBot - yTop > 14) {
+          // Measure text width to size the pill
+          const tempText = bgLayer.append('text')
+            .attr('font-size', '9px')
+            .attr('font-weight', '600')
+            .text(b.label);
+          const textW = tempText.node().getComputedTextLength();
+          tempText.remove();
+          // Background pill
+          const pillPad = 4;
+          bgLayer.append('rect')
+            .attr('x', 3)
+            .attr('y', bandMidY - 7)
+            .attr('width', textW + pillPad * 2)
+            .attr('height', 14)
+            .attr('rx', 3)
+            .attr('fill', 'rgba(255,255,255,0.7)');
+          // Label text
+          bgLayer.append('text')
+            .attr('x', 3 + pillPad)
+            .attr('y', bandMidY)
+            .attr('dy', '0.35em')
+            .attr('text-anchor', 'start')
+            .attr('font-size', '9px')
+            .attr('font-weight', '600')
+            .attr('fill', '#4a5568')
+            .text(b.label);
+        }
       }
     });
   }
@@ -282,8 +312,17 @@ function updateForecastSummary(loc) {
     targetDate.setDate(targetDate.getDate() + weeksAhead * 7);
     const targetDateStr = fmtDate(targetDate);
     const trendVerb = topTrend.includes('Increase') ? 'increase' : topTrend.includes('Decrease') ? 'decrease' : 'remain stable';
+
+    // Get median forecast value from ensemble data
+    const ensFc = DATA.ensemble.find(d =>
+      d.location === loc &&
+      d.reference_date.toISOString().slice(0, 10) === refStr &&
+      d.horizon === horizon
+    );
+    const medianStr = ensFc && ensFc['0.5'] != null ? ` with a median forecast of <strong>${fmtNum(ensFc['0.5'])}</strong> admissions` : '';
+
     narrativeEl.innerHTML =
-      `Over ${horizonLabel} (${targetDateStr}), flu hospitalizations in ${locName} are projected to ${trendVerb} — activity levels are forecast to stay <strong style="color:${actColor}">${topActivity.toLowerCase()}</strong>.`;
+      `Over ${horizonLabel} (${targetDateStr}), flu hospitalizations in ${locName} are projected to ${trendVerb}${medianStr} — activity levels are forecast to stay <strong style="color:${actColor}">${topActivity.toLowerCase()}</strong>.`;
   } else {
     headlineEl.textContent = 'Forecast summary';
     narrativeEl.textContent = 'No forecast data available for the selected date and location.';
